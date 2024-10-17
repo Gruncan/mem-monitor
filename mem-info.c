@@ -14,8 +14,21 @@ struct sMemMapping {
 };
 
 
+static const char* memMapping[] = {
+    "MemTotal", "MemFree", "MemAvailable", "Buffers", "Cached", "SwapCached",
+    "Active"," Inactive", "Active(anon)", "Inactive(anon)","Active(file)",
+    "Inactive(file)", "Unevictable", "Mlocked", "SwapTotal", "SwapFree", "Zswap",
+    "Zswapped", "Dirty", "Writeback", "AnonPages", "Mapped", "Shmem", "KReclaimable",
+    "Slab", "SReclaimable", "SUnreclaim", "KernelStack", "PageTables", "SecPageTables",
+    "NFS_Unstable", "Bounce", "WritebackTmp", "CommitLimit", "Committed_AS", "VmallocTotal",
+    "VmallocUsed", "VmallocChunk", "Percpu", "HardwareCorrupt", "AnonHugePages",
+    "ShmemHugePages", "ShmemPmdMapped", "FileHugePages", "FilePmdMapped", "Unaccepted",
+    "HugePages_Total", "HugePages_Free", "HugePages_Rsvd", "HugePages_Surp", "Hugepagesize",
+    "Hugetlb", "DirectMap4k", "DirectMap2M", "DirectMap1G",
+};
 
-void mem_parse_line(char* line, const struct sMemMapping* mappings) {
+
+void mem_parse_line(char* line, struct sMemInfo* mi) {
     char key[256];
     unsigned long value;
     char unit[32];
@@ -26,6 +39,7 @@ void mem_parse_line(char* line, const struct sMemMapping* mappings) {
     }
 
     if (items < 2) {
+        // We should always have a unit?
         return;
     }
 
@@ -35,9 +49,19 @@ void mem_parse_line(char* line, const struct sMemMapping* mappings) {
     char *paren = strchr(key, '(');
     if (paren) *paren = '\0';
 
-    for (int i = 0; mappings[i].key != NULL; i++) {
-        if (strcmp(key, mappings[i].key) == 0) {
-            *mappings[i].field = value;
+    const size_t structLength = sizeof(struct sMemInfo);
+    const size_t parLength = sizeof(unsigned long);
+
+    for (int i = 0; i < items; i++) {
+        if(strcmp(key, memMapping[i]) == 0) {
+            const size_t valueOffset = i * parLength;
+            if (valueOffset >= structLength) {
+                perror("Failed to write to struct!");
+                return;
+            }
+            // This looks disgusting.. I thought I understood C but pointer arithmetic needs casting to 1 byte char?
+            *(unsigned long *)((char *)mi + valueOffset) = value;
+
             break;
         }
     }
@@ -68,69 +92,10 @@ void read_mem_info(struct sMemInfo* mi) {
     fclose(fp);
 
 
-    const struct sMemMapping memMappings[] = {
-        {"MemTotal", &mi->total},
-        {"MemFree", &mi->free},
-        {"MemAvailable", &mi->available},
-        {"Buffers", &mi->buffers},
-        {"Cached", &mi->cached},
-        {"SwapCached", &mi->swapCache},
-        {"Active", &mi->active},
-        {"Inactive", &mi->inActive},
-        {"Active(anon)", &mi->activeAnon},
-        {"Inactive(anon)", &mi->inActiveAnon},
-        {"Active(file)", &mi->activeFile},
-        {"Inactive(file)", &mi->inActiveFile},
-        {"Unevictable", &mi->unevictable},
-        {"Mlocked", &mi->mLocked},
-        {"SwapTotal", &mi->swapTotal},
-        {"SwapFree", &mi->swapFree},
-        {"Zswap", &mi->zswap},
-        {"Zswapped", &mi->zswapped},
-        {"Dirty", &mi->dirty},
-        {"Writeback", &mi->writeback},
-        {"AnonPages", &mi->pagesAnon},
-        {"Mapped", &mi->pageMapped},
-        {"Shmem", &mi->shmem},
-        {"KReclaimable", &mi->kreClaimable},
-        {"Slab", &mi->slab},
-        {"SReclaimable", &mi->srClaimable},
-        {"SUnreclaim", &mi->sunReclaim},
-        {"KernelStack", &mi->kernelStack},
-        {"PageTables", &mi->pageTables},
-        {"SecPageTables", &mi->secPageTables},
-        {"NFS_Unstable", &mi->nfsUnstable},
-        {"Bounce", &mi->bounce},
-        {"WritebackTmp", &mi->writebackTmp},
-        {"CommitLimit", &mi->commitLimit},
-        {"Committed_AS", &mi->committedAllocs},
-        {"VmallocTotal", &mi->vmallocTotal},
-        {"VmallocUsed", &mi->vmallocUsed},
-        {"VmallocChunk", &mi->vmallocChunk},
-        {"Percpu", &mi->perCPU},
-        {"HardwareCorrupted", &mi->hardwareCorrupted},
-        {"AnonHugePages", &mi->hugePagesAnon},
-        {"ShmemHugePages", &mi->hugePagesShmem},
-        {"ShmemPmdMapped", &mi->pmdMappedShmem},
-        {"FileHugePages", &mi->hugePagesFile},
-        {"FilePmdMapped", &mi->pmdMappedFile},
-        {"Unaccepted", &mi->unaccepted},
-        {"HugePages_Total", &mi->hugePagesTotal},
-        {"HugePages_Free", &mi->hugePagesFree},
-        {"HugePages_Rsvd", &mi->hugePagesRsvd},
-        {"HugePages_Surp", &mi->hugePagesSurp},
-        {"Hugepagesize", &mi->hugePageSize},
-        {"Hugetlb", &mi->hugePageTLB},
-        {"DirectMap4k", &mi->directMap4k},
-        {"DirectMap2M", &mi->directMap2M},
-        {"DirectMap1G", &mi->directMap1G},
-        {NULL, NULL} // To mark the end
-    };
-
 
     char *line = strtok(content, "\n");
     while (line != NULL) {
-        mem_parse_line(line, memMappings);
+        mem_parse_line(line, mi);
         line = strtok(NULL, "\n");
     }
 
