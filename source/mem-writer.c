@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 
 
 void init_mem_writer(struct sMemWriter *mw, char* filename) {
@@ -14,23 +15,20 @@ void init_mem_writer(struct sMemWriter *mw, char* filename) {
 
 
 char* get_current_time() {
-    const time_t current_time = time(NULL);
+    struct timeval tv;
 
-    if (current_time == -1) {
-        perror("Error getting the current time");
-        return NULL;
-    }
+    gettimeofday(&tv, NULL);
 
-    struct tm *local_time = localtime(&current_time);
+    const struct tm *tm_info = localtime(&tv.tv_sec);
 
-    if (local_time == NULL) {
-        perror("Error converting to local time");
-        return NULL;
-    }
+    char* time_string = malloc(200);
+    time_string[0] = '\0';
 
-    char* time_string = malloc(100);
+    strftime(time_string, 200, "%Y-%m-%d %H:%M:%S", tm_info);
 
-    strftime(time_string, 100, "%Y-%m-%d %H:%M:%S", local_time);
+    char tmp[10];
+    snprintf(tmp, sizeof(tmp), ".%03ld", tv.tv_usec / 1000);
+    strcat(time_string,  tmp);
 
     return time_string;
 }
