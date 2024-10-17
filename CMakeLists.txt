@@ -3,6 +3,9 @@ project(mem_monitor C)
 
 set(CMAKE_C_STANDARD 11)
 
+
+include_directories("source/")
+
 add_executable(mem_monitor main.c
-        mem-info.h
-        mem-info.c)
+        source/mem-info.c
+        )
