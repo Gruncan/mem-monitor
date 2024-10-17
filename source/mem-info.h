@@ -98,11 +98,11 @@ void read_mem_info(struct sMemInfo* mi);
 
 void read_mem_pages(struct sMemPageInfo* mp);
 
-char *get_mem_page_data(struct sMemPageInfo *mp);
+char *get_mem_page_data(struct sMemPageInfo* mp);
 
-char **get_all_mem_page_data(struct sMemPageInfo *mp);
+char **get_all_mem_page_data(struct sMemPageInfo* mp);
 
-char *get_mem_info_data(struct sMemInfo *mi);
+char *get_mem_info_data(struct sMemInfo* mi);
 
 char** get_all_mem_info_data(struct sMemInfo* mi);
 

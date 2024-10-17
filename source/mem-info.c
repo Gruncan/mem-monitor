@@ -29,7 +29,7 @@ static const char* memPageMapping[] = {
 };
 
 
-static const char *memInfoNames[] = {
+static const char* memInfoNames[] = {
     "total", "free", "available", "buffers", "cached", "swapCache", "active", "inActive", "activeAnon", "inActiveAnon",
     "activeFile", "inActiveFile", "unevictable", "mLocked", "swapTotal", "swapFree",
     "zswap", "zswapped", "dirty", "writeback", "pagesAnon", "pageMapped", "shmem", "kreClaimable", "slab",
@@ -41,12 +41,12 @@ static const char *memInfoNames[] = {
     "hugePagesRsvd", "hugePagesSurp", "hugePageSize", "hugePageTLB", "directMap4k", "directMap2M", "directMap1G"
 };
 
-static const char *memPageNames[] = {
+static const char* memPageNames[] = {
     "pgfault", "pgmajfault", "pgpgin", "pgpgout"
 };
 
 
-inline char *get_ulong_str(const unsigned long ulong_value) {
+inline char* get_ulong_str(const unsigned long ulong_value) {
     const int length = snprintf(NULL, 0, "%lu", ulong_value);
 
     char *buf = malloc(length + 1);
@@ -71,36 +71,36 @@ void set_mem_struct_value(void* sStruct, const size_t structLength,
                 return;
             }
             // This looks disgusting.. I thought I understood C but pointer arithmetic needs casting to 1 byte char?
-            *(unsigned long *)((char *)sStruct + valueOffset) = value;
+            *(unsigned long*)((char*)sStruct + valueOffset) = value;
 
             break;
         }
     }
 }
 
-unsigned long get_mem_struct_value(void *sStruct, const size_t structLength, const char *map[], const char *key) {
+unsigned long get_mem_struct_value(void* sStruct, const size_t structLength, const char* map[], const char* key) {
     for (int i = 0; i < structLength / sizeUL; i++) {
         if (strcmp(key, map[i]) == 0) {
             const size_t valueOffset = i * sizeUL;
             if (valueOffset >= structLength) {
                 perror("Failed to read from struct!");
             }
-            return *(unsigned long *) ((char *) sStruct + valueOffset);
+            return *(unsigned long*) ((char*) sStruct + valueOffset);
         }
     }
 
     return -1; // Error memory stat should not be possible for negative?
 }
 
-char **get_all_mem_struct_values(unsigned long *values, const size_t valuesLength) {
-    char **result = malloc(valuesLength * sizeof(char *));
+char** get_all_mem_struct_values(const unsigned long* values, const size_t valuesLength) {
+    char** result = malloc(valuesLength * sizeof(char*));
     if (result == NULL) {
         perror("Failed to allocate memory");
         return NULL;
     }
 
     for (int i = 0; i < valuesLength / sizeUL; i++) {
-        unsigned long v = *(unsigned long *) (char *) values + (i * sizeUL);
+        unsigned long v = *(unsigned long*) (char*) values + (i * sizeUL);
         result[i] = get_ulong_str(v);
     }
 
@@ -119,7 +119,7 @@ void mem_parse_page_line(const char* line, struct sMemPageInfo* mp) {
         return;
     }
 
-    char *newline = strchr(key, '\n');
+    char* newline = strchr(key, '\n');
     if (newline) *newline = '\0';
 
     const size_t structLength = sizeof(struct sMemPageInfo);
@@ -143,10 +143,10 @@ void mem_parse_line(const char* line, struct sMemInfo* mi) {
         return;
     }
 
-    char *newline = strchr(key, '\n');
+    char* newline = strchr(key, '\n');
     if (newline) *newline = '\0';
 
-    char *paren = strchr(key, '(');
+    char* paren = strchr(key, '(');
     if (paren) *paren = '\0';
 
     const size_t structLength = sizeof(struct sMemInfo);
@@ -164,7 +164,7 @@ char* mem_parse_file(const char* filename) {
 
 
     size_t content_size = 0;
-    char *content = malloc(BUFFER_SIZE);
+    char* content = malloc(BUFFER_SIZE);
     if (content == NULL) {
         perror("Memory allocation failed");
         fclose(fp);
@@ -190,7 +190,7 @@ void read_mem_info(struct sMemInfo* mi) {
         return;
     }
 
-    char *line = strtok(content, "\n");
+    char* line = strtok(content, "\n");
     while (line != NULL) {
         mem_parse_line(line, mi);
         line = strtok(NULL, "\n");
@@ -217,7 +217,7 @@ void read_mem_pages(struct sMemPageInfo* mp) {
 }
 
 
-char *get_mem_page_data(struct sMemPageInfo *mp, const char *name) {
+char* get_mem_page_data(struct sMemPageInfo* mp, const char *name) {
     const unsigned long value = get_mem_struct_value(mp, sizeof(struct sMemPageInfo), memPageNames, name);
     if (value < 0) {
         return NULL;
@@ -230,8 +230,8 @@ char** get_all_mem_page_data(struct sMemPageInfo* mp) {
     return get_all_mem_struct_values((unsigned long*) mp, sizeof(struct sMemPageInfo));
 }
 
-char *get_mem_info_data(struct sMemInfo* mi, const char* name) {
-    const unsigned long value = get_mem_struct_value(mi, sizeof(struct sMemInfo), memPageNames, name);
+char* get_mem_info_data(struct sMemInfo* mi, const char* name) {
+    const unsigned long value = get_mem_struct_value(mi, sizeof(struct sMemInfo), memInfoNames, name);
     if (value < 0) {
         return NULL;
     }
