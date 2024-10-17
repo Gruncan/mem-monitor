@@ -51,15 +51,47 @@ void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
 
     buffer[0] = '\0';
 
-
-
     char* time_string = get_current_time();
 
-    char** mem_data = get_all_mem_info_data(mi);
+    struct memInfoStrings* mem_data = get_all_mem_info_data(mi);
+
+    char** mem_names = get_mem_info_names();
+
+    char temp[50];
+    snprintf(temp, sizeof(temp), "{\"%s\":{", time_string);
+    strcat(buffer, temp);
+
+    for (int i = 0; i < mem_data->mem_strings_count; i++) {
+        size_t value_len = strlen(mem_data->mem_strings[i]);
+        size_t name_len = strlen(mem_names[i]);
+        char tmp[value_len + name_len + 10];
 
 
-    // fprintf(fp, "{\"%s\":{\"%s\"}}", time_string);
+        snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", mem_names[i], mem_data->mem_strings[i]);
+        strcat(buffer,  tmp);
 
+        if (i < mem_data->mem_strings_count - 1) {
+            strcat(buffer, ", ");
+        }
+    }
+
+    strcat(buffer, "}}\n");
+
+    size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), fp);
+
+    printf("Contents:\n%s\n", buffer);
+
+
+    if (bytes_written < 1) {
+        perror("Error writing to file");
+    }else {
+        printf("Successfully written to file\n");
+    }
+
+    // TODO improve this so we dont flush on ever write!
+    fflush(fp);
+
+    free(fp);
 
     destroy_all_mem_data(mem_data);
     free(time_string);

@@ -1,6 +1,8 @@
 #ifndef MEM_INFO_H
 #define MEM_INFO_H
 
+#include <stddef.h>
+
 struct sMemAllInfo {
 
 };
@@ -90,22 +92,29 @@ struct __attribute__((packed)) sMemInfo {
 };
 
 
+struct memInfoStrings {
+    char** mem_strings;
+    size_t mem_strings_count;
+};
 
-
-// struct sMemAllInfo* get_mem_all_info();
 
 void read_mem_info(struct sMemInfo* mi);
 
 void read_mem_pages(struct sMemPageInfo* mp);
 
-char *get_mem_page_data(struct sMemPageInfo* mp);
+char* get_mem_page_data(struct sMemPageInfo* mp, const char* name);
 
-char **get_all_mem_page_data(struct sMemPageInfo* mp);
+struct memInfoStrings* get_all_mem_page_data(struct sMemPageInfo* mp);
 
-char *get_mem_info_data(struct sMemInfo* mi);
+char* get_mem_info_data(struct sMemInfo* mi, const char* name);
 
-char** get_all_mem_info_data(struct sMemInfo* mi);
+struct memInfoStrings* get_all_mem_info_data(struct sMemInfo* mi);
 
-void destroy_all_mem_data(char** data);
+void destroy_all_mem_data(struct memInfoStrings* ms);
+
+
+char** get_mem_info_names();
+
+char** get_mem_page_names();
 
 #endif //MEM_INFO_H
