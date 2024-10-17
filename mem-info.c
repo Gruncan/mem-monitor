@@ -52,7 +52,7 @@ void mem_parse_line(char* line, struct sMemInfo* mi) {
     const size_t structLength = sizeof(struct sMemInfo);
     const size_t parLength = sizeof(unsigned long);
 
-    for (int i = 0; i < items; i++) {
+    for (int i = 0; i < structLength / parLength ; i++) {
         if(strcmp(key, memMapping[i]) == 0) {
             const size_t valueOffset = i * parLength;
             if (valueOffset >= structLength) {
