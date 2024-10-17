@@ -6,7 +6,10 @@ struct sMemAllInfo {
 };
 
 struct sMemPageInfo {
-
+    unsigned long pgfault;
+    unsigned long pgmajfault;
+    unsigned long pgpgin;
+    unsigned long pgpgout;
 };
 
 struct sMemProcPageInfo {
@@ -93,7 +96,7 @@ struct sMemAllInfo* get_mem_all_info();
 
 void read_mem_info(struct sMemInfo* mi);
 
-
+void read_mem_pages(struct sMemPageInfo* mp);
 
 
 

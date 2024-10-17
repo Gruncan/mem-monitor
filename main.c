@@ -6,15 +6,25 @@
 
 int main(void){
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
+    struct sMemPageInfo* mp = malloc(sizeof(struct sMemPageInfo));
+
 
     read_mem_info(mi);
+    read_mem_pages(mp);
 
     printf("Memory info:\n");
     printf(" - Total: %lu\n", mi->total);
     printf(" - Free: %lu\n", mi->free);
     printf(" - Available: %lu\n", mi->available);
 
+    printf("\nPage info:\n");
+    printf(" - pgfault: %lu\n", mp->pgfault);
+    printf(" - pgmajfault: %lu\n", mp->pgmajfault);
+    printf(" - pgpgin: %lu\n", mp->pgpgin);
+    printf(" - pgpgout: %lu\n", mp->pgpgout);
+
     free(mi);
+    free(mp);
 
     return 0;
 }

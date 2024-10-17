@@ -6,12 +6,8 @@
 #include "mem-info.h"
 
 
-#define BUFFER_SIZE 16384 // 16Kb
-
-struct sMemMapping {
-    const char *key;
-    unsigned long *field;
-};
+#define BUFFER_SIZE 16384 // 16Kb. This should be more than enough for big systems,
+                          //        might need to tweek for lower systems..
 
 
 static const char* memMapping[] = {
@@ -27,8 +23,50 @@ static const char* memMapping[] = {
     "Hugetlb", "DirectMap4k", "DirectMap2M", "DirectMap1G",
 };
 
+static const char* memPageMapping[] = {
+    "pgfault", "pgmajfault", "pgpgin", "pgpgout"
+};
 
-void mem_parse_line(char* line, struct sMemInfo* mi) {
+
+void set_mem_struct_value(void* sStruct, const size_t structLength,
+                            const char* map[], const char* key, const unsigned long value) {
+    const size_t parLength = sizeof(unsigned long);
+
+    for (int i = 0; i < structLength / parLength ; i++) {
+        if(strcmp(key, map[i]) == 0) {
+            const size_t valueOffset = i * parLength;
+            if (valueOffset >= structLength) {
+                perror("Failed to write to struct!");
+                return;
+            }
+            // This looks disgusting.. I thought I understood C but pointer arithmetic needs casting to 1 byte char?
+            *(unsigned long *)((char *)sStruct + valueOffset) = value;
+
+            break;
+        }
+    }
+}
+
+
+void mem_parse_page_line(const char* line, struct sMemPageInfo* mp) {
+    char key[256];
+    unsigned long value;
+    int items = sscanf(line, "%255s %lu", key, &value);
+    if (items != 2) {
+        // Something has gone wrong..
+        return;
+    }
+
+    char *newline = strchr(key, '\n');
+    if (newline) *newline = '\0';
+
+    const size_t structLength = sizeof(struct sMemPageInfo);
+
+    set_mem_struct_value(mp, structLength, memPageMapping, key, value);
+
+}
+
+void mem_parse_line(const char* line, struct sMemInfo* mi) {
     char key[256];
     unsigned long value;
     char unit[32];
@@ -50,28 +88,16 @@ void mem_parse_line(char* line, struct sMemInfo* mi) {
     if (paren) *paren = '\0';
 
     const size_t structLength = sizeof(struct sMemInfo);
-    const size_t parLength = sizeof(unsigned long);
 
-    for (int i = 0; i < structLength / parLength ; i++) {
-        if(strcmp(key, memMapping[i]) == 0) {
-            const size_t valueOffset = i * parLength;
-            if (valueOffset >= structLength) {
-                perror("Failed to write to struct!");
-                return;
-            }
-            // This looks disgusting.. I thought I understood C but pointer arithmetic needs casting to 1 byte char?
-            *(unsigned long *)((char *)mi + valueOffset) = value;
+    set_mem_struct_value(mi, structLength, memMapping, key, value);
 
-            break;
-        }
-    }
 }
 
 
-void read_mem_info(struct sMemInfo* mi) {
-    FILE *fp = fopen("/proc/meminfo", "r");
+char* mem_parse_file(const char* filename) {
+    FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
-        perror("Error opening /proc/meminfo");
+        return NULL;
     }
 
 
@@ -80,7 +106,7 @@ void read_mem_info(struct sMemInfo* mi) {
     if (content == NULL) {
         perror("Memory allocation failed");
         fclose(fp);
-        return;
+        return NULL;
     }
 
     size_t bytes_read;
@@ -91,13 +117,40 @@ void read_mem_info(struct sMemInfo* mi) {
 
     fclose(fp);
 
+    return content;
+}
 
+
+void read_mem_info(struct sMemInfo* mi) {
+    char* content = mem_parse_file("/proc/meminfo");
+    if (content == NULL) {
+        perror("Failed to access /proc/meminfo");
+        return;
+    }
 
     char *line = strtok(content, "\n");
     while (line != NULL) {
         mem_parse_line(line, mi);
         line = strtok(NULL, "\n");
     }
+
+    free(content);
+
+}
+
+void read_mem_pages(struct sMemPageInfo* mp) {
+    char* content = mem_parse_file("/proc/vmstat");
+    if (content == NULL) {
+        perror("Failed to access /proc/vmstat");
+        return;
+    }
+
+    char *line = strtok(content, "\n");
+    while (line != NULL) {
+        mem_parse_page_line(line, mp);
+        line = strtok(NULL, "\n");
+    }
+
 
     free(content);
 
