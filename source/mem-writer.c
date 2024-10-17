@@ -38,7 +38,7 @@ char* get_current_time() {
 void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
     FILE *fp = fopen(mw->filename, "a");
     if (fp == NULL) {
-        return;
+        exit(EXIT_FAILURE);
     }
 
 
@@ -46,7 +46,7 @@ void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
 
     if (buffer == NULL) {
         perror("Error allocating memory");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     buffer[0] = '\0';
@@ -55,7 +55,7 @@ void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
 
     struct memInfoStrings* mem_data = get_all_mem_info_data(mi);
 
-    char** mem_names = get_mem_info_names();
+    const char** mem_names = get_mem_info_names();
 
     char temp[50];
     snprintf(temp, sizeof(temp), "{\"%s\":{", time_string);
@@ -79,13 +79,9 @@ void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
 
     size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), fp);
 
-    printf("Contents:\n%s\n", buffer);
-
-
     if (bytes_written < 1) {
         perror("Error writing to file");
-    }else {
-        printf("Successfully written to file\n");
+        exit(EXIT_FAILURE);
     }
 
     // TODO improve this so we dont flush on ever write!

@@ -6,7 +6,7 @@
 #include "mem-writer.h"
 
 
-#define SLEEP_TIME 5000
+#define SLEEP_TIME 10000
 
 int main(void){
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
@@ -32,6 +32,7 @@ int main(void){
 
     init_mem_writer(mw, "memlog.json");
 
+    printf("Writing memory info to file...\n");
 
     while (1) {
         read_mem_info(mi);

@@ -253,10 +253,10 @@ void destroy_all_mem_data(struct memInfoStrings* ms) {
 
 }
 
-char** get_mem_info_names() {
+const char** get_mem_info_names() {
     return memInfoNames;
 }
 
-char** get_mem_page_names() {
+const char** get_mem_page_names() {
     return memPageMapping;
 }

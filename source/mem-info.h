@@ -113,8 +113,8 @@ struct memInfoStrings* get_all_mem_info_data(struct sMemInfo* mi);
 void destroy_all_mem_data(struct memInfoStrings* ms);
 
 
-char** get_mem_info_names();
+const char** get_mem_info_names();
 
-char** get_mem_page_names();
+const char** get_mem_page_names();
 
 #endif //MEM_INFO_H
