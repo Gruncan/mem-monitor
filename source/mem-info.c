@@ -9,6 +9,7 @@
 #define BUFFER_SIZE 16384 // 16Kb. This should be more than enough for big systems,
                           //        might need to tweek for lower systems..
 
+static const size_t sizeUL = sizeof(unsigned long);
 
 static const char* memMapping[] = {
     "MemTotal", "MemFree", "MemAvailable", "Buffers", "Cached", "SwapCached",
@@ -28,13 +29,43 @@ static const char* memPageMapping[] = {
 };
 
 
-void set_mem_struct_value(void* sStruct, const size_t structLength,
-                            const char* map[], const char* key, const unsigned long value) {
-    const size_t parLength = sizeof(unsigned long);
+static const char *memInfoNames[] = {
+    "total", "free", "available", "buffers", "cached", "swapCache", "active", "inActive", "activeAnon", "inActiveAnon",
+    "activeFile", "inActiveFile", "unevictable", "mLocked", "swapTotal", "swapFree",
+    "zswap", "zswapped", "dirty", "writeback", "pagesAnon", "pageMapped", "shmem", "kreClaimable", "slab",
+    "srClaimable",
+    "sunReclaim", "kernelStack", "pageTables", "secPageTables", "nfsUnstable", "bounce", "writebackTmp", "commitLimit",
+    "committedAllocs", "vmallocTotal", "vmallocUsed", "vmallocChunk", "perCPU", "hardwareCorrupted", "hugePagesAnon",
+    "hugePagesShmem", "pmdMappedShmem", "hugePagesFile", "pmdMappedFile", "unaccepted", "hugePagesTotal",
+    "hugePagesFree",
+    "hugePagesRsvd", "hugePagesSurp", "hugePageSize", "hugePageTLB", "directMap4k", "directMap2M", "directMap1G"
+};
 
-    for (int i = 0; i < structLength / parLength ; i++) {
+static const char *memPageNames[] = {
+    "pgfault", "pgmajfault", "pgpgin", "pgpgout"
+};
+
+
+inline char *get_ulong_str(const unsigned long ulong_value) {
+    const int length = snprintf(NULL, 0, "%lu", ulong_value);
+
+    char *buf = malloc(length + 1);
+    if (buf == NULL) {
+        perror("Failed to allocate memory");
+        return NULL;
+    }
+
+    snprintf(buf, length + 1, "%lu", ulong_value);
+
+    return buf;
+}
+
+
+void set_mem_struct_value(void* sStruct, const size_t structLength,
+                          const char* map[], const char* key, const unsigned long value) {
+    for (int i = 0; i < structLength / sizeUL; i++) {
         if(strcmp(key, map[i]) == 0) {
-            const size_t valueOffset = i * parLength;
+            const size_t valueOffset = i * sizeUL;
             if (valueOffset >= structLength) {
                 perror("Failed to write to struct!");
                 return;
@@ -46,6 +77,37 @@ void set_mem_struct_value(void* sStruct, const size_t structLength,
         }
     }
 }
+
+unsigned long get_mem_struct_value(void *sStruct, const size_t structLength, const char *map[], const char *key) {
+    for (int i = 0; i < structLength / sizeUL; i++) {
+        if (strcmp(key, map[i]) == 0) {
+            const size_t valueOffset = i * sizeUL;
+            if (valueOffset >= structLength) {
+                perror("Failed to read from struct!");
+            }
+            return *(unsigned long *) ((char *) sStruct + valueOffset);
+        }
+    }
+
+    return -1; // Error memory stat should not be possible for negative?
+}
+
+char **get_all_mem_struct_values(unsigned long *values, const size_t valuesLength) {
+    char **result = malloc(valuesLength * sizeof(char *));
+    if (result == NULL) {
+        perror("Failed to allocate memory");
+        return NULL;
+    }
+
+    for (int i = 0; i < valuesLength / sizeUL; i++) {
+        unsigned long v = *(unsigned long *) (char *) values + (i * sizeUL);
+        result[i] = get_ulong_str(v);
+    }
+
+    return result;
+
+}
+
 
 
 void mem_parse_page_line(const char* line, struct sMemPageInfo* mp) {
@@ -151,7 +213,36 @@ void read_mem_pages(struct sMemPageInfo* mp) {
         line = strtok(NULL, "\n");
     }
 
-
     free(content);
+}
 
+
+char *get_mem_page_data(struct sMemPageInfo *mp, const char *name) {
+    const unsigned long value = get_mem_struct_value(mp, sizeof(struct sMemPageInfo), memPageNames, name);
+    if (value < 0) {
+        return NULL;
+    }
+
+    return get_ulong_str(value);
+}
+
+char** get_all_mem_page_data(struct sMemPageInfo* mp) {
+    return get_all_mem_struct_values((unsigned long*) mp, sizeof(struct sMemPageInfo));
+}
+
+char *get_mem_info_data(struct sMemInfo* mi, const char* name) {
+    const unsigned long value = get_mem_struct_value(mi, sizeof(struct sMemInfo), memPageNames, name);
+    if (value < 0) {
+        return NULL;
+    }
+
+    return get_ulong_str(value);
+}
+
+char** get_all_mem_info_data(struct sMemInfo* mi) {
+    return get_all_mem_struct_values((unsigned long*) mi, sizeof(struct sMemInfo));
+}
+
+void destroy_all_mem_data(char **data) {
+    // TODO
 }

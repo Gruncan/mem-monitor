@@ -5,7 +5,7 @@ struct sMemAllInfo {
 
 };
 
-struct sMemPageInfo {
+struct __attribute__((packed)) sMemPageInfo {
     unsigned long pgfault;
     unsigned long pgmajfault;
     unsigned long pgpgin;
@@ -16,7 +16,7 @@ struct sMemProcPageInfo {
 
 };
 
-struct sMemInfo {
+struct __attribute__((packed)) sMemInfo {
     unsigned long total;
     unsigned long free;
     unsigned long available;
@@ -92,13 +92,20 @@ struct sMemInfo {
 
 
 
-struct sMemAllInfo* get_mem_all_info();
+// struct sMemAllInfo* get_mem_all_info();
 
 void read_mem_info(struct sMemInfo* mi);
 
 void read_mem_pages(struct sMemPageInfo* mp);
 
+char *get_mem_page_data(struct sMemPageInfo *mp);
 
+char **get_all_mem_page_data(struct sMemPageInfo *mp);
 
+char *get_mem_info_data(struct sMemInfo *mi);
+
+char** get_all_mem_info_data(struct sMemInfo* mi);
+
+void destroy_all_mem_data(char** data);
 
 #endif //MEM_INFO_H
