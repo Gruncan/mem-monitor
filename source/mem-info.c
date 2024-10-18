@@ -1,10 +1,9 @@
 
+#include "mem-info.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "mem-info.h"
-
 
 #define BUFFER_SIZE 16384 // 16Kb. This should be more than enough for big systems,
                           //        might need to tweek for lower systems..

@@ -1,2 +1,2 @@
 #!/bin/bash
-nohup mem_monitor &
+nohup ./mem_monitor &

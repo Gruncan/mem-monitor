@@ -1,7 +1,7 @@
 
 #include "mem-writer.h"
+#include "mem-info.h"
 
-#include <mem-info.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,8 +9,22 @@
 #include <sys/time.h>
 
 
+#define FLUSH_INTERVAL (-1)
+
+
 void init_mem_writer(struct sMemWriter *mw, char* filename) {
     mw->filename = filename;
+    mw->file = fopen(mw->filename, "a");
+    if (mw->file  == NULL) {
+        exit(EXIT_FAILURE);
+    }
+    mw->flushCounter = 0;
+}
+
+void destroy_mem_writer(struct sMemWriter *mw) {
+    if (mw->file != NULL) {
+        fclose(mw->file);
+    }
 }
 
 
@@ -26,19 +40,14 @@ char* get_current_time() {
 
     strftime(time_string, 200, "%Y-%m-%d %H:%M:%S", tm_info);
 
-    char tmp[10];
+    char tmp[20];
     snprintf(tmp, sizeof(tmp), ".%03ld", tv.tv_usec / 1000);
     strcat(time_string,  tmp);
 
     return time_string;
 }
 
-void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
-    FILE *fp = fopen(mw->filename, "a");
-    if (fp == NULL) {
-        exit(EXIT_FAILURE);
-    }
-
+void write_mem(struct sMemWriter *mw, struct sMemInfo* mi){
 
     char* buffer = malloc(2048);
 
@@ -75,17 +84,22 @@ void write_mem(const struct sMemWriter *mw, struct sMemInfo* mi){
 
     strcat(buffer, "}}\n");
 
-    size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), fp);
+    const size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), mw->file);
 
     if (bytes_written < 1) {
         perror("Error writing to file");
         exit(EXIT_FAILURE);
     }
 
-    // TODO improve this so we dont flush on ever write!
-    fflush(fp);
+    // If FLUSH_INTERVAL is -1 let the OS decide when to flush
+    if (mw->flushCounter == FLUSH_INTERVAL) {
+        fflush(mw->file);
+        mw->flushCounter = 0;
+    }else if(FLUSH_INTERVAL != -1) {
+        mw->flushCounter++;
+    }
 
-    free(fp);
+
 
     destroy_all_mem_data(mem_data);
     free(time_string);
