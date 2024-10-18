@@ -2,22 +2,18 @@
 #define MEM_WRITER_H
 
 
-#include <stdio.h>
-
 #include "mem-info.h"
 
-struct sMemWriter {
-    char* filename;
-    FILE* file;
-    unsigned char flushCounter;
-};
+typedef struct sMemWriter MemWriter;
 
 
-void init_mem_writer(struct sMemWriter *mw, char* filename);
+void init_mem_writer(MemWriter *mw, char* filename);
 
-void destroy_mem_writer(struct sMemWriter *mw);
+MemWriter* new_mem_writer();
 
-void write_mem(struct sMemWriter *mw, struct sMemInfo* mi);
+void destroy_mem_writer(MemWriter *mw);
+
+void write_mem(MemWriter *mw, struct sMemInfo* mi);
 
 
 

@@ -9,4 +9,5 @@ include_directories("source/")
 add_executable(mem_monitor main.c
         source/mem-info.c
         source/mem-writer.c
+        source/mem-threading.c
 )

@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
     printf(" - pgpgin: %lu\n", mp->pgpgin);
     printf(" - pgpgout: %lu\n", mp->pgpgout);
 
-    struct sMemWriter* mw = malloc(sizeof(struct sMemWriter));
+    MemWriter* mw = new_mem_writer();
 
     init_mem_writer(mw, arguments.filename);
 

@@ -1,16 +1,64 @@
 
 #include "mem-writer.h"
 #include "mem-info.h"
+#include "mem-threading.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
+#include <signal.h>
 #include <sys/time.h>
 
 
-#define FLUSH_INTERVAL (-1)
+#define FLUSH_INTERVAL 1
 
+struct sMemWriter {
+    char* filename;
+    FILE* file;
+    unsigned char flushCounter;
+
+    struct mem_writer_queue* writer_queue;
+
+    pthread_t pthread;
+};
+
+
+
+void writer_routine(struct sMemWriter* mw) {
+    if (mw == NULL) return;
+
+    while(1) {
+        char* buffer = pop_from_mem_writer_queue(mw->writer_queue);
+        if (buffer == NULL) continue;
+
+        const size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), mw->file);
+        if (bytes_written < 1) {
+            perror("Error writing to file, writer routine exiting..");
+            break;
+        }
+
+        printf("Wrote %zu bytes\n", bytes_written);
+
+        // If FLUSH_INTERVAL is -1 let the OS decide when to flush
+        if (mw->flushCounter == FLUSH_INTERVAL) {
+            fflush(mw->file);
+            mw->flushCounter = 0;
+        }else if(FLUSH_INTERVAL != -1) {
+            mw->flushCounter++;
+        }
+
+        free(buffer);
+
+    }
+}
+
+
+struct sMemWriter* new_mem_writer() {
+    struct sMemWriter* mw = malloc(sizeof(struct sMemWriter));
+    return mw;
+}
 
 void init_mem_writer(struct sMemWriter *mw, char* filename) {
     mw->filename = filename;
@@ -19,12 +67,25 @@ void init_mem_writer(struct sMemWriter *mw, char* filename) {
         exit(EXIT_FAILURE);
     }
     mw->flushCounter = 0;
+
+    struct mem_writer_queue* writer_queue = malloc(sizeof(struct mem_writer_queue));
+    mem_writer_queue_init(writer_queue);
+
+    mw->writer_queue = writer_queue;
+
+
+    pthread_create(&mw->pthread, NULL, writer_routine, mw);
+
 }
 
 void destroy_mem_writer(struct sMemWriter *mw) {
     if (mw->file != NULL) {
         fclose(mw->file);
     }
+
+    pthread_kill(mw->pthread, SIGKILL);
+
+    mem_writer_queue_destroy(mw->writer_queue);
 }
 
 
@@ -84,24 +145,10 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi){
 
     strcat(buffer, "}}\n");
 
-    const size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), mw->file);
 
-    if (bytes_written < 1) {
-        perror("Error writing to file");
-        exit(EXIT_FAILURE);
-    }
-
-    // If FLUSH_INTERVAL is -1 let the OS decide when to flush
-    if (mw->flushCounter == FLUSH_INTERVAL) {
-        fflush(mw->file);
-        mw->flushCounter = 0;
-    }else if(FLUSH_INTERVAL != -1) {
-        mw->flushCounter++;
-    }
-
+    add_to_mem_writer_queue(mw->writer_queue, buffer);
 
 
     destroy_all_mem_data(mem_data);
     free(time_string);
-    free(buffer);
 }
