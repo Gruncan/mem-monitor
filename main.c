@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "mem-info.h"
 #include "mem-writer.h"
@@ -24,6 +25,7 @@ struct arguments {
     char* filename;
 };
 
+static MemWriter* mw;
 
 
 static error_t parse_opt(const int key, char *arg, const struct argp_state* state) {
@@ -45,7 +47,31 @@ static error_t parse_opt(const int key, char *arg, const struct argp_state* stat
 static struct argp argp = {options, parse_opt, args_doc, doc};
 
 
+void handle_signal(int sig) {
+
+    // Check which signal was received and handle accordingly
+    switch (sig) {
+        case SIGTERM:
+        case SIGINT:
+        case SIGQUIT:
+            printf("Finishing writing...\n");
+            // mw
+            printf("Exiting...\n");
+            // Cleanup code here
+            _exit(0);  // Exit the program
+            break;
+        default:
+            printf("Received unknown signal (signal %d). Ignoring...\n", sig);
+            break;
+    }
+}
+
+
 int main(int argc, char *argv[]){
+
+    signal(SIGTERM, handle_signal);
+    signal(SIGINT, handle_signal);
+
     struct arguments arguments;
 
     arguments.time = 10000;
@@ -72,7 +98,7 @@ int main(int argc, char *argv[]){
     printf(" - pgpgin: %lu\n", mp->pgpgin);
     printf(" - pgpgout: %lu\n", mp->pgpgout);
 
-    MemWriter* mw = new_mem_writer();
+    mw = new_mem_writer();
 
     init_mem_writer(mw, arguments.filename);
 

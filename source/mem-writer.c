@@ -39,7 +39,7 @@ void writer_routine(struct sMemWriter* mw) {
             break;
         }
 
-        printf("Wrote %zu bytes\n", bytes_written);
+        // printf("Wrote %zu bytes\n", bytes_written);
 
         // If FLUSH_INTERVAL is -1 let the OS decide when to flush
         if (mw->flushCounter == FLUSH_INTERVAL) {
@@ -79,13 +79,16 @@ void init_mem_writer(struct sMemWriter *mw, char* filename) {
 }
 
 void destroy_mem_writer(struct sMemWriter *mw) {
+
+    mem_writer_queue_destroy(mw->writer_queue);
+    pthread_kill(mw->pthread, SIGKILL);
+
     if (mw->file != NULL) {
         fclose(mw->file);
     }
 
-    pthread_kill(mw->pthread, SIGKILL);
-
-    mem_writer_queue_destroy(mw->writer_queue);
+    free(mw->writer_queue);
+    free(mw);
 }
 
 

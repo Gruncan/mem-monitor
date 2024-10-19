@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 
 void mem_writer_queue_init(struct mem_writer_queue *queue) {
@@ -11,11 +12,25 @@ void mem_writer_queue_init(struct mem_writer_queue *queue) {
     queue->size = 0;
     pthread_mutex_init(&queue->_head_lock, NULL);
     pthread_mutex_init(&queue->_tail_lock, NULL);
+    pthread_mutex_init(&queue->_size_lock, NULL);
     pthread_cond_init(&queue->_head_cond, NULL);
+    pthread_cond_init(&queue->_size_cond, NULL);
 }
 
 
 void mem_writer_queue_destroy(struct mem_writer_queue *queue) {
+
+    pthread_mutex_lock(&queue->_size_lock);
+    while (queue->size > 0) {
+        pthread_cond_wait(&queue->_size_cond, &queue->_size_lock);
+    }
+    pthread_mutex_unlock(&queue->_size_lock);
+
+    pthread_mutex_destroy(&queue->_head_lock);
+    pthread_mutex_destroy(&queue->_tail_lock);
+    pthread_mutex_destroy(&queue->_size_lock);
+    pthread_cond_destroy(&queue->_head_cond);
+    pthread_cond_destroy(&queue->_size_cond);
 
 }
 
@@ -57,7 +72,6 @@ void add_to_mem_writer_queue(struct mem_writer_queue *queue, char* data) {
     pthread_mutex_unlock(&queue->_tail_lock);
 
     pthread_mutex_unlock(&queue->_head_lock);
-    pthread_cond_signal(&queue->_head_cond);
 
 }
 
@@ -69,11 +83,9 @@ void* pop_from_mem_writer_queue(struct mem_writer_queue *queue) {
     pthread_mutex_lock(&queue->_head_lock);
     struct mem_writer_value* head = queue->head;
     while (head == NULL) {
-        printf("In waiting for cond!\n");
         pthread_cond_wait(&queue->_head_cond, &queue->_head_lock);
         head = queue->head;
     }
-    printf("Thread has been populated doing something..\n");
     queue->head = head->next;
 
 
@@ -82,12 +94,15 @@ void* pop_from_mem_writer_queue(struct mem_writer_queue *queue) {
     if (queue->size == 1) {
         queue->tail = NULL;
         queue->size--;
+        pthread_mutex_unlock(&queue->_size_lock);
+        pthread_cond_signal(&queue->_size_cond);
     }
-    pthread_mutex_unlock(&queue->_size_lock);
     pthread_mutex_unlock(&queue->_tail_lock);
-
 
     pthread_mutex_unlock(&queue->_head_lock);
 
-    return head->data;
+    char* data = head->data;
+    free(head);
+
+    return data;
 }
