@@ -7,7 +7,7 @@
 #include <signal.h>
 
 
-void mem_writer_queue_init(struct mem_writer_queue *queue) {
+void mem_queue_init(struct mem_queue *queue) {
     queue->head = queue->tail = NULL;
     queue->size = 0;
     pthread_mutex_init(&queue->_head_lock, NULL);
@@ -17,8 +17,7 @@ void mem_writer_queue_init(struct mem_writer_queue *queue) {
     pthread_cond_init(&queue->_size_cond, NULL);
 }
 
-
-void mem_writer_queue_destroy(struct mem_writer_queue *queue) {
+void mem_queue_destroy(struct mem_queue *queue) {
 
     pthread_mutex_lock(&queue->_size_lock);
     while (queue->size > 0) {
@@ -34,12 +33,12 @@ void mem_writer_queue_destroy(struct mem_writer_queue *queue) {
 
 }
 
-void add_to_mem_writer_queue(struct mem_writer_queue *queue, char* data) {
+void add_to_mem_queue(struct mem_queue *queue, char* data) {
     if (queue == NULL) {
         return;
     }
 
-    struct mem_writer_value* writer_value = malloc(sizeof(struct mem_writer_value));
+    struct mem_value* writer_value = malloc(sizeof(struct mem_value));
     if (writer_value == NULL) {
         perror("Failed to allocate memory for writer value");
         return;
@@ -75,13 +74,13 @@ void add_to_mem_writer_queue(struct mem_writer_queue *queue, char* data) {
 
 }
 
-void* pop_from_mem_writer_queue(struct mem_writer_queue *queue) {
+void* pop_from_mem_queue(struct mem_queue *queue) {
     if (queue == NULL) {
         return NULL;
     }
 
     pthread_mutex_lock(&queue->_head_lock);
-    struct mem_writer_value* head = queue->head;
+    struct mem_value* head = queue->head;
     while (head == NULL) {
         pthread_cond_wait(&queue->_head_cond, &queue->_head_lock);
         head = queue->head;

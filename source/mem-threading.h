@@ -5,15 +5,15 @@
 #include <pthread.h>
 
 
-struct mem_writer_value {
-    struct mem_writer_value *next;
+struct mem_value {
+    struct mem_value *next;
 
     char* data;
 };
 
-struct mem_writer_queue {
-    struct mem_writer_value *head;
-    struct mem_writer_value *tail;
+struct mem_queue {
+    struct mem_value *head;
+    struct mem_value *tail;
 
     unsigned int size;
 
@@ -26,13 +26,13 @@ struct mem_writer_queue {
 
 
 
-void mem_writer_queue_init(struct mem_writer_queue *queue);
+void mem_queue_init(struct mem_queue *queue);
 
-void mem_writer_queue_destroy(struct mem_writer_queue *queue);
+void mem_queue_destroy(struct mem_queue *queue);
 
-void add_to_mem_writer_queue(struct mem_writer_queue *queue, char* data);
+void add_to_mem_queue(struct mem_queue *queue, char* data);
 
-void* pop_from_mem_writer_queue(struct mem_writer_queue *queue);
+void* pop_from_mem_queue(struct mem_queue *queue);
 
 
 #endif //MEM_THREADING_H
