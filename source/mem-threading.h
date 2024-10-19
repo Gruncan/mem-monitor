@@ -19,6 +19,7 @@ struct mem_writer_queue {
 
     pthread_mutex_t _head_lock;
     pthread_mutex_t _tail_lock;
+    pthread_mutex_t _size_lock;
     pthread_cond_t _head_cond;
 };
 

@@ -33,20 +33,28 @@ void add_to_mem_writer_queue(struct mem_writer_queue *queue, char* data) {
     writer_value->data = data;
     writer_value->next = NULL;
 
-    pthread_mutex_lock(&queue->_head_lock);
+    pthread_mutex_lock(&queue->_tail_lock);
 
     if(queue->tail == NULL) {
         queue->tail = writer_value;
 
+        pthread_mutex_lock(&queue->_head_lock);
         queue->head = writer_value;
-        queue->size++;
+        pthread_mutex_unlock(&queue->_head_lock);
+
+        pthread_cond_signal(&queue->_head_cond);
+
     }else {
         queue->tail->next = writer_value;
 
         queue->tail = writer_value;
-
-        queue->size++;
     }
+
+    pthread_mutex_lock(&queue->_size_lock);
+    queue->size++;
+    pthread_mutex_unlock(&queue->_size_lock);
+
+    pthread_mutex_unlock(&queue->_tail_lock);
 
     pthread_mutex_unlock(&queue->_head_lock);
     pthread_cond_signal(&queue->_head_cond);
@@ -67,7 +75,18 @@ void* pop_from_mem_writer_queue(struct mem_writer_queue *queue) {
     }
     printf("Thread has been populated doing something..\n");
     queue->head = head->next;
-    queue->size--;
+
+
+    pthread_mutex_lock(&queue->_tail_lock);
+    pthread_mutex_lock(&queue->_size_lock);
+    if (queue->size == 1) {
+        queue->tail = NULL;
+        queue->size--;
+    }
+    pthread_mutex_unlock(&queue->_size_lock);
+    pthread_mutex_unlock(&queue->_tail_lock);
+
+
     pthread_mutex_unlock(&queue->_head_lock);
 
     return head->data;
