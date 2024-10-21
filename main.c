@@ -21,7 +21,7 @@ static struct argp_option options[] = {
 };
 
 struct arguments {
-    int time;
+    unsigned long time;
     char* filename;
 };
 
@@ -55,9 +55,9 @@ void handle_signal(int sig) {
         case SIGINT:
         case SIGQUIT:
             printf("Finishing writing...\n");
-            // mw
+            // TODO fix this, it deadlocks..
+            // destroy_mem_writer(mw);
             printf("Exiting...\n");
-            // Cleanup code here
             _exit(0);  // Exit the program
             break;
         default:

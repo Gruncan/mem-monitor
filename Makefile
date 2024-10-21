@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -std=c11 -I./source
+CFLAGS = -std=c11 -I./source -pthread
 
 TARGET = mem_monitor
 
-SRCS = main.c source/mem-info.c source/mem-writer.c
+SRCS = main.c source/mem-info.c source/mem-writer.c source/mem-threading.c
 
 OBJS = $(SRCS:.c=.o)
 

@@ -1,7 +1,6 @@
 #ifndef MEM_THREADING_H
 #define MEM_THREADING_H
 
-#include <stddef.h>
 #include <pthread.h>
 
 
