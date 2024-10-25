@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
     pid_t pid = -1;
     if (arguments.command != NULL) {
         pid = launch_process(&arguments);
-        if (pid < 0) {
+        if (pid <= 0) {
             return -1;
         }
     }
@@ -173,18 +173,20 @@ int main(int argc, char *argv[]){
 
         usleep(arguments.time);
 
-        int status;
-        const pid_t result = waitpid(pid, &status, WNOHANG);
-        if (result == -1) {
-            perror("waitpid failed");
-            break;
-        }else if (result != 0) {
-            if (WIFEXITED(status)) {
-                printf("Child exited with status %d\n", WEXITSTATUS(status));
-            } else {
-                printf("Child terminated abnormally\n");
+        if (pid != -1) {
+            int status;
+            const pid_t result = waitpid(pid, &status, WNOHANG);
+            if (result == -1) {
+                perror("waitpid failed");
+                break;
+            }else if (result != 0) {
+                if (WIFEXITED(status)) {
+                    printf("Child exited with status %d\n", WEXITSTATUS(status));
+                } else {
+                    printf("Child terminated abnormally\n");
+                }
+                break;
             }
-            break;
         }
 
     }
