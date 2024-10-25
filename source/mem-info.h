@@ -19,7 +19,7 @@ unsigned long get_mem_struct_value(void* sStruct, size_t structLength, const cha
 struct memInfoStrings* get_all_mem_struct_values(const unsigned long* values, size_t valuesLength);
 
 
-char* mem_parse_file(const char* filename);
+char* mem_parse_file(const char* filename, size_t bufferSize);
 
 
 #endif //MEM_INFO_H

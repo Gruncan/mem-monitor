@@ -11,4 +11,5 @@ add_executable(mem_monitor main.c
         source/mem-writer.c
         source/mem-threading.c
         source/mem-reader.c
+        source/process-reader.c
 )

@@ -109,7 +109,7 @@ void mem_parse_line(const char* line, struct sMemInfo* mi) {
 
 
 void read_mem_info(struct sMemInfo* mi) {
-    char* content = mem_parse_file("/proc/meminfo");
+    char* content = mem_parse_file("/proc/meminfo", -1);
     if (content == NULL) {
         perror("Failed to access /proc/meminfo");
         return;
@@ -126,7 +126,7 @@ void read_mem_info(struct sMemInfo* mi) {
 }
 
 void read_mem_vm_info(struct sMemVmInfo* mp) {
-    char* content = mem_parse_file("/proc/vmstat");
+    char* content = mem_parse_file("/proc/vmstat", -1);
     if (content == NULL) {
         perror("Failed to access /proc/vmstat");
         return;

@@ -3,6 +3,7 @@
 
 
 #include "mem-reader.h"
+#include "process-reader.h"
 
 typedef struct sMemWriter MemWriter;
 
@@ -13,7 +14,7 @@ MemWriter* new_mem_writer();
 
 void destroy_mem_writer(MemWriter *mw);
 
-void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp);
+void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi);
 
 
 

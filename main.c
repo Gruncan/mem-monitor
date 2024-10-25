@@ -6,6 +6,7 @@
 #include "mem-info.h"
 #include "mem-writer.h"
 #include <argp.h>
+#include <process-reader.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -92,7 +93,7 @@ int launch_process(struct arguments* args) {
 
     if (pid < 0) {
         perror("fork");
-        return EXIT_FAILURE;
+        return -1;
     }
 
     if (pid == 0) {
@@ -108,18 +109,12 @@ int launch_process(struct arguments* args) {
         execvp(exec_args[0], exec_args);
 
         perror("execvp");
-        return EXIT_FAILURE;
+        return -1;
     }else {
         printf("Executing %s (%d)..\n", args->command, pid);
 
-        int status;
-        waitpid(pid, &status, 0);
+        return pid;
 
-        if (WIFEXITED(status)) {
-            printf("Child exited with status: %d\n", WEXITSTATUS(status));
-        } else {
-            printf("Child did not exit normally.\n");
-        }
     }
 }
 
@@ -138,15 +133,21 @@ int main(int argc, char *argv[]){
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
 
+    pid_t pid = -1;
     if (arguments.command != NULL) {
-
+        pid = launch_process(&arguments);
     }
 
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
     struct sMemVmInfo* mp = malloc(sizeof(struct sMemVmInfo));
+    struct sProcessInfo* pi = NULL;
+
+    if (pid != -1) {
+        pi = malloc(sizeof(struct sProcessInfo));
+        init_process_info(pi, pid);
+    }
 
     read_mem_info(mi);
-    read_mem_vm_info(mp);
 
     printf("Memory info:\n");
     printf(" - Total: %lu\n", mi->total);
@@ -162,15 +163,23 @@ int main(int argc, char *argv[]){
     while (1) {
         read_mem_info(mi);
         read_mem_vm_info(mp);
-        write_mem(mw, mi, mp);
-
+        if (pid != -1) {
+            read_process_info(pi);
+        }
+        write_mem(mw, mi, mp, pi);
 
         usleep(arguments.time);
-    }
 
+        // If we are watching a process and it is no longer alive we exit..
+        if(pid != -1 && kill(pid, 0) != 0) {
+            break;
+        }
+    }
 
     free(mi);
     free(mp);
+    free(pi);
+
 
     return 0;
 }

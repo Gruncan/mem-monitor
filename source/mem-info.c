@@ -81,7 +81,7 @@ struct memInfoStrings* get_all_mem_struct_values(const unsigned long* values, co
 
 
 
-char* mem_parse_file(const char* filename) {
+char* mem_parse_file(const char* filename, size_t bufferSize) {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         return NULL;
@@ -89,7 +89,13 @@ char* mem_parse_file(const char* filename) {
 
 
     size_t content_size = 0;
-    char* content = malloc(BUFFER_SIZE);
+    if(bufferSize == -1) {
+        bufferSize = BUFFER_SIZE;
+    }
+
+    char* content = malloc(bufferSize);
+
+
     if (content == NULL) {
         perror("Memory allocation failed");
         fclose(fp);
@@ -97,7 +103,7 @@ char* mem_parse_file(const char* filename) {
     }
 
     size_t bytes_read;
-    while ((bytes_read = fread(content + content_size, 1, BUFFER_SIZE - content_size - 1, fp)) > 0) {
+    while ((bytes_read = fread(content + content_size, 1, bufferSize - content_size - 1, fp)) > 0) {
         content_size += bytes_read;
     }
     content[content_size] = '\0';

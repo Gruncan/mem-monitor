@@ -1,5 +1,8 @@
 
 #include "mem-writer.h"
+
+#include <process-reader.h>
+
 #include "mem-info.h"
 #include "mem-threading.h"
 
@@ -113,8 +116,8 @@ char* get_current_time() {
 
 
 
-void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp) {
-    char* buffer = malloc(6144);
+void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi) {
+    char* buffer = malloc(6144 + 512);
 
     if (buffer == NULL) {
         perror("Error allocating memory");
@@ -137,6 +140,13 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
     char temp[50];
     snprintf(temp, sizeof(temp), "{\"%s\":{", time_string);
     strcat(buffer, temp);
+
+    if (pi != NULL) {
+        char t[64];
+        sprintf(t, "\"%s\": \"%d\", \"%s\": \"%d\", \"%s\": \"%d\", ", "oomAdj", pi->oomAdj, "oomScore", pi->oomScore,
+                                                                                    "oomScoreAdj", pi->oomScoreAdj);
+        strcat(buffer, t);
+    }
 
     for (int i = 0; i < mem_vm_data->mem_strings_count; i++) {
         size_t value_len = strlen(mem_vm_data->mem_strings[i]);
