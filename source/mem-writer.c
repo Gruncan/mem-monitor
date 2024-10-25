@@ -111,9 +111,10 @@ char* get_current_time() {
     return time_string;
 }
 
-void write_mem(struct sMemWriter *mw, struct sMemInfo* mi){
 
-    char* buffer = malloc(2048);
+
+void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp) {
+    char* buffer = malloc(6144);
 
     if (buffer == NULL) {
         perror("Error allocating memory");
@@ -126,11 +127,29 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi){
 
     struct memInfoStrings* mem_data = get_all_mem_info_data(mi);
 
+
+    struct memInfoStrings* mem_vm_data = get_all_mem_vm_data(mp);
+
     const char** mem_names = get_mem_info_names();
+
+    const char** mem_vm_names = get_mem_vm_names();
 
     char temp[50];
     snprintf(temp, sizeof(temp), "{\"%s\":{", time_string);
     strcat(buffer, temp);
+
+    for (int i = 0; i < mem_vm_data->mem_strings_count; i++) {
+        size_t value_len = strlen(mem_vm_data->mem_strings[i]);
+        size_t name_len = strlen(mem_vm_names[i]);
+        char tmp[value_len + name_len + 10];
+
+
+        snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", mem_vm_names[i], mem_vm_data->mem_strings[i]);
+        strcat(buffer, tmp);
+
+        strcat(buffer, ", ");
+    }
+
 
     for (int i = 0; i < mem_data->mem_strings_count; i++) {
         size_t value_len = strlen(mem_data->mem_strings[i]);

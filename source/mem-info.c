@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE 16384 // 16Kb. This should be more than enough for big systems,
+#define BUFFER_SIZE 4096  // 4Kb. This should be more than enough for big systems,
                           //        might need to tweek for lower systems..
 
 static const size_t sizeUL = sizeof(unsigned long);
@@ -24,7 +24,35 @@ static const char* memMapping[] = {
 };
 
 static const char* memPageMapping[] = {
-    "pgfault", "pgmajfault", "pgpgin", "pgpgout"
+    "nr_free_pages", "nr_zone_inactive_anon", "nr_zone_active_anon", "nr_zone_inactive_file", "nr_zone_active_file",
+    "nr_zone_unevictable", "nr_zone_write_pending", "nr_mlock", "nr_bounce", "nr_zspages", "nr_free_cma", "nr_unaccepted",
+    "numa_hit", "numa_miss", "numa_foreign", "numa_interleave", "numa_local", "numa_other",
+    "nr_inactive_anon", "nr_active_anon", "nr_inactive_file", "nr_active_file", "nr_unevictable", "nr_slab_reclaimable",
+    "nr_slab_unreclaimable", "nr_isolated_anon", "nr_isolated_file",
+    "workingset_nodes", "workingset_refault_anon", "workingset_refault_file", "workingset_activate_anon",
+    "workingset_activate_file", "workingset_restore_anon", "workingset_restore_file", "workingset_nodereclaim",
+    "nr_anon_pages", "nr_mapped", "nr_file_pages", "nr_dirty", "nr_writeback", "nr_writeback_temp", "nr_shmem",
+    "nr_shmem_hugepages", "nr_shmem_pmdmapped", "nr_file_hugepages", "nr_file_pmdmapped", "nr_anon_transparent_hugepages",
+    "nr_dirty_threshold", "nr_dirty_background_threshold", "pgpgin", "pgpgout", "pswpin", "pswpout", "pgfault", "pgmajfault",
+    "pgalloc_dma", "pgalloc_dma32", "pgalloc_normal", "pgalloc_movable", "pgalloc_device", "allocstall_dma", "allocstall_dma32",
+    "allocstall_normal", "allocstall_movable", "allocstall_device", "pgskip_dma", "pgskip_dma32", "pgskip_normal", "pgskip_movable",
+    "pgskip_device", "pgfree", "pgactivate", "pgdeactivate", "pglazyfree", "pglazyfreed", "pgrefill", "pgreuse", "pgsteal_kswapd",
+    "pgsteal_direct", "pgsteal_khugepaged", "pgscan_kswapd", "pgscan_direct", "pgscan_khugepaged", "pgscan_direct_throttle",
+    "pgscan_anon", "pgscan_file", "pgsteal_anon", "pgsteal_file", "zone_reclaim_failed", "pginodesteal", "slabs_scanned",
+    "kswapd_inodesteal", "kswapd_low_wmark_hit_quickly", "kswapd_high_wmark_hit_quickly", "pageoutrun", "pgrotated",
+    "drop_pagecache", "drop_slab", "oom_kill", "numa_pte_updates", "numa_huge_pte_updates", "numa_hint_faults",
+    "numa_hint_faults_local", "numa_pages_migrated", "pgmigrate_success", "pgmigrate_fail", "thp_migration_success",
+    "thp_migration_fail", "thp_migration_split", "compact_migrate_scanned", "compact_free_scanned", "compact_isolated",
+    "compact_stall", "compact_fail", "compact_success", "compact_daemon_wake", "compact_daemon_migrate_scanned",
+    "compact_daemon_free_scanned", "htlb_buddy_alloc_success", "htlb_buddy_alloc_fail", "unevictable_pgs_culled",
+    "unevictable_pgs_scanned", "unevictable_pgs_rescued", "unevictable_pgs_mlocked", "unevictable_pgs_munlocked",
+    "unevictable_pgs_cleared", "unevictable_pgs_stranded", "thp_fault_alloc", "thp_fault_fallback", "thp_fault_fallback_charge",
+    "thp_collapse_alloc", "thp_collapse_alloc_failed", "thp_file_alloc", "thp_file_fallback", "thp_file_fallback_charge",
+    "thp_file_mapped", "thp_split_page", "thp_split_page_failed", "thp_deferred_split_page", "thp_split_pmd",
+    "thp_scan_exceed_none_pte", "thp_scan_exceed_swap_pte", "thp_scan_exceed_share_pte", "thp_split_pud", "thp_zero_page_alloc",
+    "thp_zero_page_alloc_failed", "thp_swpout", "thp_swpout_fallback", "balloon_inflate", "balloon_deflate", "balloon_migrate",
+    "swap_ra", "swap_ra_hit", "ksm_swpin_copy", "cow_ksm", "zswpin", "zswpout", "zswpwb", "direct_map_level2_splits",
+    "direct_map_level3_splits", "nr_unstable"
 };
 
 
@@ -110,7 +138,7 @@ struct memInfoStrings* get_all_mem_struct_values(const unsigned long* values, co
 
 
 
-void mem_parse_page_line(const char* line, struct sMemPageInfo* mp) {
+void mem_parse_page_line(const char* line, struct sMemVmInfo* mp) {
     char key[256];
     unsigned long value;
     int items = sscanf(line, "%255s %lu", key, &value);
@@ -122,7 +150,7 @@ void mem_parse_page_line(const char* line, struct sMemPageInfo* mp) {
     char* newline = strchr(key, '\n');
     if (newline) *newline = '\0';
 
-    const size_t structLength = sizeof(struct sMemPageInfo);
+    const size_t structLength = sizeof(struct sMemVmInfo);
 
     set_mem_struct_value(mp, structLength, memPageMapping, key, value);
 
@@ -200,7 +228,7 @@ void read_mem_info(struct sMemInfo* mi) {
 
 }
 
-void read_mem_pages(struct sMemPageInfo* mp) {
+void read_mem_vm_info(struct sMemVmInfo* mp) {
     char* content = mem_parse_file("/proc/vmstat");
     if (content == NULL) {
         perror("Failed to access /proc/vmstat");
@@ -217,8 +245,8 @@ void read_mem_pages(struct sMemPageInfo* mp) {
 }
 
 
-char* get_mem_page_data(struct sMemPageInfo* mp, const char *name) {
-    const unsigned long value = get_mem_struct_value(mp, sizeof(struct sMemPageInfo), memPageMapping, name);
+char* get_mem_vm_data(struct sMemVmInfo* mp, const char *name) {
+    const unsigned long value = get_mem_struct_value(mp, sizeof(struct sMemVmInfo), memPageMapping, name);
     if (value < 0) {
         return NULL;
     }
@@ -226,8 +254,8 @@ char* get_mem_page_data(struct sMemPageInfo* mp, const char *name) {
     return get_ulong_str(value);
 }
 
-struct memInfoStrings* get_all_mem_page_data(struct sMemPageInfo* mp) {
-    return get_all_mem_struct_values((unsigned long*) mp, sizeof(struct sMemPageInfo));
+struct memInfoStrings* get_all_mem_vm_data(struct sMemVmInfo* mp) {
+    return get_all_mem_struct_values((unsigned long*) mp, sizeof(struct sMemVmInfo));
 }
 
 char* get_mem_info_data(struct sMemInfo* mi, const char* name) {
@@ -256,6 +284,6 @@ const char** get_mem_info_names() {
     return memInfoNames;
 }
 
-const char** get_mem_page_names() {
+const char** get_mem_vm_names() {
     return memPageMapping;
 }

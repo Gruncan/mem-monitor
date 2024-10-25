@@ -13,7 +13,7 @@ MemWriter* new_mem_writer();
 
 void destroy_mem_writer(MemWriter *mw);
 
-void write_mem(MemWriter *mw, struct sMemInfo* mi);
+void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp);
 
 
 

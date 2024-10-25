@@ -80,12 +80,10 @@ int main(int argc, char *argv[]){
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
-    struct sMemPageInfo* mp = malloc(sizeof(struct sMemPageInfo));
-
+    struct sMemVmInfo* mp = malloc(sizeof(struct sMemVmInfo));
 
     read_mem_info(mi);
-    read_mem_pages(mp);
-
+    read_mem_vm_info(mp);
 
     printf("Memory info:\n");
     printf(" - Total: %lu\n", mi->total);
@@ -106,7 +104,10 @@ int main(int argc, char *argv[]){
 
     while (1) {
         read_mem_info(mi);
-        write_mem(mw, mi);
+        read_mem_vm_info(mp);
+        write_mem(mw, mi, mp);
+
+
         usleep(arguments.time);
     }
 
