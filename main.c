@@ -57,7 +57,7 @@ static error_t parse_opt(const int key, char *arg, const struct argp_state* stat
             break;
         case ARGP_KEY_END:
             if (arguments->command == NULL) {
-                argp_usage(state);
+                return 0;
             }
             break;
         default:
