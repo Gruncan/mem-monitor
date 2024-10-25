@@ -7,8 +7,11 @@
 #include "mem-writer.h"
 #include <argp.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
 
-const char *argp_program_version = "1.0";
+
+const char *argp_program_version = "1.5";
 const char *argp_program_bug_address = "<bug@example.com>";
 
 static char doc[] = "Pull memory information";
@@ -17,12 +20,15 @@ static char args_doc[] = "-f <filename> -t <delay time>";
 static struct argp_option options[] = {
     {"time", 't', 0, 0, "The time delay between reads"},
     {"file",  'f', "FILE", 0, "Output to filename to record the information"},
+    {"process",  'p', "COMMAND", 0, "The command to execute and pull proc data for"},
     {0}
 };
 
 struct arguments {
     unsigned long time;
     char* filename;
+    char* command;
+    char** args;
 };
 
 static MemWriter* mw;
@@ -37,6 +43,22 @@ static error_t parse_opt(const int key, char *arg, const struct argp_state* stat
             break;
         case 'f':
             arguments->filename = arg;
+            break;
+        case 'p':
+            arguments->command = arg;
+            break;
+        case ARGP_KEY_ARG:
+            if (arguments->args == NULL) {
+                arguments->args = malloc(sizeof(char *) * (state->arg_num + 2));
+                arguments->args[0] = NULL;
+            }
+            arguments->args[state->arg_num] = arg;
+            arguments->args[state->arg_num + 1] = NULL;
+            break;
+        case ARGP_KEY_END:
+            if (arguments->command == NULL) {
+                argp_usage(state);
+            }
             break;
         default:
             return ARGP_ERR_UNKNOWN;
@@ -65,7 +87,41 @@ void handle_signal(int sig) {
             break;
     }
 }
+int launch_process(struct arguments* args) {
+    pid_t pid = fork();
 
+    if (pid < 0) {
+        perror("fork");
+        return EXIT_FAILURE;
+    }
+
+    if (pid == 0) {
+        char *exec_args[1024];
+        exec_args[0] = args->command;
+
+        for (int i = 0; args->args[i] != NULL; i++) {
+            exec_args[i + 1] = args->args[i];
+        }
+
+        exec_args[1 + sizeof(args->args) / sizeof(args->args[0])] = NULL;
+
+        execvp(exec_args[0], exec_args);
+
+        perror("execvp");
+        return EXIT_FAILURE;
+    }else {
+        printf("Executing %s (%d)..\n", args->command, pid);
+
+        int status;
+        waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status)) {
+            printf("Child exited with status: %d\n", WEXITSTATUS(status));
+        } else {
+            printf("Child did not exit normally.\n");
+        }
+    }
+}
 
 int main(int argc, char *argv[]){
 
@@ -76,8 +132,15 @@ int main(int argc, char *argv[]){
 
     arguments.time = 10000;
     arguments.filename = "memlog.json";
+    arguments.command = NULL;
+    arguments.args = NULL;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
+
+
+    if (arguments.command != NULL) {
+
+    }
 
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
     struct sMemVmInfo* mp = malloc(sizeof(struct sMemVmInfo));
@@ -89,12 +152,6 @@ int main(int argc, char *argv[]){
     printf(" - Total: %lu\n", mi->total);
     printf(" - Free: %lu\n", mi->free);
     printf(" - Available: %lu\n", mi->available);
-
-    printf("\nPage info:\n");
-    printf(" - pgfault: %lu\n", mp->pgfault);
-    printf(" - pgmajfault: %lu\n", mp->pgmajfault);
-    printf(" - pgpgin: %lu\n", mp->pgpgin);
-    printf(" - pgpgout: %lu\n", mp->pgpgout);
 
     mw = new_mem_writer();
 

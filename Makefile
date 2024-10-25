@@ -3,7 +3,7 @@ CFLAGS = -std=c11 -I./source -pthread
 
 TARGET = mem_monitor
 
-SRCS = main.c source/mem-info.c source/mem-writer.c source/mem-threading.c
+SRCS = main.c source/mem-info.c source/mem-writer.c source/mem-threading.c source/mem-reader.c
 
 OBJS = $(SRCS:.c=.o)
 

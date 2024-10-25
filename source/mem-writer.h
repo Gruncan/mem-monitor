@@ -2,7 +2,7 @@
 #define MEM_WRITER_H
 
 
-#include "mem-info.h"
+#include "mem-reader.h"
 
 typedef struct sMemWriter MemWriter;
 
