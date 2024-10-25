@@ -136,6 +136,9 @@ int main(int argc, char *argv[]){
     pid_t pid = -1;
     if (arguments.command != NULL) {
         pid = launch_process(&arguments);
+        if (pid < 0) {
+            return -1;
+        }
     }
 
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
@@ -171,7 +174,7 @@ int main(int argc, char *argv[]){
         usleep(arguments.time);
 
         // If we are watching a process and it is no longer alive we exit..
-        if(pid != -1 && kill(pid, 0) != 0) {
+        if(pid != -1 && (int) kill(pid, 0) != 0) {
             break;
         }
     }
