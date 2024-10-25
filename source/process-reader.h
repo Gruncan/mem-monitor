@@ -32,7 +32,7 @@ void read_process_info(struct sProcessInfo* info);
 
 void read_process_mem_info(pid_t pid, struct sProcessMem* info);
 
-
+void reset_process_info(struct sProcessInfo* info);
 
 
 #endif //PROCESS_INFO_H

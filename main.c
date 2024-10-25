@@ -12,11 +12,14 @@
 #include <sys/wait.h>
 
 
+#define READS_BEFORE 100
+
+
 const char *argp_program_version = "1.5";
 const char *argp_program_bug_address = "<bug@example.com>";
 
 static char doc[] = "Pull memory information";
-static char args_doc[] = "-f <filename> -t <delay time>";
+static char args_doc[] = "-f <filename> -t <delay time> -p <program to run>";
 
 static struct argp_option options[] = {
     {"time", 't', 0, 0, "The time delay between reads"},
@@ -152,6 +155,7 @@ int main(int argc, char *argv[]){
 
     read_mem_info(mi);
 
+
     printf("Memory info:\n");
     printf(" - Total: %lu\n", mi->total);
     printf(" - Free: %lu\n", mi->free);
@@ -163,6 +167,9 @@ int main(int argc, char *argv[]){
 
     printf("Writing memory info to file...\n");
 
+    int processTerminated = 0;
+    int counter = 0;
+
     while (1) {
         read_mem_info(mi);
         read_mem_vm_info(mp);
@@ -173,7 +180,11 @@ int main(int argc, char *argv[]){
 
         usleep(arguments.time);
 
-        if (pid != -1) {
+        if (counter >= READS_BEFORE) {
+            break;
+        }else if (processTerminated == 1){
+            counter++;
+        }else if (pid != -1) {
             int status;
             const pid_t result = waitpid(pid, &status, WNOHANG);
             if (result == -1) {
@@ -183,9 +194,12 @@ int main(int argc, char *argv[]){
                 if (WIFEXITED(status)) {
                     printf("Child exited with status %d\n", WEXITSTATUS(status));
                 } else {
-                    printf("Child terminated abnormally\n");
+                    printf("Process exited..\n");
                 }
-                break;
+                printf("Collecting %d more data points..", READS_BEFORE);
+                pid = -1;
+                reset_process_info(pi);
+                processTerminated = 1;
             }
         }
 
