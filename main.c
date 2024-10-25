@@ -173,10 +173,20 @@ int main(int argc, char *argv[]){
 
         usleep(arguments.time);
 
-        // If we are watching a process and it is no longer alive we exit..
-        if(pid != -1 && (int) kill(pid, 0) != 0) {
+        int status;
+        const pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == -1) {
+            perror("waitpid failed");
+            break;
+        }else if (result != 0) {
+            if (WIFEXITED(status)) {
+                printf("Child exited with status %d\n", WEXITSTATUS(status));
+            } else {
+                printf("Child terminated abnormally\n");
+            }
             break;
         }
+
     }
 
     free(mi);
