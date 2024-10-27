@@ -2,7 +2,10 @@
 #define MEM_INFO_H
 
 #include <stddef.h>
+#include <stdint.h>
 
+#define READ_RAW    0
+#define READ_BINARY 1
 
 struct memInfoStrings {
     char** mem_strings;
@@ -19,7 +22,7 @@ unsigned long get_mem_struct_value(void* sStruct, size_t structLength, const cha
 struct memInfoStrings* get_all_mem_struct_values(const unsigned long* values, size_t valuesLength);
 
 
-char* mem_parse_file(const char* filename, size_t bufferSize);
+char* mem_parse_file(const char* filename, size_t bufferSize, uint8_t value);
 
 
 #endif //MEM_INFO_H

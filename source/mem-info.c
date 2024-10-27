@@ -8,6 +8,7 @@
 #define BUFFER_SIZE 4096  // 4Kb. This should be more than enough for big systems,
                           //        might need to tweek for lower systems..
 
+
 static const size_t sizeUL = sizeof(unsigned long);
 
 
@@ -81,12 +82,20 @@ struct memInfoStrings* get_all_mem_struct_values(const unsigned long* values, co
 
 
 
-char* mem_parse_file(const char* filename, size_t bufferSize) {
-    FILE *fp = fopen(filename, "r");
+char* mem_parse_file(const char* filename, size_t bufferSize, uint8_t value) {
+    char read_type[3];
+    if (value == READ_RAW) {
+        read_type[0]= 'r'; read_type[1] = '\0';
+    }else if (value == READ_BINARY) {
+        read_type[0] = 'r'; read_type[1] = 'b'; read_type[2] = '\0';
+    }else {
+        perror("Read type invalid!");
+    }
+
+    FILE *fp = fopen(filename, read_type);
     if (fp == NULL) {
         return NULL;
     }
-
 
     size_t content_size = 0;
     if(bufferSize == -1) {

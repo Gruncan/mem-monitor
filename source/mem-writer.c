@@ -146,6 +146,22 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
         sprintf(t, "\"%s\": \"%d\", \"%s\": \"%d\", \"%s\": \"%d\", ", "oomAdj", pi->oomAdj, "oomScore", pi->oomScore,
                                                                                     "oomScoreAdj", pi->oomScoreAdj);
         strcat(buffer, t);
+
+        struct memInfoStrings* p_mem_info = get_process_mem_info_names(pi->memInfo);
+
+        const char** proc_names = get_process_mem_names();
+
+        for (int i=0; i < p_mem_info->mem_strings_count; i++) {
+            size_t value_len = strlen(p_mem_info->mem_strings[i]);
+            size_t name_len = strlen(proc_names[i]);
+            char tmp[value_len + name_len + 10];
+
+
+            snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", proc_names[i], p_mem_info->mem_strings[i]);
+            strcat(buffer, tmp);
+
+            strcat(buffer, ", ");
+        }
     }
 
     for (int i = 0; i < mem_vm_data->mem_strings_count; i++) {
