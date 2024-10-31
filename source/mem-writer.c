@@ -162,7 +162,10 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
             strcat(buffer, ", ");
         }
+        destroy_all_mem_data(p_mem_info);
     }
+
+
 
     for (int i = 0; i < mem_vm_data->mem_strings_count; i++) {
         size_t value_len = strlen(mem_vm_data->mem_strings[i]);
@@ -175,6 +178,8 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
         strcat(buffer, ", ");
     }
+
+    destroy_all_mem_data(mem_vm_data);
 
 
     for (int i = 0; i < mem_data->mem_strings_count; i++) {

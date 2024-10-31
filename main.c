@@ -207,7 +207,10 @@ int main(int argc, char *argv[]){
 
     free(mi);
     free(mp);
-    free(pi);
+    if (pi != NULL) {
+        free(pi->memInfo);
+        free(pi);
+    }
 
 
     return 0;
