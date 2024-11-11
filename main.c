@@ -196,7 +196,7 @@ int main(int argc, char *argv[]){
                 } else {
                     printf("Process exited..\n");
                 }
-                printf("Collecting %d more data points..", READS_BEFORE);
+                printf("Collecting %d more data points..\n", READS_BEFORE);
                 pid = -1;
                 reset_process_info(pi);
                 processTerminated = 1;

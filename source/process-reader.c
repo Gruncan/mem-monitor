@@ -29,7 +29,7 @@ void init_process_info(struct sProcessInfo* pi, pid_t pid) {
 
 void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
     char file[256];
-    snprintf(file, sizeof(file), "/proc/%d/mem", pid);
+    snprintf(file, sizeof(file), "/proc/%d/statm", pid);
 
     char* content = mem_parse_file(file, 64, READ_BINARY);
     if (content == NULL) {
@@ -47,7 +47,7 @@ void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
     }else {
         if(sscanf(content, "%lu %lu %lu %lu %lu %lu",
                &pm->size, &pm->resident, &pm->shared, &pm->text, &pm->data, &pm->dirty) != STATM_FIELDS) {
-            perror("Failed to parse /proc/pid/mem");
+            perror("Failed to parse /proc/pid/statm");
             free(content);
             return;
         }
