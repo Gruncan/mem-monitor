@@ -193,8 +193,10 @@ int main(int argc, char *argv[]){
             }else if (result != 0) {
                 if (WIFEXITED(status)) {
                     printf("Child exited with status %d\n", WEXITSTATUS(status));
+                } else if (WIFSTOPPED(status)) {
+                    printf("Child stopped by signal %d\n", WSTOPSIG(status));
                 } else {
-                    printf("Process exited..\n");
+                    printf("Process exited with unknown status: %d\n", status);
                 }
                 printf("Collecting %d more data points..\n", READS_BEFORE);
                 pid = -1;
