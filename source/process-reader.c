@@ -10,9 +10,15 @@
 
 
 #define STATM_FIELDS 6
+#define STAT_FIELDS 3
 
 static const char* processMemInfoNames[] = {
     "p_size", "p_resident", "p_shared", "p_text", "p_data", "p_dirty"
+};
+
+
+static const char* processMemInfoStatNames[] = {
+    "p_vsize", "p_major_faults", "p_minor_faults"
 };
 
 
@@ -23,11 +29,12 @@ void init_process_info(struct sProcessInfo* pi, pid_t pid) {
     pi->oomScore = -1;
     pi->oomScoreAdj = -1;
     pi->memInfo = malloc(sizeof(struct sProcessInfo));
+    pi->memStat = malloc(sizeof(struct sProcessMemStat));
 }
 
 
 
-void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
+void read_process_mem_info(const pid_t pid, struct sProcessMem* pm, struct sProcessMemStat* pms) {
     char file[256];
     snprintf(file, sizeof(file), "/proc/%d/statm", pid);
 
@@ -61,7 +68,24 @@ void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
         pm->data *= page_size_kb;
         pm->dirty *= page_size_kb;
     }
+    free(content);
 
+    snprintf(file, sizeof(file), "/proc/%d/stat", pid);
+    content = mem_parse_file(file, 512, READ_BINARY);
+    if (content == NULL) {
+        printf("mem_parse_file failed\n");
+    }
+
+    if (strlen(content) == 0) {
+        pms->vsize = 0;
+        pms->major_faults = 0;
+        pms->minor_faults = 0;
+    }else {
+        if (sscanf(content, "%*d %*s %*c %*d %*d %*d %*d %*d %*d %ld %ld %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %ld %ld",
+               &pms->vsize, &pms->major_faults, & pms->minor_faults) != 3) {
+            perror("Error parsing stat data");
+        }
+    }
     free(content);
 }
 
@@ -91,7 +115,7 @@ void read_process_info(struct sProcessInfo* pi){
         free(content);
     }
 
-    read_process_mem_info(pi->pid, pi->memInfo);
+    read_process_mem_info(pi->pid, pi->memInfo, pi->memStat);
 }
 
 void reset_mem_info(struct sProcessMem* info) {
@@ -103,7 +127,14 @@ void reset_mem_info(struct sProcessMem* info) {
     info->text = -1;
     info->data = -1;
     info->dirty = -1;
+}
 
+void reset_mem_stat(struct sProcessMemStat* info) {
+    if (info == NULL) return;
+
+    info->vsize = -1;
+    info->major_faults = -1;
+    info->minor_faults = -1;
 }
 
 
@@ -123,6 +154,14 @@ struct memInfoStrings* get_process_mem_info_names(struct sProcessMem* pm) {
     return get_all_mem_struct_values((unsigned long*) pm, sizeof(struct sProcessMem));
 }
 
+struct memInfoStrings* get_process_mem_stat_info_names(struct sProcessMemStat* pms) {
+    return get_all_mem_struct_values((unsigned long*) pms, sizeof(struct sProcessMemStat));
+}
+
 const char** get_process_mem_names() {
     return processMemInfoNames;
+}
+
+const char** get_process_mem_stat_names() {
+    return processMemInfoStatNames;
 }

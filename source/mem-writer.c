@@ -163,6 +163,23 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
             strcat(buffer, ", ");
         }
         destroy_all_mem_data(p_mem_info);
+
+        struct memInfoStrings* p_mem_stat_info = get_process_mem_stat_names(pi->memStat);
+
+        const char** proc_stat_names = get_process_mem_stat_names();
+
+        for (int i=0; i < p_mem_stat_info->mem_strings_count; i++) {
+            size_t value_len = strlen(p_mem_stat_info->mem_strings[i]);
+            size_t name_len = strlen(proc_stat_names[i]);
+            char tmp[value_len + name_len + 10];
+
+
+            snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", proc_stat_names[i], p_mem_stat_info->mem_strings[i]);
+            strcat(buffer, tmp);
+
+            strcat(buffer, ", ");
+        }
+        destroy_all_mem_data(p_mem_stat_info);
     }
 
 
