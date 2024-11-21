@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <errno.h>
 
 
 #define STATM_FIELDS 6
@@ -16,13 +19,29 @@ static const char* processMemInfoNames[] = {
 };
 
 
-void init_process_info(struct sProcessInfo* pi, pid_t pid) {
+int check_process_exists(pid_t pid) {
+    if (kill(pid, 0) == 0) return 1;
+
+    if (errno == ESRCH) return 0;
+
+
+    perror("kill");
+    return -1;
+}
+
+int init_process_info(struct sProcessInfo* pi, pid_t pid) {
+    if (check_process_exists(pid) == 0) {
+        perror("Process does not exist");
+        return -1;
+    }
+
     pi->pid = pid;
     pi->name = NULL;
     pi->oomAdj = -1;
     pi->oomScore = -1;
     pi->oomScoreAdj = -1;
     pi->memInfo = malloc(sizeof(struct sProcessInfo));
+    return 0;
 }
 
 

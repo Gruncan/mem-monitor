@@ -22,10 +22,10 @@ struct sProcessInfo {
 };
 
 
-//void process_reader
 
+int check_process_exists(pid_t pid);
 
-void init_process_info(struct sProcessInfo* info, pid_t pid);
+int init_process_info(struct sProcessInfo* info, pid_t pid);
 
 void read_process_info(struct sProcessInfo* info);
 
