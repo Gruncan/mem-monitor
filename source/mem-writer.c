@@ -229,34 +229,33 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
     struct timeval* tv = get_current_time();
 
-    int miliseconds = timeval_diff_ms(tv, mw->prevTimestamp);
+    int miliseconds = timeval_diff_ms(tv, mw->prevTimestamp) & MASK_16;
 
     uint8_t* miliBuf = buffer;
-    miliBuf[0] = (uint8_t)(miliseconds & MASK_8);
-    miliBuf[1] = (uint8_t)((miliseconds >> 8) & MASK_8);
-    miliBuf[2] = (uint8_t)((miliseconds >> 16) & MASK_8);
+    miliBuf[0] = (uint8_t)(miliseconds >> 8);
+    miliBuf[1] = (uint8_t)(miliseconds << 8);
 
 
     free(mw->prevTimestamp);
     mw->prevTimestamp = tv;
 
 
-    uint offset = 8;
-    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset);
+    uint offset = 5;
 
     offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset);
+
+    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset);
+
 
     if (pi != NULL) {
         offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset);
     }
 
 
-    uint8_t* contBuf = buffer + 4;
-    const uint value = offset - 7;
-    contBuf[0] = (uint8_t)(value & MASK_8);
-    contBuf[1] = (uint8_t)((value >> 8) & MASK_8);
-    contBuf[2] = (uint8_t)((value >> 16) & MASK_8);
-    contBuf[3] = (uint8_t)((value >> 24) & MASK_8);
+    uint8_t* contBuf = buffer + 3;
+    const uint value = (offset - 4) & MASK_16;
+    contBuf[0] = (uint8_t)(value >> 8);
+    contBuf[1] = (uint8_t)(value << 8);
 
 
 
