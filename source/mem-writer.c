@@ -17,7 +17,8 @@
 
 #define FLUSH_INTERVAL 1
 
-
+#define MASK_40 0xFFFFFFFFFF
+#define MASK_32 0xFFFFFFFF
 #define MASK_16 0xFFFF
 #define MASK_12 0x0FFF
 #define MASK_8  0x00FF
@@ -26,7 +27,8 @@
 #define MASK_4  0x000F
 
 
-#define VERSION 1ULL
+
+#define VERSION 1
 
 
 typedef unsigned int uint;
@@ -135,16 +137,33 @@ void* write_mtc_header(struct timeval* tv) {
     uint minute = local_time->tm_min & MASK_6;
     uint second = local_time->tm_sec & MASK_6;
 
-    uint64 sumation = second;
-    sumation |= year << 6;
-    sumation |= month << 12;
-    sumation |= day << 17;
-    sumation |= hour << 22;
-    sumation |= minute << 26;
-    sumation |= VERSION << 32; // Version
 
-    void* header = malloc(5);
-    memcpy(header, &sumation, 5);
+    uint8_t* header = malloc(5);
+
+    for (int i = 0; i < 5; i++) {
+        header[i] = 0;
+    }
+
+    header[0] = VERSION;
+
+    header[1] |= (year << 2);
+    header[1] |= (month >> 2);
+    header[2] |= (month << 6);
+    header[2] |= (day << 1);
+    header[2] |= (hour >> 4);
+    header[3] |= (hour << 4);
+    header[3] |= (minute >> 2);
+    header[4] |= (minute << 6);
+    header[4] |= second;
+
+    printf("Bits in header:\n");
+    for (int i = 0; i < 5; i++) {
+        printf("Byte %d: ", i);
+        for (int bit = 7; bit >= 0; bit--) { // Print each bit from MSB to LSB
+            printf("%d", (header[i] >> bit) & 1);
+        }
+        printf("\n");
+    }
 
     return header;
 }
@@ -193,7 +212,7 @@ int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offse
 }
 
 void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi) {
-    void* buffer = malloc(2048); // We really only need 769
+    void* buffer = malloc(2048); // We really only need 769, apparently not..?
 
     if (buffer == NULL) {
         perror("Error allocating memory");
@@ -222,7 +241,7 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
     mw->prevTimestamp = tv;
 
 
-    uint offset = 7;
+    uint offset = 8;
     offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset);
 
     offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset);
@@ -232,12 +251,13 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
     }
 
 
-    uint8_t* contBuf = buffer + 3;
+    uint8_t* contBuf = buffer + 4;
     const uint value = offset - 7;
     contBuf[0] = (uint8_t)(value & MASK_8);
     contBuf[1] = (uint8_t)((value >> 8) & MASK_8);
     contBuf[2] = (uint8_t)((value >> 16) & MASK_8);
     contBuf[3] = (uint8_t)((value >> 24) & MASK_8);
+
 
 
     add_to_mem_queue(mw->writer_queue, buffer, offset);
