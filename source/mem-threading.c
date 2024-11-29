@@ -33,8 +33,14 @@ void mem_queue_destroy(struct mem_queue *queue) {
 
 }
 
-void add_to_mem_queue(struct mem_queue *queue, char* data) {
+void add_to_mem_queue(struct mem_queue *queue, void* data, unsigned int length) {
     if (queue == NULL) {
+        return;
+    }
+
+    struct mtc_value* mtcValue = malloc(sizeof(struct mtc_value));
+    if (mtcValue == NULL) {
+        perror("Failed to allocate memory for mtc value");
         return;
     }
 
@@ -44,8 +50,10 @@ void add_to_mem_queue(struct mem_queue *queue, char* data) {
         return;
     }
 
-    writer_value->data = data;
     writer_value->next = NULL;
+    mtcValue->data = data;
+    mtcValue->length = length;
+    writer_value->value = mtcValue;
 
     pthread_mutex_lock(&queue->_tail_lock);
 
@@ -74,7 +82,7 @@ void add_to_mem_queue(struct mem_queue *queue, char* data) {
 
 }
 
-void* pop_from_mem_queue(struct mem_queue *queue) {
+struct mtc_value* pop_from_mem_queue(struct mem_queue *queue) {
     if (queue == NULL) {
         return NULL;
     }
@@ -100,7 +108,7 @@ void* pop_from_mem_queue(struct mem_queue *queue) {
 
     pthread_mutex_unlock(&queue->_head_lock);
 
-    char* data = head->data;
+    struct mtc_value* data = head->value;
     free(head);
 
     return data;
