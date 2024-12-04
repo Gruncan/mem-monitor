@@ -156,19 +156,10 @@ void* write_mtc_header(struct timeval* tv) {
     header[4] |= (minute << 6);
     header[4] |= second;
 
-    printf("Bits in header:\n");
-    for (int i = 0; i < 5; i++) {
-        printf("Byte %d: ", i);
-        for (int bit = 7; bit >= 0; bit--) { // Print each bit from MSB to LSB
-            printf("%d", (header[i] >> bit) & 1);
-        }
-        printf("\n");
-    }
-
     return header;
 }
 
-int timeval_diff_ms(struct timeval* start, struct timeval* end) {
+short timeval_diff_ms(struct timeval* start, struct timeval* end) {
     long long sec_diff = end->tv_sec - start->tv_sec;
     long long usec_diff = end->tv_usec - start->tv_usec;
 
@@ -178,46 +169,43 @@ int timeval_diff_ms(struct timeval* start, struct timeval* end) {
     }
 
     long long total_ms = (sec_diff * 1000) + (usec_diff / 1000);
+    if (total_ms < 0) total_ms = 0;
 
-    return ((int) total_ms) & MASK_12;
+    return (short) total_ms;
 }
 
 
 
 
-int write_data_content(void* buffer, uint offset, uint key, unsigned long value) {
-    uint bytes = 0;
-    bytes |= value & MASK_16;
-    bytes |= (key & MASK_8) << 16;
+void write_data_content(void* buffer, uint offset, char key, ushort value){
+    value &= MASK_16;
+    key &= (char) MASK_8;
 
-    uint8_t* dest = (uint8_t*)buffer + offset;
+    char* dest = (char*)buffer + offset;
 
-    dest[0] = (uint8_t)(bytes & MASK_8);
-    dest[1] = (uint8_t)((bytes >> 8) & MASK_8);
-    dest[2] = (uint8_t)((bytes >> 16) & MASK_8);
+    dest[0] = key;
+    dest[1] = (char) (value >> 8) & MASK_8;
+    dest[2] = (char) (value & MASK_6);
 }
 
 int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offset) {
     static const uint sizeUL = sizeof(unsigned long);
+    uint writeOffset = 0;
     for (int i = 0; i < structLength / sizeUL; i++) {
         const size_t valueOffset = i * sizeUL;
         if (valueOffset >= structLength) {
             perror("Failed to read from struct!");
         }
-        write_data_content(buffer, offset + valueOffset, valueOffset,
+        // We offset by an additional 1 since
+        write_data_content(buffer, offset + writeOffset, (char) i + offset,
                                     *(unsigned long*) ((char*) sStruct + valueOffset));
+        writeOffset += 3;
     }
 
-    return offset + structLength;
+    return offset + writeOffset;
 }
 
 void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi) {
-    void* buffer = malloc(2048); // We really only need 769, apparently not..?
-
-    if (buffer == NULL) {
-        perror("Error allocating memory");
-        exit(EXIT_FAILURE);
-    }
 
     if (mw->hasWrittenHeader == 0) {
         mw->prevTimestamp = get_current_time();
@@ -227,14 +215,20 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
         return;
     }
 
+    void* buffer = malloc(2048); // We really only need 769, apparently not..?
+
+    if (buffer == NULL) {
+        perror("Error allocating memory");
+        exit(EXIT_FAILURE);
+    }
+
     struct timeval* tv = get_current_time();
 
-    int miliseconds = timeval_diff_ms(tv, mw->prevTimestamp) & MASK_16;
+    short miliseconds = timeval_diff_ms(tv, mw->prevTimestamp) & MASK_16;
 
-    uint8_t* miliBuf = buffer;
-    miliBuf[0] = (uint8_t)(miliseconds >> 8);
-    miliBuf[1] = (uint8_t)(miliseconds << 8);
-
+    char* miliBuf = buffer;
+    miliBuf[0] = (char)(miliseconds >> 8 & 0xFF);
+    miliBuf[1] = (char)(miliseconds & 0xFF);
 
     free(mw->prevTimestamp);
     mw->prevTimestamp = tv;
@@ -244,18 +238,18 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
     offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset);
 
-    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset);
+    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset+1);
 
 
     if (pi != NULL) {
-        offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset);
+        offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset+1);
     }
 
 
-    uint8_t* contBuf = buffer + 3;
-    const uint value = (offset - 4) & MASK_16;
-    contBuf[0] = (uint8_t)(value >> 8);
-    contBuf[1] = (uint8_t)(value << 8);
+    char* contBuf = buffer + 3;
+    const ushort value = (offset - 4);
+    contBuf[0] = (char)(value >> 8 & 0xFF);
+    contBuf[1] = (char)(value & 0xFF);
 
 
 

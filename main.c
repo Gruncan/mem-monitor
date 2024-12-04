@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
 
     struct arguments arguments;
 
-    arguments.time = 10000;
+    arguments.time = 5000;
     arguments.filename = "memlog.json";
     arguments.command = NULL;
     arguments.args = NULL;

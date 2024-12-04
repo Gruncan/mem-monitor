@@ -13,3 +13,12 @@ add_executable(mem_monitor main.c
         source/mem-reader.c
         source/process-reader.c
 )
+
+
+add_executable(mem_monitor_test tests/test.c
+        source/mem-info.c
+        source/mem-writer.c
+        source/mem-threading.c
+        source/mem-reader.c
+        source/process-reader.c
+)
