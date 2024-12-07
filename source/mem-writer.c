@@ -31,6 +31,8 @@
 
 
 void writer_routine(struct sMemWriter* mw) {
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
     if (mw == NULL) return;
 
     while(1) {
@@ -77,7 +79,7 @@ struct sMemWriter* new_mem_writer() {
     return mw;
 }
 
-void init_mem_writer(struct sMemWriter *mw, char* filename) {
+void init_mem_writer(struct sMemWriter* mw, char* filename) {
     mw->filename = filename;
     mw->file = fopen(mw->filename, "ab");
     if (mw->file  == NULL) {
@@ -97,10 +99,10 @@ void init_mem_writer(struct sMemWriter *mw, char* filename) {
 
 }
 
-void destroy_mem_writer(struct sMemWriter *mw) {
+void destroy_mem_writer(struct sMemWriter* mw) {
 
     mem_queue_destroy(mw->writer_queue);
-    pthread_kill(mw->pthread, SIGKILL);
+    pthread_cancel(mw->pthread);
 
     if (mw->file != NULL) {
         fclose(mw->file);

@@ -2,6 +2,9 @@
 #ifndef MEM_MONITOR_TEST_H
 #define MEM_MONITOR_TEST_H
 
+#include <string.h>
+
+
 #define RED_TEXT   "\033[0;31m"
 #define GREEN_TEXT "\033[0;32m"
 #define YELLOW_TEXT "\033[0;33m"
@@ -43,6 +46,13 @@ if (count == passed + skipped) { \
 
 
 
+#define ASSERT_EQUAL_P(value, expected) \
+    if (value != expected) {          \
+        fprintf(stderr, RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected); \
+        fprintf(stderr, RED_TEXT "         : %p != %p\n" RESET_TEXT, value, expected); \
+        return FAIL;                             \
+    }
+
 
 #define ASSERT_EQUAL(value, expected) \
     if (value != expected) {          \
@@ -50,6 +60,40 @@ if (count == passed + skipped) { \
         fprintf(stderr, RED_TEXT "         : %d != %d\n" RESET_TEXT, value, expected); \
         return FAIL;                             \
     }
+
+#define ASSERT_STR_EQUAL(value, expected) \
+    if (strcmp(value, expected) != 0) {          \
+        fprintf(stderr, RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected); \
+        fprintf(stderr, RED_TEXT "         : %s != %s\n" RESET_TEXT, value, expected); \
+        return FAIL;                             \
+    }
+
+
+
+#define ASSERT_NOT_EQUAL_P(value, expected) \
+    if (value == expected) {              \
+        fprintf(stderr, RED_TEXT "Failed on: %s == %s\n" RESET_TEXT, #value, #expected); \
+        fprintf(stderr, RED_TEXT "         : %p == %p\n" RESET_TEXT, value, expected); \
+        return FAIL;                                          \
+    }
+
+#define ASSERT_NOT_EQUAL(value, expected) \
+    if (value == expected) {              \
+        fprintf(stderr, RED_TEXT "Failed on: %s == %s\n" RESET_TEXT, #value, #expected); \
+        fprintf(stderr, RED_TEXT "         : %d == %d\n" RESET_TEXT, value, expected); \
+        return FAIL;                                          \
+    }                                     \
+
+
+#define ASSERT_STR_NOT_EQUAL(value, expected) \
+    ASSERT_EQUAL(strcmp(value, expected), 0)
+
+
+#define ASSERT_NOT_NULL(value) \
+    ASSERT_NOT_EQUAL_P(value, NULL)
+
+#define ASSERT_NULL(value) \
+    ASSERT_EQUAL_P(value, NULL)
 
 #define EXIT_TESTS return count == passed + skipped ? 0 : -1;
 

@@ -39,6 +39,8 @@ void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct
 
 short timeval_diff_ms(struct timeval* start, struct timeval* end);
 
+void* write_mtc_header(struct timeval* tv);
+
 int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offset);
 
 void write_data_content(void* buffer, uint offset, char key, ushort value);
