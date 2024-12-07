@@ -12,8 +12,6 @@
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>
-#include <sys/time.h>
-
 
 #define FLUSH_INTERVAL 1
 
@@ -32,36 +30,27 @@
 
 
 
-struct sMemWriter {
-    char* filename;
-    FILE* file;
-    unsigned char flushCounter;
-    int hasWrittenHeader;
-    struct timeval* prevTimestamp;
-
-
-    struct mem_queue* writer_queue;
-
-
-    pthread_t pthread;
-};
-
-
-
 void writer_routine(struct sMemWriter* mw) {
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
     if (mw == NULL) return;
 
     while(1) {
         struct mtc_value* value = pop_from_mem_queue(mw->writer_queue);
         if (value == NULL) continue;
 
-        const size_t bytes_written = fwrite(value->data, 1, value->length, mw->file);
+        // If we purposely want to write 0 bytes we should exit
+        if (value->length == 0){
+            break;
+        }
+
+#ifndef MEM_TEST
+        const size_t bytes_written = fwrite((unsigned char*) value->data, 1, value->length, mw->file);
+        // We have failed to write to the file
         if (bytes_written < 1) {
             perror("Error writing to file, writer routine exiting..");
             break;
         }
-
-        // printf("Wrote %zu bytes\n", bytes_written);
 
         // If FLUSH_INTERVAL is -1 let the OS decide when to flush
         if (mw->flushCounter == FLUSH_INTERVAL) {
@@ -70,11 +59,18 @@ void writer_routine(struct sMemWriter* mw) {
         }else if(FLUSH_INTERVAL != -1) {
             mw->flushCounter++;
         }
+#else
+        memcpy(mw->file, value->data, value->length);
+#endif
 
         free(value->data);
         free(value);
-
     }
+#ifndef MEM_TEST
+    fflush(mw->file);
+    fclose(mw->file);
+    mw->file = NULL;
+#endif
 }
 
 
@@ -83,7 +79,7 @@ struct sMemWriter* new_mem_writer() {
     return mw;
 }
 
-void init_mem_writer(struct sMemWriter *mw, char* filename) {
+void init_mem_writer(struct sMemWriter* mw, char* filename) {
     mw->filename = filename;
     mw->file = fopen(mw->filename, "ab");
     if (mw->file  == NULL) {
@@ -103,10 +99,10 @@ void init_mem_writer(struct sMemWriter *mw, char* filename) {
 
 }
 
-void destroy_mem_writer(struct sMemWriter *mw) {
+void destroy_mem_writer(struct sMemWriter* mw) {
 
     mem_queue_destroy(mw->writer_queue);
-    pthread_kill(mw->pthread, SIGKILL);
+    pthread_cancel(mw->pthread);
 
     if (mw->file != NULL) {
         fclose(mw->file);
@@ -135,8 +131,9 @@ void* write_mtc_header(struct timeval* tv) {
     uint minute = local_time->tm_min & MASK_6;
     uint second = local_time->tm_sec & MASK_6;
 
+    printf("After local time!\n"); fflush(stdout);
 
-    uint8_t* header = malloc(5);
+    ushort* header = malloc(5);
 
     for (int i = 0; i < 5; i++) {
         header[i] = 0;
@@ -153,6 +150,7 @@ void* write_mtc_header(struct timeval* tv) {
     header[3] |= (minute >> 2);
     header[4] |= (minute << 6);
     header[4] |= second;
+
 
     return header;
 }
@@ -183,7 +181,7 @@ void write_data_content(void* buffer, uint offset, char key, ushort value){
 
     dest[0] = key;
     dest[1] = (char) (value >> 8) & MASK_8;
-    dest[2] = (char) (value & MASK_6);
+    dest[2] = (char) (value & MASK_8);
 }
 
 int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offset) {

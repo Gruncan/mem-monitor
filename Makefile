@@ -18,16 +18,16 @@ $(TARGET): $(OBJS)
 
 
 test: $(TEST_TARGET)
-test: CFLAGS += -I./tests -g -fprofile-arcs -ftest-coverage
+test: CFLAGS += -I./tests -g -fprofile-arcs -ftest-coverage -DMEM_TEST -O0
 
 
 $(TEST_TARGET): $(TEST_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TEST_TARGET) $(TEST_OBJS)
+	$(CC) $(CFLAGS) -o $(TEST_TARGET) $(TEST_OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET) $(TEST_TARGET) $(TEST_OBJS) *.gcda *.gcno
+	rm -rf $(OBJS) $(TARGET) $(TEST_TARGET) $(TEST_OBJS) tests/*.gcda tests/*.gcno source/*.gcda source/*.gcno coverage.info coverage-report/
 
 .PHONY: all clean
