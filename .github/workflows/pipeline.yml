@@ -1,0 +1,81 @@
+name: Build and Test Pipeline
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential pthreads
+
+      - name: Build Main Target
+        run: |
+          make
+
+      - name: Upload mem_monitor artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mem_monitor
+          path: ./mem_monitor
+
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential pthreads
+
+      - name: Build Test Target
+        run: |
+          make test
+
+      - name: Upload mem_monitor_test artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mem_monitor_test
+          path: ./mem_monitor_test
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: [build-main, build-test]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Download mem_monitor artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: mem_monitor
+
+      - name: Download mem_monitor_test artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: mem_monitor_test
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential pthreads
+
+      - name: Run Tests
+        run: |
+          ./mem_monitor_test
