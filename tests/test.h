@@ -27,7 +27,8 @@ if (count == passed + skipped) { \
     printf(GREEN_TEXT "Passed %d/%d!\n" RESET_TEXT, passed, count);\
 } else {              \
     printf(RED_TEXT "Passed %d/%d!\n" RESET_TEXT, passed, count); \
-} \
+}                     \
+fflush(stdout); \
 
 
 #define TEST_SKIP(func) skipped++; \
@@ -42,8 +43,8 @@ if (count == passed + skipped) { \
     } else {       \
         count++;           \
         printf(RED_TEXT "  - Failed %s\n" RESET_TEXT, #func);   \
-    } \
-
+    }              \
+    fflush(stdout); \
 
 
 #define ASSERT_EQUAL_P(value, expected) \
