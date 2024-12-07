@@ -131,8 +131,9 @@ void* write_mtc_header(struct timeval* tv) {
     uint minute = local_time->tm_min & MASK_6;
     uint second = local_time->tm_sec & MASK_6;
 
+    printf("After local time!\n"); fflush(stdout);
 
-    uint8_t* header = malloc(5);
+    ushort* header = malloc(5);
 
     for (int i = 0; i < 5; i++) {
         header[i] = 0;
@@ -149,6 +150,7 @@ void* write_mtc_header(struct timeval* tv) {
     header[3] |= (minute >> 2);
     header[4] |= (minute << 6);
     header[4] |= second;
+
 
     return header;
 }
