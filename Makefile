@@ -18,7 +18,7 @@ $(TARGET): $(OBJS)
 
 
 test: $(TEST_TARGET)
-test: CFLAGS += -I./tests
+test: CFLAGS += -I./tests -g -fprofile-arcs -ftest-coverage
 
 
 $(TEST_TARGET): $(TEST_OBJS)
@@ -28,6 +28,6 @@ $(TEST_TARGET): $(TEST_OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET) $(TEST_TARGET) $(TEST_OBJS)
+	rm -f $(OBJS) $(TARGET) $(TEST_TARGET) $(TEST_OBJS) *.gcda *.gcno
 
 .PHONY: all clean
