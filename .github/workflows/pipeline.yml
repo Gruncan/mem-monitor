@@ -19,7 +19,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt update
-          sudo apt install -y build-essential pthreads
+          sudo apt install -y build-essential
 
       - name: Build Main Target
         run: |
@@ -41,7 +41,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt update
-          sudo apt install -y build-essential pthreads
+          sudo apt install -y build-essential
 
       - name: Build Test Target
         run: |
@@ -74,7 +74,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt update
-          sudo apt install -y build-essential pthreads
+          sudo apt install -y build-essential
 
       - name: Run Tests
         run: |
