@@ -47,11 +47,16 @@ jobs:
         run: |
           make test
 
-      - name: Upload mem_monitor_test artifact
+      - name: Upload mem_monitor_test and coverage files
         uses: actions/upload-artifact@v3
         with:
-          name: mem_monitor_test
-          path: ./mem_monitor_test
+          name: test-artifacts
+          path: |
+            ./mem_monitor_test
+            ./source/*.gcno
+            ./tests/*.gcno
+            ./*.gcda
+
 
   run-tests:
     runs-on: ubuntu-latest
