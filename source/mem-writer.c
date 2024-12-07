@@ -1,6 +1,8 @@
 
 #include "mem-writer.h"
+
 #include "process-reader.h"
+
 #include "mem-info.h"
 #include "mem-threading.h"
 
@@ -29,8 +31,6 @@
 #define VERSION 1
 
 
-typedef unsigned int uint;
-typedef unsigned long long uint64;
 
 struct sMemWriter {
     char* filename;
