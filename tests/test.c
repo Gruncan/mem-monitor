@@ -222,7 +222,8 @@ int test_write_mtc_header(){
     time->tv_sec = 1629387587;
     time->tv_usec = 510000;
 
-    u_int8_t* buffer = write_mtc_header(time);
+    printf("Before buffer!\n"); fflush(stdout);
+    ushort* buffer = write_mtc_header(time);
 
     ASSERT_EQUAL(buffer[0],  1);
 
@@ -232,6 +233,8 @@ int test_write_mtc_header(){
     ASSERT_EQUAL(buffer[4], 239);
 
 
+    free(buffer);
+    free(time);
     return PASS;
 }
 
