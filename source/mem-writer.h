@@ -5,6 +5,8 @@
 #include "mem-reader.h"
 #include "process-reader.h"
 
+#include <sys/time.h>
+
 typedef struct sMemWriter MemWriter;
 
 typedef unsigned int uint;
@@ -19,6 +21,8 @@ MemWriter* new_mem_writer();
 void destroy_mem_writer(MemWriter *mw);
 
 void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi);
+
+short timeval_diff_ms(struct timeval* start, struct timeval* end);
 
 int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offset);
 

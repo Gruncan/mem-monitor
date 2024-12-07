@@ -6,6 +6,9 @@
 #define GREEN_TEXT "\033[0;32m"
 #define RESET_TEXT "\033[0m"
 
+#define PASS 1
+#define FAIL 0
+
 #define INIT_TEST static int count = 0; \
                   static int passed = 0;\
                   printf("Running tests..\n"); \
@@ -31,8 +34,9 @@ if (count == passed) { \
 
 #define ASSERT_EQUAL(value, expected) \
     if (value != expected) {          \
-        printf("%s != %s\n", #value, #expected); \
-        return 0;                               \
+        fprintf(stderr, RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected); \
+        fprintf(stderr, RED_TEXT "         : %d != %d\n" RESET_TEXT, value, expected); \
+        return FAIL;                             \
     }
 
 #define EXIT_TESTS return count == passed ? 0 : -1;
