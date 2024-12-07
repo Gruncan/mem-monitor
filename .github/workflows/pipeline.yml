@@ -73,8 +73,29 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt update
-          sudo apt install -y build-essential
+          sudo apt install -y build-essential lcov
 
       - name: Run Tests
         run: |
           ./mem_monitor_test
+
+      - name: Collect Coverage Data
+        run: |
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Generate HTML Coverage Report
+        run: |
+          genhtml coverage.info --output-directory coverage-report
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage-report
