@@ -38,7 +38,7 @@ int test1() {
     }
 
     int offset = write_struct_data(buffer, &t1, size, 0);
-    ASSERT_EQUAL(offset, (length * 2) + 5);
+    ASSERT_EQUAL(offset, (length * 2) + 4);
 
     int v = 0;
     for (int i = 0; i < length + 4; i += 3) {
