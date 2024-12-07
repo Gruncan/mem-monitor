@@ -42,8 +42,8 @@ void writer_routine(struct sMemWriter* mw) {
             break;
         }
 
+#ifndef MEM_TEST
         const size_t bytes_written = fwrite((unsigned char*) value->data, 1, value->length, mw->file);
-
         // We have failed to write to the file
         if (bytes_written < 1) {
             perror("Error writing to file, writer routine exiting..");
@@ -57,13 +57,18 @@ void writer_routine(struct sMemWriter* mw) {
         }else if(FLUSH_INTERVAL != -1) {
             mw->flushCounter++;
         }
+#else
+        memcpy(mw->file, value->data, value->length);
+#endif
 
         free(value->data);
         free(value);
     }
+#ifndef MEM_TEST
     fflush(mw->file);
     fclose(mw->file);
     mw->file = NULL;
+#endif
 }
 
 

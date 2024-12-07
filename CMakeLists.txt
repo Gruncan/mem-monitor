@@ -24,5 +24,5 @@ add_executable(mem_monitor_test tests/test.c
         source/mem-reader.c
         source/process-reader.c
 )
-
+target_compile_definitions(mem_monitor_test PRIVATE MEM_TEST)
 target_link_libraries(mem_monitor_test PRIVATE pthread)
