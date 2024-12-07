@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
 
     TEST(test_timeval_diff_ms)
 
-    TEST_SKIP(test_writer_routine)
+    TEST(test_writer_routine)
 
     PRINT_RESULTS
 
@@ -148,11 +148,9 @@ int test_writer_routine(){
 
     struct sMemWriter test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
 
-    unsigned char* buffer = malloc(5);
+    void* buffer = malloc(5);
 
-    FILE *fp = fmemopen(buffer, 5, "wb"); // I don't know why this needs to be 6?
-
-    test_writer.file = fp;
+    test_writer.file = buffer;
 
     struct mem_value* tailValue = init_test_mem_value(NULL, NULL, 0);
 
@@ -171,8 +169,10 @@ int test_writer_routine(){
 
     writer_routine(&test_writer);
 
+    unsigned char* data_buffer = buffer;
+
     for (int i = 0; i < 5; i++){
-        ASSERT_EQUAL(buffer[i], i + 1);
+        ASSERT_EQUAL(data_buffer[i], i + 1);
     }
 
     return PASS;
