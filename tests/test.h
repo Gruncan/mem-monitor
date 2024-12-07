@@ -35,7 +35,7 @@ if (count == passed) { \
         return 0;                               \
     }
 
-#define EXIT_TESTS return count == passed ? 1 : -1;
+#define EXIT_TESTS return count == passed ? 0 : -1;
 
 
 #endif //MEM_MONITOR_TEST_H
