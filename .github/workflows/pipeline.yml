@@ -78,8 +78,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt update
-          sudo apt install -y build-essential lcov tzdata
-          sudo timedatectl set-timezone Europe/London
+          sudo apt install -y build-essential lcov
 
       - name: Run Tests
         run: |
