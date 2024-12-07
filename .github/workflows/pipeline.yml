@@ -50,7 +50,7 @@ jobs:
       - name: Upload mem_monitor_test and coverage files
         uses: actions/upload-artifact@v3
         with:
-          name: test-artifacts
+          name: mem_monitor_test
           path: |
             ./mem_monitor_test
             ./source/*.gcno
