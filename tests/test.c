@@ -22,29 +22,20 @@ int test_write_mtc_header();
 int main(int argc, char *argv[]){
     INIT_TEST
 
-    fflush(stdout);
-
     TEST(test_struct_writer)
-
-    fflush(stdout);
 
     TEST(test_data_writer1)
     TEST(test_data_writer2)
     TEST(test_data_writer3)
 
-    fflush(stdout);
     TEST(test_timeval_diff_ms)
 
-    fflush(stdout);
     TEST(test_writer_routine)
 
-    fflush(stdout);
     TEST(test_create_destroy_mem_writer)
 
-    fflush(stdout);
     TEST(test_write_mtc_header)
 
-    fflush(stdout);
     PRINT_RESULTS
 
     EXIT_TESTS
@@ -227,9 +218,11 @@ int test_create_destroy_mem_writer(){
 
 int test_write_mtc_header(){
     // 2021-07-19: 16:39.47
-    struct timeval time = {1629387587, 510000};
+    struct timeval* time = malloc(sizeof(struct timeval));
+    time->tv_sec = 1629387587;
+    time->tv_usec = 510000;
 
-    u_int8_t* buffer = write_mtc_header(&time);
+    u_int8_t* buffer = write_mtc_header(time);
 
     ASSERT_EQUAL(buffer[0],  1);
 
