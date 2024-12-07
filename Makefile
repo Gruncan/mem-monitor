@@ -18,7 +18,7 @@ $(TARGET): $(OBJS)
 
 
 test: $(TEST_TARGET)
-test: CFLAGS += -I./tests -g -fprofile-arcs -ftest-coverage -DMEM_TEST
+test: CFLAGS += -I./tests -g -fprofile-arcs -ftest-coverage -DMEM_TEST -O0 -fsanitize=address
 
 
 $(TEST_TARGET): $(TEST_OBJS)
