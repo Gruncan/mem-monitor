@@ -21,11 +21,8 @@ struct mem_queue {
 
     unsigned int size;
 
-    pthread_mutex_t _head_lock;
-    pthread_mutex_t _tail_lock;
-    pthread_mutex_t _size_lock;
-    pthread_cond_t _head_cond;
-    pthread_cond_t _size_cond;
+    pthread_mutex_t _lock;
+    pthread_cond_t _lock_cond;
 };
 
 
