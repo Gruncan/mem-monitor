@@ -3,7 +3,6 @@
 
 #include "mem-writer.h"
 
-
 #include "test.h"
 
 int test1();
@@ -14,6 +13,8 @@ int main(int argc, char *argv[]){
     TEST(test1)
 
     PRINT_RESULTS
+
+    EXIT_TESTS
 }
 
 
@@ -37,7 +38,7 @@ int test1() {
     }
 
     int offset = write_struct_data(buffer, &t1, size, 0);
-    ASSERT_EQUAL(offset, (length * 2) + 4);
+    ASSERT_EQUAL(offset, (length * 2) + 5);
 
     int v = 0;
     for (int i = 0; i < length + 4; i += 3) {
