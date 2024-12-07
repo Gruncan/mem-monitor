@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 int test_struct_writer();
 int test_data_writer1();
@@ -15,6 +16,8 @@ int test_data_writer2();
 int test_data_writer3();
 int test_timeval_diff_ms();
 int test_writer_routine();
+int test_create_destroy_mem_writer();
+int test_write_mtc_header();
 
 int main(int argc, char *argv[]){
     INIT_TEST
@@ -28,6 +31,10 @@ int main(int argc, char *argv[]){
     TEST(test_timeval_diff_ms)
 
     TEST(test_writer_routine)
+
+    TEST(test_create_destroy_mem_writer)
+
+    TEST(test_write_mtc_header)
 
     PRINT_RESULTS
 
@@ -177,3 +184,52 @@ int test_writer_routine(){
 
     return PASS;
 }
+
+
+
+int test_create_destroy_mem_writer(){
+    struct sMemWriter* mw = new_mem_writer();
+
+    char* filename = "test.file";
+
+    init_mem_writer(mw, filename);
+
+
+    ASSERT_STR_EQUAL(mw->filename, filename);
+
+    ASSERT_NOT_NULL((void*) mw->file);
+
+    ASSERT_EQUAL(mw->hasWrittenHeader, 0)
+    ASSERT_NULL(mw->prevTimestamp)
+
+    ASSERT_NOT_NULL(mw->writer_queue)
+
+    ASSERT_NULL(mw->writer_queue->head)
+    ASSERT_NULL(mw->writer_queue->tail)
+    ASSERT_EQUAL(mw->writer_queue->size, 0)
+
+
+    // Todo how can we test that we have freed?
+    destroy_mem_writer(mw);
+
+    remove(filename);
+    return PASS;
+}
+
+int test_write_mtc_header(){
+    // 2021-07-19: 16:39.47
+    struct timeval time = {1629387587, 510000};
+
+    u_int8_t* buffer = write_mtc_header(&time);
+
+    ASSERT_EQUAL(buffer[0],  1);
+
+    ASSERT_EQUAL(buffer[1], 85);
+    ASSERT_EQUAL(buffer[2], 231);
+    ASSERT_EQUAL(buffer[3], 9);
+    ASSERT_EQUAL(buffer[4], 239);
+
+
+    return PASS;
+}
+
