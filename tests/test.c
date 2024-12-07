@@ -219,6 +219,10 @@ int test_create_destroy_mem_writer(){
 int test_write_mtc_header(){
     // 2021-07-19: 16:39.47
     struct timeval* time = malloc(sizeof(struct timeval));
+    if(time == NULL){
+        perror("Failed to allocated time memory");
+        return FAIL;
+    }
     time->tv_sec = 1629387587;
     time->tv_usec = 510000;
 
