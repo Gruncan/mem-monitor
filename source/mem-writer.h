@@ -7,12 +7,27 @@
 
 #include <sys/time.h>
 
+struct sMemWriter {
+    char* filename;
+    FILE* file;
+    unsigned char flushCounter;
+    int hasWrittenHeader;
+    struct timeval* prevTimestamp;
+
+
+    struct mem_queue* writer_queue;
+
+
+    pthread_t pthread;
+};
+
 typedef struct sMemWriter MemWriter;
 
 typedef unsigned int uint;
 typedef unsigned long long uint64;
 typedef unsigned short ushort;
 
+void writer_routine(struct sMemWriter* mw);
 
 void init_mem_writer(MemWriter *mw, char* filename);
 

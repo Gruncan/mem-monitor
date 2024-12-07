@@ -30,22 +30,6 @@
 
 
 
-struct sMemWriter {
-    char* filename;
-    FILE* file;
-    unsigned char flushCounter;
-    int hasWrittenHeader;
-    struct timeval* prevTimestamp;
-
-
-    struct mem_queue* writer_queue;
-
-
-    pthread_t pthread;
-};
-
-
-
 void writer_routine(struct sMemWriter* mw) {
     if (mw == NULL) return;
 
@@ -53,13 +37,18 @@ void writer_routine(struct sMemWriter* mw) {
         struct mtc_value* value = pop_from_mem_queue(mw->writer_queue);
         if (value == NULL) continue;
 
-        const size_t bytes_written = fwrite(value->data, 1, value->length, mw->file);
+        // If we purposely want to write 0 bytes we should exit
+        if (value->length == 0){
+            break;
+        }
+
+        const size_t bytes_written = fwrite((unsigned char*) value->data, 1, value->length, mw->file);
+
+        // We have failed to write to the file
         if (bytes_written < 1) {
             perror("Error writing to file, writer routine exiting..");
             break;
         }
-
-        // printf("Wrote %zu bytes\n", bytes_written);
 
         // If FLUSH_INTERVAL is -1 let the OS decide when to flush
         if (mw->flushCounter == FLUSH_INTERVAL) {
@@ -71,8 +60,10 @@ void writer_routine(struct sMemWriter* mw) {
 
         free(value->data);
         free(value);
-
     }
+    fflush(mw->file);
+    fclose(mw->file);
+    mw->file = NULL;
 }
 
 

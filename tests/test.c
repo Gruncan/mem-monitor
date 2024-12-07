@@ -1,16 +1,20 @@
 
 #include "mem-writer.h"
+#include "mem-threading.h"
 
 #include "test.h"
 
 #include <stdio.h>
 #include <sys/time.h>
+#include <stdlib.h>
+#include <string.h>
 
 int test_struct_writer();
 int test_data_writer1();
 int test_data_writer2();
 int test_data_writer3();
 int test_timeval_diff_ms();
+int test_writer_routine();
 
 int main(int argc, char *argv[]){
     INIT_TEST
@@ -22,6 +26,8 @@ int main(int argc, char *argv[]){
     TEST(test_data_writer3)
 
     TEST(test_timeval_diff_ms)
+
+    TEST(test_writer_routine)
 
     PRINT_RESULTS
 
@@ -117,6 +123,58 @@ int test_timeval_diff_ms(){
     short milliseconds2 = timeval_diff_ms(&time_2, &time_1);
 
     ASSERT_EQUAL(milliseconds2, 0)
+
+    return PASS;
+}
+
+struct mem_value* init_test_mem_value(struct mem_value* next, void* data, unsigned int length){
+    struct mem_value* test_value = malloc(sizeof(struct mem_value));
+    test_value->next = next;
+
+    struct mtc_value* test_mtc_value = malloc(sizeof(struct mtc_value));
+    test_mtc_value->data = data;
+    test_mtc_value->length = length;
+
+    test_value->value = test_mtc_value;
+
+    return test_value;
+}
+
+
+int test_writer_routine(){
+    struct mem_queue test_queue;
+
+    mem_queue_init(&test_queue);
+
+    struct sMemWriter test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
+
+    unsigned char* buffer = malloc(5);
+
+    FILE *fp = fmemopen(buffer, 6, "wb"); // I don't know why this needs to be 6?
+
+    test_writer.file = fp;
+
+
+    struct mem_value* tailValue = init_test_mem_value(NULL, NULL, 0);
+
+    unsigned char* values = malloc(5);
+
+    for (int i = 0; i < 5; i++){
+        values[i] = i+1;
+    }
+
+    struct mem_value* headValue = init_test_mem_value(tailValue, values, 5);
+
+
+    test_queue.size = 2;
+    test_queue.head = headValue;
+    test_queue.tail = tailValue;
+
+    writer_routine(&test_writer);
+
+    for (int i = 0; i < 5; i++){
+        ASSERT_EQUAL(buffer[i], i + 1);
+    }
 
     return PASS;
 }
