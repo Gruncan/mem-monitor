@@ -61,15 +61,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Download mem_monitor artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: mem_monitor
-
       - name: Download mem_monitor_test artifact
         uses: actions/download-artifact@v3
         with:
           name: mem_monitor_test
+
+      - name: Set execute permissions
+        run: |
+          chmod +x ./mem_monitor_test
 
       - name: Setup Environment
         run: |
