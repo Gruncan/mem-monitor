@@ -4,10 +4,16 @@
 #include "mem-writer.h"
 
 
+#include "test.h"
+
 int test1();
 
 int main(int argc, char *argv[]){
-    test1();
+    INIT_TEST
+
+    TEST(test1)
+
+    PRINT_RESULTS
 }
 
 
@@ -31,14 +37,15 @@ int test1() {
     }
 
     int offset = write_struct_data(buffer, &t1, size, 0);
-    assert(offset == (length * 2) + 4);
+    ASSERT_EQUAL(offset, (length * 2) + 4);
 
     int v = 0;
     for (int i = 0; i < length + 4; i += 3) {
-        assert(buffer[i] == v); // Key
+        ASSERT_EQUAL(buffer[i], v); // Key
         short value = buffer[i + 1] << 8 | buffer[i + 2];
-        printf("%d: %lu\n", v, value);
-        assert(value == v+1);
+        ASSERT_EQUAL(value, v+1);
         v++;
     }
+
+    return 1;
 }
