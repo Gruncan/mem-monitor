@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.16)
 project(mem_monitor C)
 
 set(CMAKE_C_STANDARD 11)
@@ -14,6 +14,8 @@ add_executable(mem_monitor main.c
         source/process-reader.c
 )
 
+target_link_libraries(mem_monitor PRIVATE pthread)
+
 
 add_executable(mem_monitor_test tests/test.c
         source/mem-info.c
@@ -22,3 +24,5 @@ add_executable(mem_monitor_test tests/test.c
         source/mem-reader.c
         source/process-reader.c
 )
+
+target_link_libraries(mem_monitor_test PRIVATE pthread)

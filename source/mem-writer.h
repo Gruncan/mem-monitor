@@ -7,6 +7,10 @@
 
 typedef struct sMemWriter MemWriter;
 
+typedef unsigned int uint;
+typedef unsigned long long uint64;
+typedef unsigned short ushort;
+
 
 void init_mem_writer(MemWriter *mw, char* filename);
 
