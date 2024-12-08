@@ -41,7 +41,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt update
-          sudo apt install -y build-essential
+          sudo apt install -y build-essential lcov
 
       - name: Build Test Target
         run: |
