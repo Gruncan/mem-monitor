@@ -31,7 +31,7 @@
 
 
 void writer_routine(struct sMemWriter* mw) {
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+//    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
     if (mw == NULL) return;
 
@@ -94,16 +94,18 @@ void init_mem_writer(struct sMemWriter* mw, char* filename) {
     mw->hasWrittenHeader = 0;
     mw->prevTimestamp = NULL;
 
-
+#ifndef MEM_TEST
     pthread_create(&mw->pthread, NULL, (void*(*)(void*)) writer_routine, mw);
+#endif
 
 }
 
 void destroy_mem_writer(struct sMemWriter* mw) {
 
     mem_queue_destroy(mw->writer_queue);
+#ifndef MEM_TEST
     pthread_cancel(mw->pthread);
-
+#endif
     if (mw->file != NULL) {
         fclose(mw->file);
     }
@@ -130,8 +132,6 @@ void* write_mtc_header(struct timeval* tv) {
     uint hour = local_time->tm_hour & MASK_5;
     uint minute = local_time->tm_min & MASK_6;
     uint second = local_time->tm_sec & MASK_6;
-
-    printf("After local time!\n"); fflush(stdout);
 
     ushort* header = malloc(5);
 
