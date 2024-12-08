@@ -34,12 +34,9 @@ int main(int argc, char *argv[]){
 
     TEST(test_create_destroy_mem_writer)
 
-    TEST_SKIP(test_write_mtc_header) // Not sure why this fails only on remote ;(
+    TEST(test_write_mtc_header) // Not sure why this fails only on remote ;(
 
     PRINT_RESULTS
-
-    printf("Exiting.. %d\n", EXIT_VALUE);
-    fflush(stdout);
 
     return EXIT_VALUE;
 }
@@ -220,6 +217,9 @@ int test_create_destroy_mem_writer(){
 }
 
 int test_write_mtc_header(){
+    setenv("TZ", "UTC", 1);
+    tzset();
+
     // 2021-07-19: 16:39.47
     struct timeval* time = malloc(sizeof(struct timeval));
     if(time == NULL){
@@ -229,19 +229,21 @@ int test_write_mtc_header(){
     time->tv_sec = 1629387587;
     time->tv_usec = 510000;
 
-    printf("Before buffer!\n"); fflush(stdout);
     ushort* buffer = write_mtc_header(time);
 
     ASSERT_EQUAL(buffer[0],  1);
 
     ASSERT_EQUAL(buffer[1], 85);
-    ASSERT_EQUAL(buffer[2], 231);
-    ASSERT_EQUAL(buffer[3], 9);
-    ASSERT_EQUAL(buffer[4], 239);
+    ASSERT_EQUAL(buffer[2], 486);
+    ASSERT_EQUAL(buffer[3], 249);
+    ASSERT_EQUAL(buffer[4], 2543);
 
 
     free(buffer);
     free(time);
+
+    unsetenv("TZ");
+    tzset();
     return PASS;
 }
 
