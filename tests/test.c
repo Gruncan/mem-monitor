@@ -212,7 +212,7 @@ int test_create_destroy_mem_writer(){
     // Todo how can we test that we have freed?
     destroy_mem_writer(mw);
 
-    remove(filename);
+//    remove(filename);
     return PASS;
 }
 
