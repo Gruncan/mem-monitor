@@ -38,7 +38,10 @@ int main(int argc, char *argv[]){
 
     PRINT_RESULTS
 
-    EXIT_TESTS
+    printf("Exiting.. %d\n", EXIT_VALUE);
+    fflush(stdout);
+
+    return EXIT_VALUE;
 }
 
 

@@ -96,7 +96,7 @@ fflush(stdout); \
 #define ASSERT_NULL(value) \
     ASSERT_EQUAL_P(value, NULL)
 
-#define EXIT_TESTS return count == passed + skipped ? 0 : -1;
+#define EXIT_VALUE (count == (passed + skipped) ? 0 : -1)
 
 
 #endif //MEM_MONITOR_TEST_H
