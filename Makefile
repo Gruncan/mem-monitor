@@ -18,7 +18,7 @@ $(TARGET): $(OBJS)
 
 
 test: $(TEST_TARGET)
-test: CFLAGS += -I./tests -g -DMEM_TEST
+test: CFLAGS += -I./tests -g -fprofile-arcs -ftest-coverage -DMEM_TEST
 
 
 $(TEST_TARGET): $(TEST_OBJS)
