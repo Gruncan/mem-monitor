@@ -10,7 +10,6 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 
 #define STRUCT_WRITE_SIZE(s) ((sizeof(s) / SIZE_UL) * 3)
 
@@ -27,7 +26,7 @@ int test_write_mem_header();
 int test_write_mem_body_1();
 int test_write_mem_body_2();
 
-static const uint SIZE_UL = sizeof(ulong);
+static const uint SIZE_UL = sizeof(unsigned long);
 
 
 int main(int argc, char *argv[]){
@@ -294,7 +293,7 @@ int test_write_mem_header() {
     return PASS;
 }
 
-void set_struct_incremental_values(ulong* sStruct, const uint structLength, const uint offset) {
+void set_struct_incremental_values(unsigned long* sStruct, const uint structLength, const uint offset) {
     for (int i =0; i < structLength / SIZE_UL; i++) {
         sStruct[i] = i + 1 + offset;
     }
@@ -311,9 +310,9 @@ int test_write_mem_body_1() {
     struct sMemInfo meminfo = {0};
     struct sMemVmInfo memvminfo = {0};
 
-    set_struct_incremental_values((ulong*) &meminfo, sizeof(struct sMemInfo), 0);
+    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), 0);
 
-    set_struct_incremental_values((ulong*) &memvminfo, sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
+    set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
 
     write_mem(&test_writer, &meminfo, &memvminfo, NULL);
 
@@ -348,9 +347,9 @@ int test_write_mem_body_2() {
     struct sMemVmInfo memvminfo = {0};
     struct sProcessInfo mem_process_info = {0};
 
-    set_struct_incremental_values((ulong*) &meminfo, sizeof(struct sMemInfo), 0);
+    set_struct_incremental_values((unsigned long*) &meminfo, sizeof(struct sMemInfo), 0);
 
-    set_struct_incremental_values((ulong*) &memvminfo, sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
+    set_struct_incremental_values((unsigned long*) &memvminfo, sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
 
     write_mem(&test_writer, &meminfo, &memvminfo, NULL);
 
