@@ -1,6 +1,7 @@
 
 #include "mem-writer.h"
 #include "mem-threading.h"
+#include "mem-reader.h"
 
 #include "test.h"
 
@@ -18,6 +19,9 @@ int test_timeval_diff_ms();
 int test_writer_routine();
 int test_create_destroy_mem_writer();
 int test_write_mtc_header();
+int test_write_mem_header();
+int test_write_mem_body_1();
+int test_write_mem_body_2();
 
 int main(int argc, char *argv[]){
     INIT_TEST
@@ -34,7 +38,9 @@ int main(int argc, char *argv[]){
 
     TEST(test_create_destroy_mem_writer)
 
-    TEST(test_write_mtc_header) // Not sure why this fails only on remote ;(
+    TEST(test_write_mtc_header)
+    TEST(test_write_mem_header)
+
 
     PRINT_RESULTS
 
@@ -244,6 +250,47 @@ int test_write_mtc_header(){
 
     unsetenv("TZ");
     tzset();
+    return PASS;
+}
+
+
+
+
+int test_write_mem_header() {
+    struct mem_queue test_queue;
+
+    mem_queue_init(&test_queue);
+
+    struct sMemWriter test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
+
+    struct sMemInfo meminfo = {0};
+    struct sMemVmInfo memvminfo = {0};
+
+    write_mem(&test_writer, &meminfo, &memvminfo, NULL);
+
+    ASSERT_EQUAL(test_writer.hasWrittenHeader, 1)
+
+    ASSERT_EQUAL(test_queue.size, 1);
+    ASSERT_NOT_NULL(test_queue.head);
+    ASSERT_NOT_NULL(test_queue.tail);
+
+    struct mem_value* header_value = test_queue.head;
+
+    ASSERT_EQUAL(header_value->value->length, 5);
+    ushort* header_content = header_value->value->data;
+
+    ASSERT_EQUAL(header_content[0], 1);
+
+    return PASS;
+}
+
+int test_write_mem_body_1() {
+
+    return PASS;
+}
+
+int test_write_mem_body_2() {
+
     return PASS;
 }
 
