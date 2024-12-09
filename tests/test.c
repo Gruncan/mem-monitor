@@ -320,14 +320,14 @@ int test_write_mem_body_1() {
     struct mem_value* header_value = test_queue.head;
 
     // 4 is the subheader containing the millisecond offset and length.
-    uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemInfo) + STRUCT_WRITE_SIZE(struct sMemVmInfo);
+    uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemVmInfo) + STRUCT_WRITE_SIZE(struct sMemInfo);
 
     ASSERT_EQUAL(header_value->value->length, total_size);
 
-    char* buffer = header_value->value->data + 5;
+    unsigned char* buffer = header_value->value->data + 4;
 
     int v = 0;
-    for (int i = 0; i < header_value->value->length - 5; i += 3) {
+    for (int i = 0; i < header_value->value->length - 4; i += 3) {
         ASSERT_EQUAL(buffer[i], v); // Key
         short value = buffer[i + 1] << 8 | buffer[i + 2];
         ASSERT_EQUAL(value, v+1);

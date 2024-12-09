@@ -39,7 +39,7 @@ void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct
 
 struct timeval* get_current_time();
 
-short timeval_diff_ms(struct timeval* start, struct timeval* end);
+ushort timeval_diff_ms(struct timeval* start, struct timeval* end);
 
 void* write_mtc_header(struct timeval* tv);
 
