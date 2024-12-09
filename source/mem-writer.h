@@ -37,6 +37,8 @@ void destroy_mem_writer(MemWriter *mw);
 
 void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi);
 
+struct timeval* get_current_time();
+
 short timeval_diff_ms(struct timeval* start, struct timeval* end);
 
 void* write_mtc_header(struct timeval* tv);
