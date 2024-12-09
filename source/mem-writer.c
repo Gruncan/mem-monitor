@@ -238,6 +238,7 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
 
     if (pi != NULL) {
+        //TODO this is not write, process struct is more complex
         offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset+1);
     }
 

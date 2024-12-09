@@ -2,6 +2,7 @@
 #include "mem-writer.h"
 #include "mem-threading.h"
 #include "mem-reader.h"
+#include "process-reader.h"
 
 #include "test.h"
 
@@ -10,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+
+#define STRUCT_WRITE_SIZE(s) ((sizeof(s) / SIZE_UL) * 3)
+
 
 int test_struct_writer();
 int test_data_writer1();
@@ -22,6 +26,9 @@ int test_write_mtc_header();
 int test_write_mem_header();
 int test_write_mem_body_1();
 int test_write_mem_body_2();
+
+static const uint SIZE_UL = sizeof(ulong);
+
 
 int main(int argc, char *argv[]){
     INIT_TEST
@@ -40,6 +47,8 @@ int main(int argc, char *argv[]){
 
     TEST(test_write_mtc_header)
     TEST(test_write_mem_header)
+
+    TEST_SKIP(test_write_mem_body_1)
 
 
     PRINT_RESULTS
@@ -280,16 +289,89 @@ int test_write_mem_header() {
     ushort* header_content = header_value->value->data;
 
     ASSERT_EQUAL(header_content[0], 1);
+    // Harder to test timestamps since we get current time. This is tested above.
 
     return PASS;
 }
 
+void set_struct_incremental_values(ulong* sStruct, const uint structLength, const uint offset) {
+    for (int i =0; i < structLength / SIZE_UL; i++) {
+        sStruct[i] = i + 1 + offset;
+    }
+}
+
+
 int test_write_mem_body_1() {
+    struct mem_queue test_queue;
+
+    mem_queue_init(&test_queue);
+
+    struct sMemWriter test_writer = {"test", NULL, 0, 1, get_current_time(), &test_queue, 0};
+
+    struct sMemInfo meminfo = {0};
+    struct sMemVmInfo memvminfo = {0};
+
+    set_struct_incremental_values((ulong*) &meminfo, sizeof(struct sMemInfo), 0);
+
+    set_struct_incremental_values((ulong*) &memvminfo, sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
+
+    write_mem(&test_writer, &meminfo, &memvminfo, NULL);
+
+    struct mem_value* header_value = test_queue.head;
+
+    // 4 is the subheader containing the millisecond offset and length.
+    uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemInfo) + STRUCT_WRITE_SIZE(struct sMemVmInfo);
+
+    ASSERT_EQUAL(header_value->value->length, total_size);
+
+    char* buffer = header_value->value->data + 5;
+
+    int v = 0;
+    for (int i = 0; i < header_value->value->length - 5; i += 3) {
+        ASSERT_EQUAL(buffer[i], v); // Key
+        short value = buffer[i + 1] << 8 | buffer[i + 2];
+        ASSERT_EQUAL(value, v+1);
+        v++;
+    }
 
     return PASS;
 }
 
 int test_write_mem_body_2() {
+    struct mem_queue test_queue;
+
+    mem_queue_init(&test_queue);
+
+    struct sMemWriter test_writer = {"test", NULL, 0, 1, get_current_time(), &test_queue, 0};
+
+    struct sMemInfo meminfo = {0};
+    struct sMemVmInfo memvminfo = {0};
+    struct sProcessInfo mem_process_info = {0};
+
+    set_struct_incremental_values((ulong*) &meminfo, sizeof(struct sMemInfo), 0);
+
+    set_struct_incremental_values((ulong*) &memvminfo, sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
+
+    write_mem(&test_writer, &meminfo, &memvminfo, NULL);
+
+    struct mem_value* header_value = test_queue.head;
+
+    // 4 is the subheader containing the millisecond offset and length.
+    uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemInfo) + STRUCT_WRITE_SIZE(struct sMemVmInfo);
+
+    ASSERT_EQUAL(header_value->value->length, total_size);
+
+    char* buffer = header_value->value->data + 5;
+
+    int v = 0;
+    for (int i = 0; i < header_value->value->length - 5; i += 3) {
+        ASSERT_EQUAL(buffer[i], v); // Key
+        short value = buffer[i + 1] << 8 | buffer[i + 2];
+        ASSERT_EQUAL(value, v+1);
+        v++;
+    }
+
+    return PASS;
 
     return PASS;
 }
