@@ -43,8 +43,8 @@ ushort timeval_diff_ms(struct timeval* start, struct timeval* end);
 
 void* write_mtc_header(struct timeval* tv);
 
-int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offset);
+uint write_struct_data(void* buffer, void* sStruct, uint structLength, uint mem_offset, int key_offset);
 
-void write_data_content(void* buffer, uint offset, char key, ushort value);
+void write_data_content(void* buffer, uint offset, unsigned char key, ushort value);
 
 #endif //MEM_WRITER_H

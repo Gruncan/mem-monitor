@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
     TEST(test_write_mtc_header)
     TEST(test_write_mem_header)
 
-    TEST_SKIP(test_write_mem_body_1)
+    TEST(test_write_mem_body_1)
 
 
     PRINT_RESULTS
@@ -72,7 +72,7 @@ int test_struct_writer() {
     char* buffer = malloc(length + 4);
 
 
-    int offset = write_struct_data(buffer, &t1, size, 0);
+    int offset = write_struct_data(buffer, &t1, size, 0, 0);
     ASSERT_EQUAL(offset, (length * 2) + 4);
 
     int v = 0;
@@ -310,9 +310,9 @@ int test_write_mem_body_1() {
     struct sMemInfo meminfo = {0};
     struct sMemVmInfo memvminfo = {0};
 
-    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), 0);
+    set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), 0);
 
-    set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), sizeof(struct sMemInfo) / SIZE_UL);
+    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), sizeof(struct sMemVmInfo) / SIZE_UL);
 
     write_mem(&test_writer, &meminfo, &memvminfo, NULL);
 
@@ -322,6 +322,10 @@ int test_write_mem_body_1() {
     uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemVmInfo) + STRUCT_WRITE_SIZE(struct sMemInfo);
 
     ASSERT_EQUAL(header_value->value->length, total_size);
+
+    unsigned char* countBuffer = header_value->value->data + 2;
+    ushort count = countBuffer[0] << 8 | countBuffer[1];
+    ASSERT_EQUAL(count, total_size - 4);
 
     unsigned char* buffer = header_value->value->data + 4;
 

@@ -173,7 +173,7 @@ ushort timeval_diff_ms(struct timeval* start, struct timeval* end) {
 
 
 
-void write_data_content(void* buffer, uint offset, char key, ushort value){
+void write_data_content(void* buffer, uint offset, unsigned char key, ushort value){
     value &= MASK_16;
     key &= (char) MASK_8;
 
@@ -184,7 +184,7 @@ void write_data_content(void* buffer, uint offset, char key, ushort value){
     dest[2] = (char) (value & MASK_8);
 }
 
-int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offset) {
+uint write_struct_data(void* buffer, void* sStruct, uint structLength, const uint mem_offset, const int key_offset) {
     static const uint sizeUL = sizeof(unsigned long);
     uint writeOffset = 0;
     for (int i = 0; i < structLength / sizeUL; i++) {
@@ -193,12 +193,12 @@ int write_struct_data(void* buffer, void* sStruct, uint structLength, uint offse
             perror("Failed to read from struct!");
         }
 
-        write_data_content(buffer, offset + writeOffset, (char) i + offset,
+        write_data_content(buffer, mem_offset + writeOffset, i + key_offset,
                                     *(unsigned long*) ((char*) sStruct + valueOffset));
         writeOffset += 3;
     }
 
-    return offset + writeOffset;
+    return mem_offset + writeOffset;
 }
 
 void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi) {
@@ -230,21 +230,22 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
     mw->prevTimestamp = tv;
 
 
-    uint offset = 4;
+    static const int starting_offset = 4;
+    uint offset = starting_offset;
 
-    offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset);
+    offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset, 0);
 
-    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset);
+    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset, 161);
 
 
     if (pi != NULL) {
         //TODO this is not write, process struct is more complex
-        offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset);
+        offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset, -starting_offset);
     }
 
 
     unsigned char* countBuf = buffer + 2;
-    const ushort value = (offset - 4);
+    const ushort value = (offset - starting_offset);
     countBuf[0] = (unsigned char)(value >> 8 & 0xFF);
     countBuf[1] = (unsigned char)(value & 0xFF);
 
