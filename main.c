@@ -202,7 +202,7 @@ int main(int argc, char *argv[]){
 
     struct arguments arguments;
 
-    arguments.time = 10000;
+    arguments.time = 5000;
     arguments.filename = "memlog.json";
     arguments.command = NULL;
     arguments.args = NULL;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]){
 
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
     struct sMemVmInfo* mp = malloc(sizeof(struct sMemVmInfo));
-    struct sProcessInfo* pi = NULL;
+    struct sMemProcessInfo* pi = NULL;
 
     if (pid == -2) {
         return -1;
@@ -263,7 +263,7 @@ int main(int argc, char *argv[]){
         read_mem_info(mi);
         read_mem_vm_info(mp);
         if (pid != -1) {
-            read_process_info(pi);
+            read_process_info(pi, pid);
         }
         write_mem(mw, mi, mp, pi);
 
@@ -315,7 +315,6 @@ int main(int argc, char *argv[]){
     free(mi);
     free(mp);
     if (pi != NULL) {
-        free(pi->memInfo);
         free(pi);
     }
 

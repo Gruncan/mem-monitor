@@ -210,9 +210,6 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long nrUnstable;
 };
 
-struct sMemProcPageInfo {
-
-};
 
 struct __attribute__((packed)) sMemInfo {
     unsigned long total;
@@ -291,21 +288,6 @@ struct __attribute__((packed)) sMemInfo {
 void read_mem_info(struct sMemInfo* mi);
 
 void read_mem_vm_info(struct sMemVmInfo* mp);
-
-char* get_mem_vm_data(struct sMemVmInfo* mp, const char* name);
-
-struct memInfoStrings* get_all_mem_vm_data(struct sMemVmInfo* mp);
-
-char* get_mem_info_data(struct sMemInfo* mi, const char* name);
-
-struct memInfoStrings* get_all_mem_info_data(struct sMemInfo* mi);
-
-void destroy_all_mem_data(struct memInfoStrings* ms);
-
-
-const char** get_mem_info_names();
-
-const char** get_mem_vm_names();
 
 
 #endif //MEM_READER_H
