@@ -251,7 +251,5 @@ void write_mem(struct sMemWriter* mw, struct sMemInfo* mi, struct sMemVmInfo* mp
     countBuf[0] = (unsigned char)(value >> 8 & 0xFF);
     countBuf[1] = (unsigned char)(value & 0xFF);
 
-
-
     add_to_mem_queue(mw->writer_queue, buffer, offset);
 }
