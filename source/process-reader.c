@@ -115,24 +115,13 @@ void read_process_info(struct sMemProcessInfo* pi, const pid_t pid){
     read_process_mem_info(pi, pid);
 }
 
-void reset_mem_info(struct sMemProcessInfo* info) {
-    if (info == NULL) return;
+void reset_process_info(struct sMemProcessInfo* pi) {
+    if (pi == NULL) return;
 
-    info->size = -1;
-    info->resident = -1;
-    info->shared = -1;
-    info->text = -1;
-    info->data = -1;
-    info->dirty = -1;
-}
-
-
-void reset_process_info(struct sMemProcessInfo* info) {
-    if (info == NULL) return;
-
-    info->oomAdj = -1;
-    info->oomScore = -1;
-    info->oomScoreAdj = -1;
-
-    reset_mem_info(info);
+    pi->size = -1;
+    pi->resident = -1;
+    pi->shared = -1;
+    pi->text = -1;
+    pi->data = -1;
+    pi->dirty = -1;
 }

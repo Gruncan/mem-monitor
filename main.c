@@ -48,15 +48,17 @@ static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
 
     switch (key) {
         case 't':
+        {
             char* endptr;
             unsigned long value = strtoul(arg, &endptr, 10);
-            if (*endptr != '\0') {
+            if (*endptr != '\0')
+            {
                 printf("Invalid time: %s\n", endptr);
                 return ARGP_KEY_ERROR;
             }
             arguments->time = value;
             break;
-
+        }
         case 'f':
             arguments->filename = arg;
             break;
@@ -66,15 +68,17 @@ static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
             break;
 
         case 'i':
+        {
             char* pendptr;
             long int pvalue = strtol(arg, &pendptr, 10);
-            if (*pendptr != '\0') {
+            if (*pendptr != '\0')
+            {
                 printf("Invalid process id: %s\n", pendptr);
                 return ARGP_KEY_ERROR;
             }
             arguments->processid = pvalue;
             break;
-
+        }
         case 'n':
             arguments->processname = arg;
             break;
@@ -236,7 +240,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
     if (pid != -1) {
-        pi = malloc(sizeof(struct sProcessInfo));
+        pi = malloc(sizeof(struct sMemProcessInfo));
         if (init_process_info(pi, pid) == -1) {
             return -1;
         }
