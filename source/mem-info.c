@@ -13,21 +13,6 @@ static const size_t sizeUL = sizeof(unsigned long);
 
 
 
-char* get_ulong_str(const unsigned long ulong_value) {
-    const int length = snprintf(NULL, 0, "%lu", ulong_value);
-
-    char *buf = malloc(length + 1);
-    if (buf == NULL) {
-        perror("Failed to allocate memory");
-        return NULL;
-    }
-
-    snprintf(buf, length + 1, "%lu", ulong_value);
-
-    return buf;
-}
-
-
 void set_mem_struct_value(void* sStruct, const size_t structLength,
                           const char* map[], const char* key, const unsigned long value) {
     for (int i = 0; i < structLength / sizeUL; i++) {
@@ -58,28 +43,6 @@ unsigned long get_mem_struct_value(void* sStruct, const size_t structLength, con
 
     return -1; // Error memory stat should not be possible for negative?
 }
-
-struct memInfoStrings* get_all_mem_struct_values(const unsigned long* values, const size_t valuesLength) {
-    char** buffer = malloc(valuesLength * sizeof(char*));
-    if (buffer == NULL) {
-        perror("Failed to allocate memory");
-        return NULL;
-    }
-
-    for (int i = 0; i < valuesLength / sizeUL; i++) {
-        unsigned long v = *(unsigned long*) ((char*) values + (i * sizeUL));
-        buffer[i] = get_ulong_str(v);
-    }
-
-    struct memInfoStrings* ms = malloc(sizeof(struct memInfoStrings));
-
-    ms->mem_strings = buffer;
-    ms->mem_strings_count = valuesLength / sizeUL;
-
-    return ms;
-}
-
-
 
 
 char* mem_parse_file(const char* filename, size_t bufferSize, uint8_t value) {

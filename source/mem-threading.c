@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 
 
 void mem_queue_init(struct mem_queue* queue) {
