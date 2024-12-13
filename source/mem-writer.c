@@ -184,7 +184,7 @@ void write_data_content(void* buffer, uint offset, unsigned char key, ushort val
     dest[2] = (char) (value & MASK_8);
 }
 
-uint write_struct_data(void* buffer, void* sStruct, uint structLength, const uint mem_offset, const int key_offset) {
+uint write_struct_data(void* buffer, void* sStruct, const uint structLength, const uint mem_offset, const uint key_offset) {
     static const uint sizeUL = sizeof(unsigned long);
     uint writeOffset = 0;
     for (int i = 0; i < structLength / sizeUL; i++) {
@@ -201,8 +201,7 @@ uint write_struct_data(void* buffer, void* sStruct, uint structLength, const uin
     return mem_offset + writeOffset;
 }
 
-void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi) {
-
+void write_mem(struct sMemWriter* mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sMemProcessInfo* pi) {
     if (mw->hasWrittenHeader == 0) {
         mw->prevTimestamp = get_current_time();
         void* header = write_mtc_header(mw->prevTimestamp);
@@ -210,6 +209,8 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
         mw->hasWrittenHeader = 1;
         return;
     }
+
+    static const uint SIZE_UL = sizeof(unsigned long);
 
     void* buffer = malloc(2048); // We really only need 769, apparently not..?
 
@@ -235,12 +236,13 @@ void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
     offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset, 0);
 
-    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset, 161);
+    size_t value_length = sizeof(struct sMemVmInfo) / SIZE_UL;
+    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset, value_length);
 
 
     if (pi != NULL) {
-        //TODO this is not write, process struct is more complex
-        offset = write_struct_data(buffer, pi, sizeof(struct sProcessInfo*), offset, -starting_offset);
+        value_length += sizeof(struct sMemInfo) / SIZE_UL;
+        offset = write_struct_data(buffer, pi, sizeof(struct sMemProcessInfo*), offset, value_length);
     }
 
 

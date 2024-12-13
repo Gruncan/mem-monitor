@@ -349,11 +349,15 @@ int test_write_mem_body_2() {
 
     struct sMemInfo meminfo = {0};
     struct sMemVmInfo memvminfo = {0};
-    struct sProcessInfo process_info = {0};
+    struct sMemProcessInfo process_info = {0};
 
     set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), 0);
 
-    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), sizeof(struct sMemVmInfo) / SIZE_UL);
+    size_t value_length = sizeof(struct sMemVmInfo) / SIZE_UL;
+    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), value_length);
+
+    value_length += sizeof(struct sMemInfo) / SIZE_UL;
+    set_struct_incremental_values((unsigned long*) (&process_info), sizeof(struct sMemProcessInfo), value_length);
 
     write_mem(&test_writer, &meminfo, &memvminfo, NULL);
 

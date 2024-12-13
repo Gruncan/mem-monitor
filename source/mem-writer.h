@@ -35,7 +35,7 @@ MemWriter* new_mem_writer();
 
 void destroy_mem_writer(MemWriter *mw);
 
-void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi);
+void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sMemProcessInfo* pi);
 
 struct timeval* get_current_time();
 
@@ -43,7 +43,7 @@ ushort timeval_diff_ms(struct timeval* start, struct timeval* end);
 
 void* write_mtc_header(struct timeval* tv);
 
-uint write_struct_data(void* buffer, void* sStruct, uint structLength, uint mem_offset, int key_offset);
+uint write_struct_data(void* buffer, void* sStruct, uint structLength, uint mem_offset, uint key_offset);
 
 void write_data_content(void* buffer, uint offset, unsigned char key, ushort value);
 
