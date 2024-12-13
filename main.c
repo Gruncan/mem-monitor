@@ -210,7 +210,6 @@ int main(int argc, char *argv[]){
     free(mi);
     free(mp);
     if (pi != NULL) {
-        free(pi->memInfo);
         free(pi);
     }
 
