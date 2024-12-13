@@ -14,9 +14,6 @@
 
 #define STATM_FIELDS 6
 
-static const char* processMemInfoNames[] = {
-    "p_size", "p_resident", "p_shared", "p_text", "p_data", "p_dirty"
-};
 
 
 int check_process_exists(pid_t pid) {
@@ -29,24 +26,29 @@ int check_process_exists(pid_t pid) {
     return -1;
 }
 
-int init_process_info(struct sProcessInfo* pi, pid_t pid) {
+int init_process_info(struct sMemProcessInfo* pi, pid_t pid) {
     if (check_process_exists(pid) == 0) {
         perror("Process does not exist");
         return -1;
     }
 
-    pi->pid = pid;
-    pi->name = NULL;
     pi->oomAdj = -1;
     pi->oomScore = -1;
     pi->oomScoreAdj = -1;
-    pi->memInfo = malloc(sizeof(struct sProcessInfo));
+    pi->data = 0;
+    pi->size = 0;
+    pi->resident = 0;
+    pi->shared = 0;
+    pi->text = 0;
+    pi->data = 0;
+    pi->dirty = 0;
+
     return 0;
 }
 
 
 
-void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
+void read_process_mem_info(struct sMemProcessInfo* pi, const pid_t pid) {
     char file[256];
     snprintf(file, sizeof(file), "/proc/%d/statm", pid);
 
@@ -57,15 +59,15 @@ void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
     }
 
     if (strlen(content) == 0) {
-        pm->size = 0;
-        pm->resident = 0;
-        pm->shared = 0;
-        pm->text = 0;
-        pm->data = 0;
-        pm->dirty = 0;
+        pi->size = 0;
+        pi->resident = 0;
+        pi->shared = 0;
+        pi->text = 0;
+        pi->data = 0;
+        pi->dirty = 0;
     }else {
         if(sscanf(content, "%lu %lu %lu %lu %lu %lu",
-               &pm->size, &pm->resident, &pm->shared, &pm->text, &pm->data, &pm->dirty) != STATM_FIELDS) {
+               &pi->size, &pi->resident, &pi->shared, &pi->text, &pi->data, &pi->dirty) != STATM_FIELDS) {
             perror("Failed to parse /proc/pid/statm");
             free(content);
             return;
@@ -73,25 +75,25 @@ void read_process_mem_info(const pid_t pid, struct sProcessMem* pm) {
 
         const long page_size_kb = sysconf(_SC_PAGESIZE) / 1024;
 
-        pm->size *= page_size_kb;
-        pm->resident *= page_size_kb;
-        pm->shared *= page_size_kb;
-        pm->text *= page_size_kb;
-        pm->data *= page_size_kb;
-        pm->dirty *= page_size_kb;
+        pi->size *= page_size_kb;
+        pi->resident *= page_size_kb;
+        pi->shared *= page_size_kb;
+        pi->text *= page_size_kb;
+        pi->data *= page_size_kb;
+        pi->dirty *= page_size_kb;
     }
 
     free(content);
 }
 
-void read_process_info(struct sProcessInfo* pi){
+void read_process_info(struct sMemProcessInfo* pi, const pid_t pid){
     const size_t length = 3;
     char* files[] = {"/proc/%d/oom_adj", "/proc/%d/oom_score", "/proc/%d/oom_score_adj"};
 
     char filenames[length][20];
 
     for (int i = 0; i < length; i++) {
-        sprintf(filenames[i], files[i], pi->pid);
+        sprintf(filenames[i], files[i], pid);
         char* content = mem_parse_file(filenames[i], 8, READ_RAW);
         const int value = atoi(content);
         switch (i) {
@@ -110,10 +112,10 @@ void read_process_info(struct sProcessInfo* pi){
         free(content);
     }
 
-    read_process_mem_info(pi->pid, pi->memInfo);
+    read_process_mem_info(pi, pid);
 }
 
-void reset_mem_info(struct sProcessMem* info) {
+void reset_mem_info(struct sMemProcessInfo* info) {
     if (info == NULL) return;
 
     info->size = -1;
@@ -122,26 +124,15 @@ void reset_mem_info(struct sProcessMem* info) {
     info->text = -1;
     info->data = -1;
     info->dirty = -1;
-
 }
 
 
-void reset_process_info(struct sProcessInfo* info) {
+void reset_process_info(struct sMemProcessInfo* info) {
     if (info == NULL) return;
 
     info->oomAdj = -1;
     info->oomScore = -1;
     info->oomScoreAdj = -1;
-    info->pid = -1;
 
-    reset_mem_info(info->memInfo);
-}
-
-
-struct memInfoStrings* get_process_mem_info_names(struct sProcessMem* pm) {
-    return get_all_mem_struct_values((unsigned long*) pm, sizeof(struct sProcessMem));
-}
-
-const char** get_process_mem_names() {
-    return processMemInfoNames;
+    reset_mem_info(info);
 }

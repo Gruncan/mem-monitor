@@ -3,7 +3,11 @@
 
 #include <sys/types.h>
 
-struct sProcessMem {
+
+struct sMemProcessInfo {
+    long oomAdj;
+    long oomScore;
+    long oomScoreAdj;
     unsigned long size;
     unsigned long resident;
     unsigned long shared;
@@ -12,31 +16,21 @@ struct sProcessMem {
     unsigned long dirty;
 };
 
-struct sProcessInfo {
-      pid_t pid;
-      char* name;
-      int oomAdj;
-      int oomScore;
-      int oomScoreAdj;
-      struct sProcessMem* memInfo;
-};
+
 
 
 
 int check_process_exists(pid_t pid);
 
-int init_process_info(struct sProcessInfo* info, pid_t pid);
+int init_process_info(struct sMemProcessInfo* info, pid_t pid);
 
 void read_process_info(struct sProcessInfo* info);
 
-void read_process_mem_info(pid_t pid, struct sProcessMem* info);
+void read_process_info(struct sMemProcessInfo* pi, pid_t pid);
 
-void reset_process_info(struct sProcessInfo* info);
+void read_process_mem_info(struct sMemProcessInfo* pi, pid_t pid);
 
-struct memInfoStrings* get_process_mem_info_names(struct sProcessMem* pm);
-
-const char** get_process_mem_names();
-
+void reset_process_info(struct sMemProcessInfo* pi);
 
 
 #endif //PROCESS_INFO_H

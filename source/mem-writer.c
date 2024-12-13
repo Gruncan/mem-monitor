@@ -1,7 +1,7 @@
 
 #include "mem-writer.h"
 
-#include <process-reader.h>
+#include "process-reader.h"
 
 #include "mem-info.h"
 #include "mem-threading.h"
@@ -12,37 +12,45 @@
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>
-#include <sys/time.h>
-
 
 #define FLUSH_INTERVAL 1
 
-struct sMemWriter {
-    char* filename;
-    FILE* file;
-    unsigned char flushCounter;
+#define MASK_40 0xFFFFFFFFFF
+#define MASK_32 0xFFFFFFFF
+#define MASK_16 0xFFFF
+#define MASK_12 0x0FFF
+#define MASK_8  0x00FF
+#define MASK_6  0x003F
+#define MASK_5  0x001F
+#define MASK_4  0x000F
 
-    struct mem_queue* writer_queue;
 
-    pthread_t pthread;
-};
+
+#define VERSION 1
 
 
 
 void writer_routine(struct sMemWriter* mw) {
+//    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
     if (mw == NULL) return;
 
     while(1) {
-        char* buffer = pop_from_mem_queue(mw->writer_queue);
-        if (buffer == NULL) continue;
+        struct mtc_value* value = pop_from_mem_queue(mw->writer_queue);
+        if (value == NULL) continue;
 
-        const size_t bytes_written = fwrite(buffer, sizeof(char), strlen(buffer), mw->file);
+        // If we purposely want to write 0 bytes we should exit
+        if (value->length == 0){
+            break;
+        }
+
+#ifndef MEM_TEST
+        const size_t bytes_written = fwrite((unsigned char*) value->data, 1, value->length, mw->file);
+        // We have failed to write to the file
         if (bytes_written < 1) {
             perror("Error writing to file, writer routine exiting..");
             break;
         }
-
-        // printf("Wrote %zu bytes\n", bytes_written);
 
         // If FLUSH_INTERVAL is -1 let the OS decide when to flush
         if (mw->flushCounter == FLUSH_INTERVAL) {
@@ -51,10 +59,18 @@ void writer_routine(struct sMemWriter* mw) {
         }else if(FLUSH_INTERVAL != -1) {
             mw->flushCounter++;
         }
+#else
+        memcpy(mw->file, value->data, value->length);
+#endif
 
-        free(buffer);
-
+        free(value->data);
+        free(value);
     }
+#ifndef MEM_TEST
+    fflush(mw->file);
+    fclose(mw->file);
+    mw->file = NULL;
+#endif
 }
 
 
@@ -63,9 +79,9 @@ struct sMemWriter* new_mem_writer() {
     return mw;
 }
 
-void init_mem_writer(struct sMemWriter *mw, char* filename) {
+void init_mem_writer(struct sMemWriter* mw, char* filename) {
     mw->filename = filename;
-    mw->file = fopen(mw->filename, "a");
+    mw->file = fopen(mw->filename, "ab");
     if (mw->file  == NULL) {
         exit(EXIT_FAILURE);
     }
@@ -75,17 +91,21 @@ void init_mem_writer(struct sMemWriter *mw, char* filename) {
     mem_queue_init(writer_queue);
 
     mw->writer_queue = writer_queue;
+    mw->hasWrittenHeader = 0;
+    mw->prevTimestamp = NULL;
 
-
-    pthread_create(&mw->pthread, NULL, writer_routine, mw);
+#ifndef MEM_TEST
+    pthread_create(&mw->pthread, NULL, (void*(*)(void*)) writer_routine, mw);
+#endif
 
 }
 
-void destroy_mem_writer(struct sMemWriter *mw) {
+void destroy_mem_writer(struct sMemWriter* mw) {
 
     mem_queue_destroy(mw->writer_queue);
-    pthread_kill(mw->pthread, SIGKILL);
-
+#ifndef MEM_TEST
+    pthread_cancel(mw->pthread);
+#endif
     if (mw->file != NULL) {
         fclose(mw->file);
     }
@@ -95,113 +115,141 @@ void destroy_mem_writer(struct sMemWriter *mw) {
 }
 
 
-char* get_current_time() {
-    struct timeval tv;
+struct timeval* get_current_time() {
+    struct timeval* tv = malloc(sizeof(struct timeval));
 
-    gettimeofday(&tv, NULL);
+    gettimeofday(tv, NULL);
 
-    const struct tm *tm_info = localtime(&tv.tv_sec);
+    return tv;
+}
 
-    char* time_string = malloc(200);
-    time_string[0] = '\0';
+void* write_mtc_header(struct timeval* tv) {
+    struct tm* local_time = localtime(&tv->tv_sec);
 
-    strftime(time_string, 200, "%Y-%m-%d %H:%M:%S", tm_info);
+    uint year = (local_time->tm_year % 100) & MASK_6;
+    uint month = local_time->tm_mon & MASK_4;
+    uint day = local_time->tm_mday & MASK_5;
+    uint hour = local_time->tm_hour & MASK_5;
+    uint minute = local_time->tm_min & MASK_6;
+    uint second = local_time->tm_sec & MASK_6;
 
-    char tmp[20];
-    snprintf(tmp, sizeof(tmp), ".%03ld", tv.tv_usec / 1000);
-    strcat(time_string,  tmp);
+    ushort* header = malloc(5);
 
-    return time_string;
+    for (int i = 0; i < 5; i++) {
+        header[i] = 0;
+    }
+
+    header[0] = VERSION;
+
+    header[1] |= (year << 2);
+    header[1] |= (month >> 2);
+    header[2] |= (month << 6);
+    header[2] |= (day << 1);
+    header[2] |= (hour >> 4);
+    header[3] |= (hour << 4);
+    header[3] |= (minute >> 2);
+    header[4] |= (minute << 6);
+    header[4] |= second;
+
+
+    return header;
+}
+
+ushort timeval_diff_ms(struct timeval* start, struct timeval* end) {
+    long long sec_diff = end->tv_sec - start->tv_sec;
+    long long usec_diff = end->tv_usec - start->tv_usec;
+
+    if (usec_diff < 0) {
+        usec_diff += 1000000;
+        sec_diff -= 1;
+    }
+
+    long long total_ms = (sec_diff * 1000) + (usec_diff / 1000);
+    if (total_ms < 0) total_ms = 0;
+
+    return (ushort) total_ms;
 }
 
 
 
-void write_mem(struct sMemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sProcessInfo* pi) {
-    char* buffer = malloc(6144 + 512);
+
+void write_data_content(void* buffer, uint offset, unsigned char key, ushort value){
+    value &= MASK_16;
+    key &= (char) MASK_8;
+
+    char* dest = (char*)buffer + offset;
+
+    dest[0] = key;
+    dest[1] = (char) (value >> 8) & MASK_8;
+    dest[2] = (char) (value & MASK_8);
+}
+
+uint write_struct_data(void* buffer, void* sStruct, const uint structLength, const uint mem_offset, const uint key_offset) {
+    static const uint sizeUL = sizeof(unsigned long);
+    uint writeOffset = 0;
+    for (int i = 0; i < structLength / sizeUL; i++) {
+        const size_t valueOffset = i * sizeUL;
+        if (valueOffset >= structLength) {
+            perror("Failed to read from struct!");
+        }
+
+        write_data_content(buffer, mem_offset + writeOffset, i + key_offset,
+                                    *(unsigned long*) ((char*) sStruct + valueOffset));
+        writeOffset += 3;
+    }
+
+    return mem_offset + writeOffset;
+}
+
+void write_mem(struct sMemWriter* mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sMemProcessInfo* pi) {
+    if (mw->hasWrittenHeader == 0) {
+        mw->prevTimestamp = get_current_time();
+        void* header = write_mtc_header(mw->prevTimestamp);
+        add_to_mem_queue(mw->writer_queue, header, 5);
+        mw->hasWrittenHeader = 1;
+        return;
+    }
+
+    static const uint SIZE_UL = sizeof(unsigned long);
+
+    void* buffer = malloc(2048); // We really only need 769, apparently not..?
 
     if (buffer == NULL) {
         perror("Error allocating memory");
         exit(EXIT_FAILURE);
     }
 
-    buffer[0] = '\0';
+    struct timeval* tv = get_current_time();
 
-    char* time_string = get_current_time();
+    ushort milliseconds = timeval_diff_ms(tv, mw->prevTimestamp) & MASK_16;
 
-    struct memInfoStrings* mem_data = get_all_mem_info_data(mi);
+    unsigned char* miliBuf = buffer;
+    miliBuf[0] = (unsigned char)(milliseconds >> 8 & 0xFF);
+    miliBuf[1] = (unsigned char)(milliseconds & 0xFF);
+
+    free(mw->prevTimestamp);
+    mw->prevTimestamp = tv;
 
 
-    struct memInfoStrings* mem_vm_data = get_all_mem_vm_data(mp);
+    static const int starting_offset = 4;
+    uint offset = starting_offset;
 
-    const char** mem_names = get_mem_info_names();
+    offset = write_struct_data(buffer, mp, sizeof(struct sMemVmInfo), offset, 0);
 
-    const char** mem_vm_names = get_mem_vm_names();
+    size_t value_length = sizeof(struct sMemVmInfo) / SIZE_UL;
+    offset = write_struct_data(buffer, mi, sizeof(struct sMemInfo), offset, value_length);
 
-    char temp[50];
-    snprintf(temp, sizeof(temp), "{\"%s\":{", time_string);
-    strcat(buffer, temp);
 
     if (pi != NULL) {
-        char t[64];
-        sprintf(t, "\"%s\": \"%d\", \"%s\": \"%d\", \"%s\": \"%d\", ", "oomAdj", pi->oomAdj, "oomScore", pi->oomScore,
-                                                                                    "oomScoreAdj", pi->oomScoreAdj);
-        strcat(buffer, t);
-
-        struct memInfoStrings* p_mem_info = get_process_mem_info_names(pi->memInfo);
-
-        const char** proc_names = get_process_mem_names();
-
-        for (int i=0; i < p_mem_info->mem_strings_count; i++) {
-            size_t value_len = strlen(p_mem_info->mem_strings[i]);
-            size_t name_len = strlen(proc_names[i]);
-            char tmp[value_len + name_len + 10];
-
-
-            snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", proc_names[i], p_mem_info->mem_strings[i]);
-            strcat(buffer, tmp);
-
-            strcat(buffer, ", ");
-        }
-        destroy_all_mem_data(p_mem_info);
+        value_length += sizeof(struct sMemInfo) / SIZE_UL;
+        offset = write_struct_data(buffer, pi, sizeof(struct sMemProcessInfo*), offset, value_length);
     }
 
 
+    unsigned char* countBuf = buffer + 2;
+    const ushort value = (offset - starting_offset);
+    countBuf[0] = (unsigned char)(value >> 8 & 0xFF);
+    countBuf[1] = (unsigned char)(value & 0xFF);
 
-    for (int i = 0; i < mem_vm_data->mem_strings_count; i++) {
-        size_t value_len = strlen(mem_vm_data->mem_strings[i]);
-        size_t name_len = strlen(mem_vm_names[i]);
-        char tmp[value_len + name_len + 10];
-
-
-        snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", mem_vm_names[i], mem_vm_data->mem_strings[i]);
-        strcat(buffer, tmp);
-
-        strcat(buffer, ", ");
-    }
-
-    destroy_all_mem_data(mem_vm_data);
-
-
-    for (int i = 0; i < mem_data->mem_strings_count; i++) {
-        size_t value_len = strlen(mem_data->mem_strings[i]);
-        size_t name_len = strlen(mem_names[i]);
-        char tmp[value_len + name_len + 10];
-
-
-        snprintf(tmp, sizeof(tmp), "\"%s\": \"%s\"", mem_names[i], mem_data->mem_strings[i]);
-        strcat(buffer,  tmp);
-
-        if (i < mem_data->mem_strings_count - 1) {
-            strcat(buffer, ", ");
-        }
-    }
-
-    strcat(buffer, "}}\n");
-
-
-    add_to_mem_queue(mw->writer_queue, buffer);
-
-
-    destroy_all_mem_data(mem_data);
-    free(time_string);
+    add_to_mem_queue(mw->writer_queue, buffer, offset);
 }
