@@ -146,11 +146,11 @@ int main(int argc, char *argv[]){
 
     struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
     struct sMemVmInfo* mp = malloc(sizeof(struct sMemVmInfo));
-    struct sProcessInfo* pi = NULL;
+    struct sMemProcessInfo* pi = NULL;
 
     if (pid != -1) {
-        pi = malloc(sizeof(struct sProcessInfo));
-        init_process_info(pi, pid);
+        pi = malloc(sizeof(struct sMemProcessInfo));
+        init_process_info(pi);
     }
 
     read_mem_info(mi);
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]){
         read_mem_info(mi);
         read_mem_vm_info(mp);
         if (pid != -1) {
-            read_process_info(pi);
+            read_process_info(pi, pid);
         }
         write_mem(mw, mi, mp, pi);
 
