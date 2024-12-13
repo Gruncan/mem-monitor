@@ -28,4 +28,4 @@ void read_process_info(struct sMemProcessInfo* pi, pid_t pid);
 void reset_process_info(struct sMemProcessInfo* pi);
 
 
-#endif //PROCESS_INFO_H
+#endif //PROCESS_READER_H
