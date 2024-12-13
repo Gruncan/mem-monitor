@@ -49,6 +49,8 @@ int main(int argc, char *argv[]){
 
     TEST(test_write_mem_body_1)
 
+    TEST(test_write_mem_body_2)
+
 
     PRINT_RESULTS
 
