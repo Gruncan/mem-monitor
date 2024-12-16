@@ -133,7 +133,7 @@ void* write_mtc_header(struct timeval* tv) {
     uint minute = local_time->tm_min & MASK_6;
     uint second = local_time->tm_sec & MASK_6;
 
-    ushort* header = malloc(5);
+    unsigned char* header = malloc(5);
 
     for (int i = 0; i < 5; i++) {
         header[i] = 0;
@@ -242,7 +242,7 @@ void write_mem(struct sMemWriter* mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
     if (pi != NULL) {
         value_length += sizeof(struct sMemInfo) / SIZE_UL;
-        offset = write_struct_data(buffer, pi, sizeof(struct sMemProcessInfo*), offset, value_length);
+        offset = write_struct_data(buffer, pi, sizeof(struct sMemProcessInfo), offset, value_length);
     }
 
 
