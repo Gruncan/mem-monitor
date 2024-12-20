@@ -221,7 +221,7 @@ void write_mem(struct sMemWriter* mw, struct sMemInfo* mi, struct sMemVmInfo* mp
 
     struct timeval* tv = get_current_time();
 
-    ushort milliseconds = timeval_diff_ms(tv, mw->prevTimestamp) & MASK_16;
+    ushort milliseconds = timeval_diff_ms(mw->prevTimestamp, tv) & MASK_16;
 
     unsigned char* miliBuf = buffer;
     miliBuf[0] = (unsigned char)(milliseconds >> 8 & 0xFF);
