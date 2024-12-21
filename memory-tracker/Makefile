@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -std=c++17 -fPIC -ldl
 
-LIB_NAME = mem_tracker.so
+LIB_NAME = lib_mem_tracker.so
 LIB_TEST = mem_tracker_test
 
 SRCS = memory-tracker.cpp
