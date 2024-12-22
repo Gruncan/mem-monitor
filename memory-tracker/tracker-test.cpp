@@ -1,29 +1,57 @@
 
-
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 
+#include "../tests/test.h"
+
+
+int malloc_test();
+int realloc_test();
+int free_test();
+int calloc_test();
+
+
 int main() {
-    printf("Starting test\n");
-    int* arr = new int[10];
-    delete[] arr;
+    INIT_TEST("Memory tracker")
 
 
-    void* test = malloc(5);
-    printf("Allocated memory: %p\n", test);
-    free(test);
-    printf("Finished test\n");
-    // std::string* arr2 = new std::string[20];
-    //
-    // arr2[0] = "test";
-    //
-    // // printf("Starting test...\n");
-    // // void* t = malloc(10);
-    // // free(t);
-    // // printf("Done.\n");
-    // // sleep(30);
-    // delete[] arr2;
-    sleep(10);
-    return 0;
+    TEST(malloc_test)
+    TEST(realloc_test)
+    TEST(free_test)
+    TEST(calloc_test)
+
+    PRINT_RESULTS
+
+    return EXIT_VALUE;
+}
+
+
+int malloc_test() {
+    void* malloc_ptr = malloc(10);
+
+    ASSERT_NOT_NULL(malloc_ptr);
+
+    void* realloc_ptr = realloc(malloc_ptr, 20);
+    ASSERT_NOT_NULL(realloc_ptr);
+
+    free(realloc_ptr);
+
+    return PASS;
+}
+
+// Since we require malloc no need to run separate malloc call
+int realloc_test() {
+    return PASS;
+}
+
+int free_test() {
+    return PASS;
+}
+
+int calloc_test() {
+    void* calloc_ptr = calloc(5, sizeof(int));
+    ASSERT_NOT_NULL(calloc_ptr);
+
+    return PASS;
 }
