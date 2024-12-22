@@ -187,7 +187,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: c-test-output-file
-          path: memory-tracker/memory_tracker.tmtc
+          path: memory_tracker.tmtc
 
   run-mem-python-tracker-tests:
     runs-on: ubuntu-latest
