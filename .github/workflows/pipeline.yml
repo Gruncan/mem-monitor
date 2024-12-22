@@ -181,7 +181,7 @@ jobs:
 
       - name: Run C Tests
         run: |
-          ./mem_tracker_test
+          LD_PRELOAD=./lib_mem_tracker ./mem_tracker_test
 
       - name: Upload test output file
         uses: actions/upload-artifact@v3
