@@ -8,6 +8,7 @@
 #ifdef __cplusplus
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <new>
 #include <type_traits>
 
@@ -52,14 +53,14 @@
 
 
 #define FILE_NAME "memory_tracker.tmtc"
-
+#define LOG_SIZE 50
 
 #define LOAD_SYMBOL(symbol, funcType) \
     if(real_##symbol == NONE) { \
         real_##symbol = (funcType) dlsym(RTLD_NEXT, #symbol);   \
     }\
 
-#define LOG_MEMORY()
+#define CONVERT_ALIGN(align) static_cast<std::underlying_type_t<std::align_val_t>>(align)
 
 static void* (*real_malloc) (size_t size) = NONE;
 static void* (*real_calloc) (size_t nmemb, size_t size) = NONE;
@@ -117,7 +118,14 @@ static DeleteArrayAlignFuncType real_delete_array_align = NONE;
 #endif
 #endif
 
-static int log_fd;
+static int log_fd = -1;
+
+#define LOG_MEMORY(str, ...) \
+    char buffer[128];\
+    int len = snprintf(buffer, sizeof(buffer)-2, str, ##__VA_ARGS__);\
+    buffer[len] = '\n';  \
+    buffer[len + 1] = '\0';  \
+    write(log_fd, buffer, len+1);\
 
 void __attribute__((constructor)) lib_init() {
     log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -143,14 +151,11 @@ void __attribute__((constructor)) lib_init() {
 #endif
 
 #endif
-
-    const char* init_message = "Memory tracker initialized.\n";
-    write(log_fd, init_message, strlen(init_message));
+    LOG_MEMORY("Memory tracker initialized.")
 }
 
 void __attribute__((destructor)) lib_cleanup() {
-    const char* cleanup_message = "Memory tracker cleaning up.\n";
-    write(log_fd, cleanup_message, strlen(cleanup_message));
+    LOG_MEMORY("Memory tracker cleaning up.")
 
     close(log_fd);
 }
@@ -163,9 +168,7 @@ void* malloc(size_t size) {
     LOAD_SYMBOL(malloc, void* (*)(size_t))
 
     void* ptr = real_malloc(size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "malloc(%zd) = %p\n", size, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("malloc(%zd) = %p", size, ptr);
     return ptr;
 }
 
@@ -173,9 +176,7 @@ void* calloc(size_t nmemb, size_t size) {
     LOAD_SYMBOL(calloc, void* (*)(size_t, size_t))
 
     void* ptr = real_calloc(nmemb, size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "calloc(%zd, %zd) = %p\n", nmemb, size, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("calloc(%zd, %zd) = %p", nmemb, size, ptr);
     return ptr;
 }
 
@@ -183,27 +184,21 @@ void* reallocarray(void* ptr, size_t nmemb, size_t size) {
     LOAD_SYMBOL(reallocarray, void* (*)(void*, size_t, size_t))
 
     void* new_ptr = real_reallocarray(ptr, nmemb, size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "reallocarray(%p, %zd, %zd) = %p\n", ptr, nmemb, size, new_ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("reallocarray(%p, %zd, %zd) = %p", ptr, nmemb, size, new_ptr);
     return new_ptr;
 }
 
 void* realloc(void* ptr, size_t size) {
     LOAD_SYMBOL(realloc, void* (*)(void*, size_t))
     void* new_ptr = real_realloc(ptr, size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "realloc(%p, %zd) = %p\n", ptr, size, new_ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("realloc(%p, %zd) = %p", ptr, size, new_ptr);
     return new_ptr;
 }
 
 void free(void *ptr) {
     LOAD_SYMBOL(free, void (*)(void*))
     real_free(ptr);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "free(%p)\n", ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("free(%p)", ptr);
 }
 
 #ifdef __cplusplus
@@ -211,113 +206,80 @@ void free(void *ptr) {
 
 void* operator new(std::size_t size){
     void* ptr = real_new(size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "new(%zd) = %p\n", size, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("new(%zd) = %p", size, ptr);
     return ptr;
 }
 
 void* operator new(std::size_t size, const std::nothrow_t& nothrow){
     void* ptr = real_new_nothrow(size, nothrow);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "new_nothrow(%zd) = %p\n", size, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("new_nothrow(%zd) = %p", size, ptr);
     return ptr;
 }
 
 void* operator new[](size_t size) {
     void* ptr = real_new_array(size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "new[](%zd) = %p\n", size, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("new[](%zd) = %p", size, ptr);
     return ptr;
 }
 
 void* operator new[](size_t size, const std::nothrow_t& nothrow) noexcept {
     void* ptr = real_new_array_nothrow(size, nothrow);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "new_nothrow[](%zd) = %p\n", size, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("new_nothrow[](%zd) = %p", size, ptr);
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept {
     real_delete(ptr);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "delete(%p)\n", ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete(%p)", ptr);
 }
 
 void operator delete(void* ptr, std::size_t size){
     real_delete_sized(ptr, size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "delete_sized(%p, %lu)\n", ptr, size);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete_sized(%p, %lu)", ptr, size);
 }
 
 void operator delete(void* ptr, const std::nothrow_t& nothrow) noexcept {
     real_delete_nothrow(ptr, nothrow);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "delete_nothrow(%p)\n", ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete_nothrow(%p)", ptr)
 }
 
 void operator delete[](void* ptr){
     real_delete_array(ptr);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "delete[](%p)\n", ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete[](%p)", ptr)
 }
 
 void operator delete[](void* ptr, std::size_t size){
     real_delete_array_sized(ptr, size);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "delete[](%p)\n", ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete[](%p, %zd)", ptr, size);
 }
 
 void operator delete[](void* ptr, const std::nothrow_t& nothrow) noexcept {
     real_delete_array_nothrow(ptr, nothrow);
-    char buffer[128];
-    int len = snprintf(buffer, sizeof buffer, "delete_nothrow[](%p)\n", ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete[](%p)", ptr);
 }
 
 #if __cplusplus >= CPP_17
 
 void* operator new(std::size_t size, std::align_val_t align){
     void* ptr = real_new_align(size, align);
-    char buffer[128];
-    auto align_val = static_cast<std::underlying_type_t<std::align_val_t>>(align);
-
-    int len = snprintf(buffer, sizeof buffer, "new(%zd, %zd) = %p\n", size, align_val, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("new_align(%zd, %zd) = %p", size, CONVERT_ALIGN(align), ptr);
     return ptr;
 }
 
 void* operator new[](std::size_t size, std::align_val_t align){
     void* ptr = real_new_array_align(size, align);
-    char buffer[128];
-    auto align_val = static_cast<std::underlying_type_t<std::align_val_t>>(align);
-    int len = snprintf(buffer, sizeof buffer, "new[](%zd, %zd) = %p\n", size, align_val, ptr);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("new[](%zd, %zd) = %p", size, CONVERT_ALIGN(align), ptr);
     return ptr;
 }
 
 void operator delete(void* ptr, std::align_val_t align){
     real_delete_align(ptr, align);
-    char buffer[128];
-    auto align_val = static_cast<std::underlying_type_t<std::align_val_t>>(align);
-    int len = snprintf(buffer, sizeof buffer, "delete_align(%p, %zd)\n", ptr, align_val);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete_align(%p, %zd)", ptr, CONVERT_ALIGN(align));
 }
 
 void operator delete[](void* ptr, std::align_val_t align){
     real_delete_array_align(ptr, align);
-    char buffer[128];
-    auto align_val = static_cast<std::underlying_type_t<std::align_val_t>>(align);
-    int len = snprintf(buffer, sizeof buffer, "delete_align[](%p, %zd)\n", ptr, align_val);
-    write(log_fd, buffer, len);
+    LOG_MEMORY("delete_align[](%p, %zd)", ptr, CONVERT_ALIGN(align));
 }
 
 
