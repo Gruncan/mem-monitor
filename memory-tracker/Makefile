@@ -1,4 +1,4 @@
-CC = gcc
+CC = g++
 CFLAGS = -std=c++17 -fPIC -ldl
 
 LIB_NAME = lib_mem_tracker.so
@@ -7,7 +7,7 @@ LIB_TEST = mem_tracker_test
 SRCS = memory-tracker.cpp
 TEST_SRCS = tracker-test.cpp
 
-OBJS = $(SRCS:.cpp=.o)
+OBJS = $(SRCS:.cpp=.o)s
 TEST_OBJS = $(TEST_SRCS:.cpp=.o)
 
 all: $(LIB_NAME)
