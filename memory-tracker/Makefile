@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++17 -fPIC -ldl
+CFLAGS = -std=c++17 -fPIC
 
 LIB_NAME = lib_mem_tracker.so
 LIB_TEST = mem_tracker_test
@@ -7,7 +7,7 @@ LIB_TEST = mem_tracker_test
 SRCS = memory-tracker.cpp
 TEST_SRCS = tracker-test.cpp
 
-OBJS = $(SRCS:.cpp=.o)s
+OBJS = $(SRCS:.cpp=.o)
 TEST_OBJS = $(TEST_SRCS:.cpp=.o)
 
 all: $(LIB_NAME)
