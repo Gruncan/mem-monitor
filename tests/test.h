@@ -13,10 +13,10 @@
 #define PASS 1
 #define FAIL 0
 
-#define INIT_TEST static int count = 0; \
+#define INIT_TEST(name) static int count = 0; \
                   static int passed = 0; \
                   static int skipped = 0; \
-                  printf("Running tests..\n"); \
+                  printf("[%s] Running tests..\n", name); \
 
 
 #define PRINT_RESULTS \
