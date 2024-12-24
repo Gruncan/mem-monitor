@@ -49,27 +49,4 @@ def test_memory_tracker_data():
 # test_memory_tracker_data()
 
 
-with open("memory_tracker.tmtc", "rb") as f:
-    content = f.read()
-
-key = content[0]
-length = content[1]
-
-file_length = len(content)
-index = 0
-
-
-while index < file_length:
-    key = content[index]
-    length = content[index+1]
-    index += 2
-    values = []
-    for i in range(0, length * 8, 8):
-        value = 0
-        for j in range(8):
-            value |= content[index + i + j] << (8 * (7 - j))
-        values.append(value)
-    print(hex(values[0]))
-    print(values)
-    index += length * 8
 
