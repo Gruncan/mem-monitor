@@ -4,6 +4,12 @@
 
 #include <string.h>
 
+#ifdef __cplusplus
+#define NONE nullptr
+#else
+#define NONE NULL
+#endif
+
 
 #define RED_TEXT   "\033[0;31m"
 #define GREEN_TEXT "\033[0;32m"
@@ -91,10 +97,10 @@ fflush(stdout); \
 
 
 #define ASSERT_NOT_NULL(value) \
-    ASSERT_NOT_EQUAL_P(value, NULL)
+    ASSERT_NOT_EQUAL_P(value, NONE)
 
 #define ASSERT_NULL(value) \
-    ASSERT_EQUAL_P(value, NULL)
+    ASSERT_EQUAL_P(value, NONE)
 
 #define EXIT_VALUE (count == (passed + skipped) ? 0 : -1)
 
