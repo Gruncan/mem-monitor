@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <bits/stdint-uintn.h>
+#include <sys/time.h>
 
 
 #define SYMBOL_NEW                  "_Znwm"
@@ -78,8 +79,7 @@
 #define CPP_17 201703L
 
 
-#define FILE_NAME "memory_tracker.tmtc"
-#define LOG_SIZE 50
+#define FILE_NAME "/tmp/memory_tracker.tmtc"
 
 #define LOAD_SYMBOL(symbol, funcType) \
     if(real_##symbol == NONE) { \
@@ -145,20 +145,36 @@ static DeleteArrayAlignFuncType real_delete_array_align = NONE;
 #endif
 
 static int log_fd = -1;
+#define WRITE_TIME(array, time) \
+    (array)[0] = ((time).tv_sec >> 24) & 0xFF; \
+    (array)[1] = ((time).tv_sec >> 16) & 0xFF; \
+    (array)[2] = ((time).tv_sec >> 8) & 0xFF; \
+    (array)[3] = (time).tv_sec & 0xFF; \
+    (array)[4] = ((time).tv_usec  >> 24) & 0xFF; \
+    (array)[5] = ((time).tv_usec  >> 16) & 0xFF; \
+    (array)[6] = ((time).tv_usec  >> 8) & 0xFF; \
+    (array)[7] = (time).tv_usec & 0xFF; \
+
+#define WRITE_TIME_DIFFERENCE(array) \
+    struct timeval current_time{}; \
+    gettimeofday(&current_time, NONE); \
+    WRITE_TIME(array, current_time) \
 
 #define LOG_MEMORY(key, args)\
     unsigned char length = (unsigned char) sizeof(args) / sizeof(u_int64_t);\
-    unsigned char array[2 + (sizeof(u_int64_t) * length)];\
-    array[0] = key;\
-    array[1] = length;\
-    for (unsigned char i=0; i  < 2; i++) {\
-        u_int64_t value = (args)[i];\
+    unsigned char array[10 + (sizeof(u_int64_t) * length)];\
+    WRITE_TIME_DIFFERENCE(array) \
+    array[8] = key;\
+    array[9] = length;\
+    for (unsigned char i=0; i  < length; i++) {\
         for(int j=0; j < 8; j++){\
-            array[(i * 8) + 2 + j] = (value >> (8 * (7 - j))) & 0xFF;\
+        u_int64_t value = (args)[i];\
+            array[(i * 8) + 10 + j] = (value >> (8 * (7 - j))) & 0xFF;\
         }\
     }\
-    write(log_fd, array, 2 + (sizeof(u_int64_t) * length));\
+    write(log_fd, array, 10 + (sizeof(u_int64_t) * length));\
 
+#define MEM_TEST
 #ifndef MEM_TEST
     // stderr is loaded before everything
     #define DEBUG(str, ...) fprintf(stderr, str, ##__VA_ARGS__);
@@ -168,6 +184,9 @@ static int log_fd = -1;
 
 void __attribute__((constructor)) lib_init() {
     log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (log_fd < 0) {
+        printf("MEMTRACK: Failed to open file %s", FILE_NAME);
+    }
 
 #ifdef __cplusplus
     real_new               = (NewFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW);
