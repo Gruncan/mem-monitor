@@ -31,7 +31,7 @@ static const uint SIZE_UL = sizeof(unsigned long);
 
 
 int main(int argc, char *argv[]){
-    INIT_TEST
+    INIT_TEST("Memory Monitor")
 
     TEST(test_struct_writer)
 

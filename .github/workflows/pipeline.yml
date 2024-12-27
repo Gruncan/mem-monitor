@@ -57,6 +57,51 @@ jobs:
             ./tests/*.gcno
             ./*.gcda
 
+  build-mem-tracker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Build Main Target
+        run: |
+          cd memory-tracker
+          make
+
+      - name: Upload lib_mem_tracker artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lib_mem_tracker
+          path: ./memory-tracker/lib_mem_tracker.so
+
+  build-mem-tracker-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Build Main Target
+        run: |
+          cd memory-tracker
+          make test
+
+      - name: Upload mem_tracker_test artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mem_tracker_test
+          path: ./memory-tracker/mem_tracker_test
 
   run-tests:
     runs-on: ubuntu-latest
@@ -104,3 +149,69 @@ jobs:
         with:
           name: coverage-report
           path: coverage-report
+
+
+
+  run-mem-c-tracker-tests:
+    runs-on: ubuntu-latest
+    needs: [ build-mem-tracker, build-mem-tracker-test ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Download lib_mem_tracker artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: lib_mem_tracker
+
+      - name: Download mem_tracker_test artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: mem_tracker_test
+
+      - name: Set execute permissions
+        run: |
+          chmod +x ./mem_tracker_test
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Run C Tests
+        run: |
+          LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test
+
+      - name: Upload test output file
+        uses: actions/upload-artifact@v3
+        with:
+          name: c-test-output-file
+          path: memory_tracker.tmtc
+
+#  run-mem-python-tracker-tests:
+#    runs-on: ubuntu-latest
+#    needs: [ run-mem-c-tracker-tests ]
+#
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v2
+#
+#      - name: Download c-test-output-file artifact
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: c-test-output-file
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v4
+#        with:
+#          python-version: 3.12
+#
+#      - name: Install Dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          pip install -r memory-tracker/requirements.txt
+#
+#      - name: Run PyTests
+#        run: |
+#          pytest memory-tracker/test-output.py
