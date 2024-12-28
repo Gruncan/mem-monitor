@@ -125,7 +125,7 @@ jobs:
           find . -name "*.cpp" -or -name "*.h" | xargs clang-format -i
           git diff --exit-code --color --unified=0
 
-  run-tests:
+  run-monitor-tests:
     runs-on: ubuntu-latest
     needs: [build-mem-monitor, build-mem-monitor-test]
 
@@ -153,6 +153,7 @@ jobs:
 
       - name: Collect Coverage Data
         run: |
+          mv components/memory-monitor/*/*.gcda .
           lcov --capture --directory . --output-file coverage.info
           lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
 
@@ -174,7 +175,7 @@ jobs:
 
 
 
-  run-mem-c-tracker-tests:
+  run-tracker-tests:
     runs-on: ubuntu-latest
     needs: [ build-mem-tracker, build-mem-tracker-test ]
 
