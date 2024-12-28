@@ -20,8 +20,8 @@
 #define FAIL 0
 
 #define INIT_TEST(name)                                                                                                \
-    static int count   = 0;                                                                                            \
-    static int passed  = 0;                                                                                            \
+    static int count = 0;                                                                                              \
+    static int passed = 0;                                                                                             \
     static int skipped = 0;                                                                                            \
     printf("[%s] Running tests..\n", name);
 
