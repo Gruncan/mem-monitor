@@ -6,7 +6,7 @@
 #include <string.h>
 
 
-struct __attribute__((packed)) sMemVmInfo {
+typedef struct __attribute__((packed)) mem_vm_info_s {
     // Zone-related stats
     unsigned long nrFreePages; // 0x0
     unsigned long nrZoneInactiveAnon;
@@ -208,10 +208,10 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long directMapLevel3Splits;
 
     unsigned long nrUnstable; // 0xa0
-};
+} MemVmInfo;
 
 
-struct __attribute__((packed)) sMemInfo {
+typedef struct __attribute__((packed)) mem_info_s {
     unsigned long total;
     unsigned long free;
     unsigned long available;
@@ -281,12 +281,12 @@ struct __attribute__((packed)) sMemInfo {
     unsigned long directMap4k; // 0xd5
     unsigned long directMap2M;
     unsigned long directMap1G;
-};
+} MemInfo;
 
 
-void read_mem_info(struct sMemInfo* mi);
+void read_mem_info(MemInfo* mem_info);
 
-void read_mem_vm_info(struct sMemVmInfo* mp);
+void read_mem_vm_info(MemVmInfo* mem_vm_info);
 
 
 #endif // MEM_READER_H
