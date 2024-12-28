@@ -9,7 +9,7 @@ on:
       - '*'
 
 jobs:
-  build-main:
+  build-mem-monitor:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,15 +23,16 @@ jobs:
 
       - name: Build Main Target
         run: |
+          cd components/memory-monitor/
           make
 
       - name: Upload mem_monitor artifact
         uses: actions/upload-artifact@v3
         with:
           name: mem_monitor
-          path: ./mem_monitor
+          path: components/memory-monitor/mem_monitor
 
-  build-test:
+  build-mem-monitor-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -45,6 +46,7 @@ jobs:
 
       - name: Build Test Target
         run: |
+          cd components/memory-monitor/
           make test
 
       - name: Upload mem_monitor_test and coverage files
@@ -52,10 +54,11 @@ jobs:
         with:
           name: mem_monitor_test
           path: |
-            ./mem_monitor_test
-            ./source/*.gcno
-            ./tests/*.gcno
-            ./*.gcda
+            components/memory-monitor/mem_monitor_test
+            components/memory-monitor/src/*.gcno
+            components/memory-monitor/tests/*.gcno
+            components/memory-monitor/*.gcda
+
 
   build-mem-tracker:
     runs-on: ubuntu-latest
@@ -71,14 +74,14 @@ jobs:
 
       - name: Build Main Target
         run: |
-          cd memory-tracker
+          cd components/memory-tracker/
           make
 
       - name: Upload lib_mem_tracker artifact
         uses: actions/upload-artifact@v3
         with:
           name: lib_mem_tracker
-          path: ./memory-tracker/lib_mem_tracker.so
+          path: components/memory-tracker/lib_mem_tracker.so
 
   build-mem-tracker-test:
     runs-on: ubuntu-latest
@@ -94,18 +97,37 @@ jobs:
 
       - name: Build Main Target
         run: |
-          cd memory-tracker
+          cd components/memory-tracker/
           make test
 
       - name: Upload mem_tracker_test artifact
         uses: actions/upload-artifact@v3
         with:
           name: mem_tracker_test
-          path: ./memory-tracker/mem_tracker_test
+          path: components/memory-tracker/mem_tracker_test
+
+  format-repo:
+    runs-on: ubuntu-latest
+    needs: [ build-mem-monitor, build-mem-monitor-test, build-mem-tracker, build-mem-tracker-test ]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential clang-format
+
+      - name: Format Repositories
+        run: |
+          find . -name "*.cpp" -or -name "*.h" | xargs clang-format -i
+          git diff --exit-code --color --unified=0
 
   run-tests:
     runs-on: ubuntu-latest
-    needs: [build-main, build-test]
+    needs: [build-mem-monitor, build-mem-monitor-test]
 
     steps:
       - name: Checkout Repository
