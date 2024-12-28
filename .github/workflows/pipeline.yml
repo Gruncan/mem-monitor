@@ -153,7 +153,8 @@ jobs:
 
       - name: Collect Coverage Data
         run: |
-          mv ./*/*.gcda .
+          mv components/memory-monitor/src/*.gcda src/
+          mv components/memory-monitor/tests/*.gcda tests/
           lcov --capture --directory . --output-file coverage.info
           lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
 
