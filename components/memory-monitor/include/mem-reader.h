@@ -6,9 +6,9 @@
 #include <string.h>
 
 
-struct __attribute__((packed)) sMemVmInfo {
+typedef struct __attribute__((packed)) mem_vm_info_s {
     // Zone-related stats
-    unsigned long nrFreePages;          // 0x0
+    unsigned long nrFreePages; // 0x0
     unsigned long nrZoneInactiveAnon;
     unsigned long nrZoneActiveAnon;
     unsigned long nrZoneInactiveFile;
@@ -22,7 +22,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long nrUnaccepted;
 
     // NUMA-related stats
-    unsigned long numaHit;              // 0xC
+    unsigned long numaHit; // 0xC
     unsigned long numaMiss;
     unsigned long numaForeign;
     unsigned long numaInterleave;
@@ -30,7 +30,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long numaOther;
 
     // Page usage
-    unsigned long nrInactiveAnon;       // 0x12
+    unsigned long nrInactiveAnon; // 0x12
     unsigned long nrActiveAnon;
     unsigned long nrInactiveFile;
     unsigned long nrActiveFile;
@@ -41,7 +41,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long nrIsolatedFile;
 
     // Working set
-    unsigned long workingsetNodes;          // 0x1B
+    unsigned long workingsetNodes; // 0x1B
     unsigned long workingsetRefaultAnon;
     unsigned long workingsetRefaultFile;
     unsigned long workingsetActivateAnon;
@@ -51,7 +51,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long workingsetNodereclaim;
 
     // Anonymous and file pages
-    unsigned long nrAnonPages;              // 0x23
+    unsigned long nrAnonPages; // 0x23
     unsigned long nrMapped;
     unsigned long nrFilePages;
     unsigned long nrDirty;
@@ -65,11 +65,11 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long nrAnonTransparentHugepages;
 
     // Dirty and writeback thresholds
-    unsigned long nrDirtyThreshold;         // 0x2F
+    unsigned long nrDirtyThreshold; // 0x2F
     unsigned long nrDirtyBackgroundThreshold;
 
     // Page reclaim and fault
-    unsigned long pgpgin;                   // 0x31
+    unsigned long pgpgin; // 0x31
     unsigned long pgpgout;
     unsigned long pswpin;
     unsigned long pswpout;
@@ -77,7 +77,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long pgmajfault;
 
     // Page allocation
-    unsigned long pgallocDma;               // 0x37
+    unsigned long pgallocDma; // 0x37
     unsigned long pgallocDma32;
     unsigned long pgallocNormal;
     unsigned long pgallocMovable;
@@ -101,7 +101,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long pgreuse;
 
     // Stealing and scanning
-    unsigned long pgstealKswapd;               // 0x4D
+    unsigned long pgstealKswapd; // 0x4D
     unsigned long pgstealDirect;
     unsigned long pgstealKhugepaged;
     unsigned long pgscanKswapd;
@@ -114,7 +114,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long pgstealFile;
 
     // Zone reclaim and kswapd
-    unsigned long zoneReclaimFailed;        // 0x58
+    unsigned long zoneReclaimFailed; // 0x58
     unsigned long pginodesteal;
     unsigned long slabsScanned;
     unsigned long kswapdInodesteal;
@@ -127,7 +127,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long oomKill;
 
     // NUMA and migration
-    unsigned long numaPteUpdates;           // 0x63
+    unsigned long numaPteUpdates; // 0x63
     unsigned long numaHugePteUpdates;
     unsigned long numaHintFaults;
     unsigned long numaHintFaultsLocal;
@@ -139,7 +139,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long thpMigrationSplit;
 
     // Compaction stats
-    unsigned long compactMigrateScanned;    // 0x6D
+    unsigned long compactMigrateScanned; // 0x6D
     unsigned long compactFreeScanned;
     unsigned long compactIsolated;
     unsigned long compactStall;
@@ -150,11 +150,11 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long compactDaemonFreeScanned;
 
     // High-order allocations
-    unsigned long htlbBuddyAllocSuccess;    // 0x76
+    unsigned long htlbBuddyAllocSuccess; // 0x76
     unsigned long htlbBuddyAllocFail;
 
     // Unevictable pages
-    unsigned long unevictablePgsCulled;     // 0x78
+    unsigned long unevictablePgsCulled; // 0x78
     unsigned long unevictablePgsScanned;
     unsigned long unevictablePgsRescued;
     unsigned long unevictablePgsMlocked;
@@ -163,7 +163,7 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long unevictablePgsStranded;
 
     // Transparent hugepage stats
-    unsigned long thpFaultAlloc;            // 0x7F
+    unsigned long thpFaultAlloc; // 0x7F
     unsigned long thpFaultFallback;
     unsigned long thpFaultFallbackCharge;
     unsigned long thpCollapseAlloc;
@@ -186,32 +186,32 @@ struct __attribute__((packed)) sMemVmInfo {
     unsigned long thpSwpoutFallback;
 
     // Ballooning
-    unsigned long balloonInflate;       // 0x94
+    unsigned long balloonInflate; // 0x94
     unsigned long balloonDeflate;
     unsigned long balloonMigrate;
 
     // Swap readahead and hits
-    unsigned long swapRa;               // 0x97
+    unsigned long swapRa; // 0x97
     unsigned long swapRaHit;
 
     // Kernel Samepage Merging (KSM)
-    unsigned long ksmSwpinCopy;         // 0x99
+    unsigned long ksmSwpinCopy; // 0x99
     unsigned long cowKsm;
 
     // Zswap
-    unsigned long zswpin;               // 0x9b
+    unsigned long zswpin; // 0x9b
     unsigned long zswpout;
     unsigned long zswpwb;
 
     // Direct map splits
-    unsigned long directMapLevel2Splits;    // 0x9e
+    unsigned long directMapLevel2Splits; // 0x9e
     unsigned long directMapLevel3Splits;
 
-    unsigned long nrUnstable;               // 0xa0
-};
+    unsigned long nrUnstable; // 0xa0
+} MemVmInfo;
 
 
-struct __attribute__((packed)) sMemInfo {
+typedef struct __attribute__((packed)) mem_info_s {
     unsigned long total;
     unsigned long free;
     unsigned long available;
@@ -219,7 +219,7 @@ struct __attribute__((packed)) sMemInfo {
     unsigned long cached;
     unsigned long swapCache;
 
-    unsigned long active;                   // 0xa7
+    unsigned long active; // 0xa7
     unsigned long inActive;
     unsigned long activeAnon;
     unsigned long inActiveAnon;
@@ -229,7 +229,7 @@ struct __attribute__((packed)) sMemInfo {
     unsigned long unevictable;
     unsigned long mLocked;
 
-    unsigned long swapTotal;                // 0xaf
+    unsigned long swapTotal; // 0xaf
     unsigned long swapFree;
     unsigned long zswap;
     unsigned long zswapped;
@@ -237,17 +237,17 @@ struct __attribute__((packed)) sMemInfo {
     unsigned long dirty;
     unsigned long writeback;
 
-    unsigned long pagesAnon;                // 0xb5
+    unsigned long pagesAnon; // 0xb5
     unsigned long pageMapped;
 
     unsigned long shmem;
 
-    unsigned long kreClaimable;             // 0xb8
+    unsigned long kreClaimable; // 0xb8
     unsigned long slab;
     unsigned long srClaimable;
     unsigned long sunReclaim;
 
-    unsigned long kernelStack;              //0xbc
+    unsigned long kernelStack; // 0xbc
     unsigned long pageTables;
     unsigned long secPageTables;
     unsigned long nfsUnstable;
@@ -257,14 +257,14 @@ struct __attribute__((packed)) sMemInfo {
     unsigned long commitLimit;
     unsigned long committedAllocs;
 
-    unsigned long vmallocTotal;             // 0xc4
+    unsigned long vmallocTotal; // 0xc4
     unsigned long vmallocUsed;
     unsigned long vmallocChunk;
 
     unsigned long perCPU;
     unsigned long hardwareCorrupted;
 
-    unsigned long hugePagesAnon;            // 0xc9
+    unsigned long hugePagesAnon; // 0xc9
     unsigned long hugePagesShmem;
     unsigned long pmdMappedShmem;
     unsigned long hugePagesFile;
@@ -278,16 +278,15 @@ struct __attribute__((packed)) sMemInfo {
     unsigned long hugePageSize;
     unsigned long hugePageTLB;
 
-    unsigned long directMap4k;              // 0xd5
+    unsigned long directMap4k; // 0xd5
     unsigned long directMap2M;
     unsigned long directMap1G;
-
-};
-
-
-void read_mem_info(struct sMemInfo* mi);
-
-void read_mem_vm_info(struct sMemVmInfo* mp);
+} MemInfo;
 
 
-#endif //MEM_READER_H
+void read_mem_info(MemInfo* mem_info);
+
+void read_mem_vm_info(MemVmInfo* mem_vm_info);
+
+
+#endif // MEM_READER_H
