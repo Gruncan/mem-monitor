@@ -15,7 +15,6 @@ void mem_queue_init(struct mem_queue* queue) {
 }
 
 void mem_queue_destroy(struct mem_queue* queue) {
-
     pthread_mutex_lock(&queue->_lock);
     while (queue->size > 0) {
         pthread_cond_wait(&queue->_lock_cond, &queue->_lock);
@@ -24,10 +23,9 @@ void mem_queue_destroy(struct mem_queue* queue) {
     pthread_mutex_unlock(&queue->_lock);
     pthread_mutex_destroy(&queue->_lock);
     pthread_cond_destroy(&queue->_lock_cond);
-
 }
 
-void add_to_mem_queue(struct mem_queue *queue, void* data, unsigned int length) {
+void add_to_mem_queue(struct mem_queue* queue, void* data, unsigned int length) {
     if (queue == NULL) {
         return;
     }
@@ -44,20 +42,20 @@ void add_to_mem_queue(struct mem_queue *queue, void* data, unsigned int length) 
         return;
     }
 
-    writer_value->next = NULL;
-    mtcValue->data = data;
-    mtcValue->length = length;
+    writer_value->next  = NULL;
+    mtcValue->data      = data;
+    mtcValue->length    = length;
     writer_value->value = mtcValue;
 
     pthread_mutex_lock(&queue->_lock);
 
-    if(queue->tail == NULL) {
+    if (queue->tail == NULL) {
         queue->tail = writer_value;
         queue->head = writer_value;
 
-    }else {
+    } else {
         queue->tail->next = writer_value;
-        queue->tail = writer_value;
+        queue->tail       = writer_value;
     }
 
 
@@ -65,7 +63,6 @@ void add_to_mem_queue(struct mem_queue *queue, void* data, unsigned int length) 
 
     pthread_cond_signal(&queue->_lock_cond);
     pthread_mutex_unlock(&queue->_lock);
-
 }
 
 struct mtc_value* pop_from_mem_queue(struct mem_queue* queue) {
@@ -85,7 +82,7 @@ struct mtc_value* pop_from_mem_queue(struct mem_queue* queue) {
 
     // This is safe as we have ensured above that head is not NULL
     queue->head = queue->head->next;
-    if(queue->head == NULL){
+    if (queue->head == NULL) {
         queue->tail = NULL;
     }
 

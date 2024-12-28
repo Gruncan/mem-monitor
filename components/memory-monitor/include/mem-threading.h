@@ -5,7 +5,7 @@
 
 
 struct mtc_value {
-    void* data;
+    void*        data;
     unsigned int length;
 };
 
@@ -22,18 +22,17 @@ struct mem_queue {
     unsigned int size;
 
     pthread_mutex_t _lock;
-    pthread_cond_t _lock_cond;
+    pthread_cond_t  _lock_cond;
 };
 
 
+void mem_queue_init(struct mem_queue* queue);
 
-void mem_queue_init(struct mem_queue *queue);
+void mem_queue_destroy(struct mem_queue* queue);
 
-void mem_queue_destroy(struct mem_queue *queue);
+void add_to_mem_queue(struct mem_queue* queue, void* data, unsigned int length);
 
-void add_to_mem_queue(struct mem_queue *queue, void* data, unsigned int length);
-
-struct mtc_value* pop_from_mem_queue(struct mem_queue *queue);
+struct mtc_value* pop_from_mem_queue(struct mem_queue* queue);
 
 
-#endif //MEM_THREADING_H
+#endif // MEM_THREADING_H

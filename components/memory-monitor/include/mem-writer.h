@@ -8,10 +8,10 @@
 #include <sys/time.h>
 
 struct sMemWriter {
-    char* filename;
-    FILE* file;
-    unsigned char flushCounter;
-    int hasWrittenHeader;
+    char*           filename;
+    FILE*           file;
+    unsigned char   flushCounter;
+    int             hasWrittenHeader;
     struct timeval* prevTimestamp;
 
 
@@ -23,19 +23,19 @@ struct sMemWriter {
 
 typedef struct sMemWriter MemWriter;
 
-typedef unsigned int uint;
+typedef unsigned int       uint;
 typedef unsigned long long uint64;
-typedef unsigned short ushort;
+typedef unsigned short     ushort;
 
 void writer_routine(struct sMemWriter* mw);
 
-void init_mem_writer(MemWriter *mw, char* filename);
+void init_mem_writer(MemWriter* mw, char* filename);
 
 MemWriter* new_mem_writer();
 
-void destroy_mem_writer(MemWriter *mw);
+void destroy_mem_writer(MemWriter* mw);
 
-void write_mem(MemWriter *mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sMemProcessInfo* pi);
+void write_mem(MemWriter* mw, struct sMemInfo* mi, struct sMemVmInfo* mp, struct sMemProcessInfo* pi);
 
 struct timeval* get_current_time();
 
@@ -47,4 +47,4 @@ uint write_struct_data(void* buffer, void* sStruct, uint structLength, uint mem_
 
 void write_data_content(void* buffer, uint offset, unsigned char key, ushort value);
 
-#endif //MEM_WRITER_H
+#endif // MEM_WRITER_H
