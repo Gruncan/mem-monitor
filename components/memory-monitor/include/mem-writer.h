@@ -2,8 +2,8 @@
 #define MEM_WRITER_H
 
 
-#include "mem-threading.h"
 #include "mem-reader.h"
+#include "mem-threading.h"
 #include "process-reader.h"
 
 #include <sys/time.h>

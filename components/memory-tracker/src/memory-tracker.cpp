@@ -86,47 +86,47 @@
 
 #define CONVERT_ALIGN(align) static_cast<std::underlying_type_t<std::align_val_t>>(align)
 
-static void* (*real_malloc)(size_t size)                                = NONE;
-static void* (*real_calloc)(size_t nmemb, size_t size)                  = NONE;
-static void* (*real_realloc)(void* ptr, size_t size)                    = NONE;
+static void* (*real_malloc)(size_t size) = NONE;
+static void* (*real_calloc)(size_t nmemb, size_t size) = NONE;
+static void* (*real_realloc)(void* ptr, size_t size) = NONE;
 static void* (*real_reallocarray)(void* ptr, size_t nmemb, size_t size) = NONE;
-static void (*real_free)(void* ptr)                                     = NONE;
+static void (*real_free)(void* ptr) = NONE;
 
 #ifdef __cplusplus
-using NewFuncType                          = void* (*) (std::size_t);
-static NewFuncType real_new                = NONE;
-using NewFuncNoThrowType                   = void* (*) (std::size_t, const std::nothrow_t&) noexcept;
+using NewFuncType = void* (*) (std::size_t);
+static NewFuncType real_new = NONE;
+using NewFuncNoThrowType = void* (*) (std::size_t, const std::nothrow_t&) noexcept;
 static NewFuncNoThrowType real_new_nothrow = NONE;
 
-using DeleteFuncType                             = void (*)(void*);
-static DeleteFuncType real_delete                = NONE;
-using DeleteFuncSizedType                        = void (*)(void*, std::size_t);
-static DeleteFuncSizedType real_delete_sized     = NONE;
-using DeleteFuncNoThrowType                      = void (*)(void*, const std::nothrow_t&) noexcept;
+using DeleteFuncType = void (*)(void*);
+static DeleteFuncType real_delete = NONE;
+using DeleteFuncSizedType = void (*)(void*, std::size_t);
+static DeleteFuncSizedType real_delete_sized = NONE;
+using DeleteFuncNoThrowType = void (*)(void*, const std::nothrow_t&) noexcept;
 static DeleteFuncNoThrowType real_delete_nothrow = NONE;
 
-using NewArrayFuncType                                = void* (*) (std::size_t);
-static NewArrayFuncType real_new_array                = NONE;
-using NewArrayFuncNoThrowType                         = void* (*) (std::size_t, const std::nothrow_t&) noexcept;
+using NewArrayFuncType = void* (*) (std::size_t);
+static NewArrayFuncType real_new_array = NONE;
+using NewArrayFuncNoThrowType = void* (*) (std::size_t, const std::nothrow_t&) noexcept;
 static NewArrayFuncNoThrowType real_new_array_nothrow = NONE;
 
-using DeleteArrayFuncType                                   = void (*)(void*) noexcept;
-static DeleteArrayFuncType real_delete_array                = NONE;
-using DeleteArrayFuncSizedType                              = void (*)(void*, std::size_t) noexcept;
-static DeleteArrayFuncSizedType real_delete_array_sized     = NONE;
-using DeleteArrayFuncNoThrowType                            = void (*)(void*, const std::nothrow_t&) noexcept;
+using DeleteArrayFuncType = void (*)(void*) noexcept;
+static DeleteArrayFuncType real_delete_array = NONE;
+using DeleteArrayFuncSizedType = void (*)(void*, std::size_t) noexcept;
+static DeleteArrayFuncSizedType real_delete_array_sized = NONE;
+using DeleteArrayFuncNoThrowType = void (*)(void*, const std::nothrow_t&) noexcept;
 static DeleteArrayFuncNoThrowType real_delete_array_nothrow = NONE;
 
 #if __cplusplus >= CPP_17
 
-using NewAlignFuncType                            = void* (*) (std::size_t, std::align_val_t);
-static NewAlignFuncType real_new_align            = NONE;
-using NewArrayAlignFuncType                       = void* (*) (std::size_t, std::align_val_t);
+using NewAlignFuncType = void* (*) (std::size_t, std::align_val_t);
+static NewAlignFuncType real_new_align = NONE;
+using NewArrayAlignFuncType = void* (*) (std::size_t, std::align_val_t);
 static NewArrayAlignFuncType real_new_array_align = NONE;
 
-using DeleteAlignFuncType                               = void (*)(void*, std::align_val_t) noexcept;
-static DeleteAlignFuncType real_delete_align            = NONE;
-using DeleteArrayAlignFuncType                          = void (*)(void*, std::align_val_t) noexcept;
+using DeleteAlignFuncType = void (*)(void*, std::align_val_t) noexcept;
+static DeleteAlignFuncType real_delete_align = NONE;
+using DeleteArrayAlignFuncType = void (*)(void*, std::align_val_t) noexcept;
 static DeleteArrayAlignFuncType real_delete_array_align = NONE;
 
 // Unused.
@@ -167,7 +167,7 @@ static int log_fd = -1;
     array[9] = length;                                                                                                 \
     for (unsigned char i = 0; i < length; i++) {                                                                       \
         for (int j = 0; j < 8; j++) {                                                                                  \
-            u_int64_t value         = (args)[i];                                                                       \
+            u_int64_t value = (args)[i];                                                                               \
             array[(i * 8) + 10 + j] = (value >> (8 * (7 - j))) & 0xFF;                                                 \
         }                                                                                                              \
     }                                                                                                                  \
@@ -188,22 +188,22 @@ void __attribute__((constructor)) lib_init() {
     }
 
 #ifdef __cplusplus
-    real_new               = (NewFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW);
-    real_new_nothrow       = (NewFuncNoThrowType) dlsym(RTLD_NEXT, SYMBOL_NEW_NOTHROW);
-    real_new_array         = (NewArrayFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW_ARRAY);
+    real_new = (NewFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW);
+    real_new_nothrow = (NewFuncNoThrowType) dlsym(RTLD_NEXT, SYMBOL_NEW_NOTHROW);
+    real_new_array = (NewArrayFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW_ARRAY);
     real_new_array_nothrow = (NewArrayFuncNoThrowType) dlsym(RTLD_NEXT, SYMBOL_NEW_ARRAY_NOTHROW);
 
-    real_delete               = (DeleteFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE);
-    real_delete_sized         = (DeleteFuncSizedType) dlsym(RTLD_NEXT, SYMBOL_DELETE_SIZED);
-    real_delete_nothrow       = (DeleteFuncNoThrowType) dlsym(RTLD_NEXT, SYMBOL_DELETE_NOTHROW);
-    real_delete_array         = (DeleteArrayFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ARRAY);
-    real_delete_array_sized   = (DeleteArrayFuncSizedType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ARRAY_SIZED);
+    real_delete = (DeleteFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE);
+    real_delete_sized = (DeleteFuncSizedType) dlsym(RTLD_NEXT, SYMBOL_DELETE_SIZED);
+    real_delete_nothrow = (DeleteFuncNoThrowType) dlsym(RTLD_NEXT, SYMBOL_DELETE_NOTHROW);
+    real_delete_array = (DeleteArrayFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ARRAY);
+    real_delete_array_sized = (DeleteArrayFuncSizedType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ARRAY_SIZED);
     real_delete_array_nothrow = (DeleteArrayFuncNoThrowType) dlsym(RTLD_NEXT, SYMBOL_NEW_ARRAY_NOTHROW);
 
 #if __cplusplus >= CPP_17
-    real_new_align          = (NewAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW_ALIGN);
-    real_new_array_align    = (NewArrayAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW_ARRAY_ALIGN);
-    real_delete_align       = (DeleteAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ALIGN);
+    real_new_align = (NewAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW_ALIGN);
+    real_new_array_align = (NewArrayAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW_ARRAY_ALIGN);
+    real_delete_align = (DeleteAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ALIGN);
     real_delete_array_align = (DeleteArrayAlignFuncType) dlsym(RTLD_NEXT, SYMBOL_DELETE_ARRAY_ALIGN);
 #endif
 
