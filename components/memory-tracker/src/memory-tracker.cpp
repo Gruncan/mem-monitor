@@ -78,6 +78,8 @@
 
 
 #define FILE_NAME "/tmp/memory_tracker.tmtc"
+#define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
+#define DEBUG_PREFIX "[MEMORY_TRACKER] DEBUG: "
 
 #define LOAD_SYMBOL(symbol, funcType)                                                                                  \
     if (real_##symbol == NONE) {                                                                                       \
@@ -171,7 +173,10 @@ static int log_fd = -1;
             array[(i * 8) + 10 + j] = (value >> (8 * (7 - j))) & 0xFF;                                                 \
         }                                                                                                              \
     }                                                                                                                  \
-    write(log_fd, array, 10 + (sizeof(u_int64_t) * length));
+    size_t written = write(log_fd, array, 10 + (sizeof(u_int64_t) * length));                                          \
+    if (written < 1) {                                                                                                 \
+        fprintf(stderr, ERROR_PREFIX "Error writing to log file\n");                                                   \
+    }
 
 #define MEM_TEST
 #ifndef MEM_TEST
@@ -184,7 +189,7 @@ static int log_fd = -1;
 void __attribute__((constructor)) lib_init() {
     log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (log_fd < 0) {
-        printf("MEMTRACK: Failed to open file %s", FILE_NAME);
+        fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);
     }
 
 #ifdef __cplusplus
