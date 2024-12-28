@@ -1,7 +1,7 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include "mem-info.h"
 #include "mem-writer.h"
@@ -15,44 +15,40 @@
 #define READS_BEFORE 100
 
 
-const char *argp_program_version = "1.5";
-const char *argp_program_bug_address = "<bug@example.com>";
+const char* argp_program_version     = "1.5";
+const char* argp_program_bug_address = "<bug@example.com>";
 
-static char doc[] = "Pull memory information";
+static char doc[]      = "Pull memory information";
 static char args_doc[] = "-f <filename> -t <delay time> -p <program to run>";
 
-static struct argp_option options[] = {
-    {"time", 't', "VALUE", 0, "The time delay between reads"},
-    {"file",  'f', "FILE", 0, "Output to filename to record the information"},
-    {"process",  'p', "COMMAND", 0, "The command to execute and pull proc data for"},
-    {"processid", 'i', "ID", 0, "The existing process ID to monitor"},
-    {"processname", 'n', "NAME",0, "The existing process name to monitor"},
-    {0}
-};
+static struct argp_option options[] = {{"time", 't', "VALUE", 0, "The time delay between reads"},
+                                       {"file", 'f', "FILE", 0, "Output to filename to record the information"},
+                                       {"process", 'p', "COMMAND", 0, "The command to execute and pull proc data for"},
+                                       {"processid", 'i', "ID", 0, "The existing process ID to monitor"},
+                                       {"processname", 'n', "NAME", 0, "The existing process name to monitor"},
+                                       {0}};
 
 struct arguments {
     unsigned long time;
-    char* filename;
-    char* command;
-    long int processid;
-    char* processname;
-    char** args;
-    int is_collecting_args;
+    char*         filename;
+    char*         command;
+    long int      processid;
+    char*         processname;
+    char**        args;
+    int           is_collecting_args;
 };
 
 static MemWriter* mw;
 
 
-static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
-    struct arguments *arguments = state->input;
+static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
+    struct arguments* arguments = state->input;
 
     switch (key) {
-        case 't':
-        {
-            char* endptr;
+        case 't': {
+            char*         endptr;
             unsigned long value = strtoul(arg, &endptr, 10);
-            if (*endptr != '\0')
-            {
+            if (*endptr != '\0') {
                 printf("Invalid time: %s\n", endptr);
                 return ARGP_KEY_ERROR;
             }
@@ -63,16 +59,14 @@ static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
             arguments->filename = arg;
             break;
         case 'p':
-            arguments->command = arg;
+            arguments->command            = arg;
             arguments->is_collecting_args = 1;
             break;
 
-        case 'i':
-        {
-            char* pendptr;
+        case 'i': {
+            char*    pendptr;
             long int pvalue = strtol(arg, &pendptr, 10);
-            if (*pendptr != '\0')
-            {
+            if (*pendptr != '\0') {
                 printf("Invalid process id: %s\n", pendptr);
                 return ARGP_KEY_ERROR;
             }
@@ -84,7 +78,7 @@ static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
             break;
         case ARGP_KEY_ARG:
             if (arguments->args == NULL) {
-                arguments->args = malloc(sizeof(char *) * 2);
+                arguments->args = malloc(sizeof(char*) * 2);
                 if (arguments->args == NULL) {
                     fprintf(stderr, "Error: Memory allocation failed.\n");
                     return ARGP_ERR_UNKNOWN;
@@ -97,7 +91,7 @@ static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
                     count++;
                 }
 
-                char **new_args = realloc(arguments->args, sizeof(char *) * (count + 2));
+                char** new_args = realloc(arguments->args, sizeof(char*) * (count + 2));
                 if (new_args == NULL) {
                     fprintf(stderr, "Error: Memory reallocation failed.\n");
                     for (int i = 0; arguments->args[i] != NULL; i++) {
@@ -108,8 +102,8 @@ static error_t parse_opt(const int key, char *arg, struct argp_state* state) {
                     return ARGP_ERR_UNKNOWN;
                 }
 
-                arguments->args = new_args;
-                arguments->args[count] = arg;
+                arguments->args            = new_args;
+                arguments->args[count]     = arg;
                 arguments->args[count + 1] = NULL;
             }
             break;
@@ -128,7 +122,6 @@ static struct argp argp = {options, parse_opt, args_doc, doc};
 
 
 void handle_signal(int sig) {
-
     // Check which signal was received and handle accordingly
     switch (sig) {
         case SIGTERM:
@@ -138,7 +131,7 @@ void handle_signal(int sig) {
             // TODO fix this, it deadlocks..
             // destroy_mem_writer(mw);
             printf("Exiting...\n");
-            _exit(0);  // Exit the program
+            _exit(0); // Exit the program
             break;
         default:
             printf("Received unknown signal (signal %d). Ignoring...\n", sig);
@@ -151,7 +144,7 @@ pid_t get_pid_by_name(const char* name) {
     // pgrep is probably more efficient that what i would do.. and quicker for me :)
     snprintf(command, sizeof(command), "pgrep %s", name);
 
-    FILE *fp = popen(command, "r");
+    FILE* fp = popen(command, "r");
     if (fp == NULL) {
         perror("popen");
         return -1;
@@ -177,7 +170,7 @@ int launch_process(struct arguments* args) {
     }
 
     if (pid == 0) {
-        char *exec_args[1024];
+        char* exec_args[1024];
         exec_args[0] = args->command;
 
         int i = 0;
@@ -191,27 +184,25 @@ int launch_process(struct arguments* args) {
 
         perror("execvp");
         return -1;
-    }else {
+    } else {
         printf("Executing %s (%d)..\n", args->command, pid);
 
         return pid;
-
     }
 }
 
-int main(int argc, char *argv[]){
-
+int main(int argc, char* argv[]) {
     signal(SIGTERM, handle_signal);
     signal(SIGINT, handle_signal);
 
     struct arguments arguments;
 
-    arguments.time = 5000;
-    arguments.filename = "memlog.json";
-    arguments.command = NULL;
-    arguments.args = NULL;
-    arguments.processid = -1;
-    arguments.processname = NULL;
+    arguments.time               = 5000;
+    arguments.filename           = "memlog.json";
+    arguments.command            = NULL;
+    arguments.args               = NULL;
+    arguments.processid          = -1;
+    arguments.processname        = NULL;
     arguments.is_collecting_args = 0;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
@@ -232,8 +223,8 @@ int main(int argc, char *argv[]){
     }
 
 
-    struct sMemInfo* mi = malloc(sizeof(struct sMemInfo));
-    struct sMemVmInfo* mp = malloc(sizeof(struct sMemVmInfo));
+    struct sMemInfo*        mi = malloc(sizeof(struct sMemInfo));
+    struct sMemVmInfo*      mp = malloc(sizeof(struct sMemVmInfo));
     struct sMemProcessInfo* pi = NULL;
 
     if (pid == -2) {
@@ -261,7 +252,7 @@ int main(int argc, char *argv[]){
     printf("Writing memory info to file...\n");
 
     int processTerminated = 0;
-    int counter = 0;
+    int counter           = 0;
 
     while (1) {
         read_mem_info(mi);
@@ -275,9 +266,9 @@ int main(int argc, char *argv[]){
 
         if (counter >= READS_BEFORE) {
             break;
-        }else if (processTerminated == 1){
+        } else if (processTerminated == 1) {
             counter++;
-        }else if (pid != -1) {
+        } else if (pid != -1) {
             int result;
             int status;
             if (is_child_proc == 1) {
@@ -286,7 +277,7 @@ int main(int argc, char *argv[]){
                 result = check_process_exists(pid);
                 if (result == 1) {
                     result = 0;
-                }else if (result == 0) {
+                } else if (result == 0) {
                     result = 1;
                 }
                 status = 0;
@@ -313,7 +304,6 @@ int main(int argc, char *argv[]){
                 processTerminated = 1;
             }
         }
-
     }
 
     free(mi);

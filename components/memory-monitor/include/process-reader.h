@@ -5,9 +5,9 @@
 
 
 struct sMemProcessInfo {
-    long oomAdj;
-    long oomScore;
-    long oomScoreAdj;
+    long          oomAdj;
+    long          oomScore;
+    long          oomScoreAdj;
     unsigned long size;
     unsigned long resident;
     unsigned long shared;
@@ -28,4 +28,4 @@ void read_process_info(struct sMemProcessInfo* pi, pid_t pid);
 void reset_process_info(struct sMemProcessInfo* pi);
 
 
-#endif //PROCESS_READER_H
+#endif // PROCESS_READER_H

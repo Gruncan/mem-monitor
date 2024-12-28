@@ -120,7 +120,7 @@ int delete_nothrow_test() {
 
 int new_array_nothrow_test() {
     // This should throw a std::bad_alloc however with nothrow we get a nullptr
-    int* ptr = new(std::nothrow) int[1000000000000000000];
+    int* ptr = new (std::nothrow) int[1000000000000000000];
     ASSERT_NULL(ptr);
     return PASS;
 }
@@ -168,14 +168,3 @@ int new_array_aligned_test() {
 int delete_array_aligned_test() {
     return PASS;
 }
-
-
-
-
-
-
-
-
-
-
-
