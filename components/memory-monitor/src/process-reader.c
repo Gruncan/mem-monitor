@@ -27,28 +27,28 @@ int check_process_exists(pid_t pid) {
     return -1;
 }
 
-int init_process_info(struct sMemProcessInfo* pi, pid_t pid) {
+int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
     if (check_process_exists(pid) == 0) {
         perror("Process does not exist");
         return -1;
     }
 
-    pi->oomAdj      = -1;
-    pi->oomScore    = -1;
-    pi->oomScoreAdj = -1;
-    pi->data        = 0;
-    pi->size        = 0;
-    pi->resident    = 0;
-    pi->shared      = 0;
-    pi->text        = 0;
-    pi->data        = 0;
-    pi->dirty       = 0;
+    mem_proc_info->oom_adj = -1;
+    mem_proc_info->oom_score = -1;
+    mem_proc_info->oom_score_adj = -1;
+    mem_proc_info->data = 0;
+    mem_proc_info->size = 0;
+    mem_proc_info->resident = 0;
+    mem_proc_info->shared = 0;
+    mem_proc_info->text = 0;
+    mem_proc_info->data = 0;
+    mem_proc_info->dirty = 0;
 
     return 0;
 }
 
 
-void read_process_mem_info(struct sMemProcessInfo* pi, const pid_t pid) {
+void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     char file[256];
     snprintf(file, sizeof(file), "/proc/%d/statm", pid);
 
@@ -59,15 +59,16 @@ void read_process_mem_info(struct sMemProcessInfo* pi, const pid_t pid) {
     }
 
     if (strlen(content) == 0) {
-        pi->size     = 0;
-        pi->resident = 0;
-        pi->shared   = 0;
-        pi->text     = 0;
-        pi->data     = 0;
-        pi->dirty    = 0;
+        mem_proc_info->size = 0;
+        mem_proc_info->resident = 0;
+        mem_proc_info->shared = 0;
+        mem_proc_info->text = 0;
+        mem_proc_info->data = 0;
+        mem_proc_info->dirty = 0;
     } else {
-        if (sscanf(content, "%lu %lu %lu %lu %lu %lu", &pi->size, &pi->resident, &pi->shared, &pi->text, &pi->data,
-                   &pi->dirty) != STATM_FIELDS) {
+        if (sscanf(content, "%lu %lu %lu %lu %lu %lu", &mem_proc_info->size, &mem_proc_info->resident,
+                   &mem_proc_info->shared, &mem_proc_info->text, &mem_proc_info->data,
+                   &mem_proc_info->dirty) != STATM_FIELDS) {
             perror("Failed to parse /proc/pid/statm");
             free(content);
             return;
@@ -75,36 +76,36 @@ void read_process_mem_info(struct sMemProcessInfo* pi, const pid_t pid) {
 
         const long page_size_kb = sysconf(_SC_PAGESIZE) / 1024;
 
-        pi->size *= page_size_kb;
-        pi->resident *= page_size_kb;
-        pi->shared *= page_size_kb;
-        pi->text *= page_size_kb;
-        pi->data *= page_size_kb;
-        pi->dirty *= page_size_kb;
+        mem_proc_info->size *= page_size_kb;
+        mem_proc_info->resident *= page_size_kb;
+        mem_proc_info->shared *= page_size_kb;
+        mem_proc_info->text *= page_size_kb;
+        mem_proc_info->data *= page_size_kb;
+        mem_proc_info->dirty *= page_size_kb;
     }
 
     free(content);
 }
 
-void read_process_info(struct sMemProcessInfo* pi, const pid_t pid) {
-    const size_t length  = 3;
-    char*        files[] = {"/proc/%d/oom_adj", "/proc/%d/oom_score", "/proc/%d/oom_score_adj"};
+void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+    const size_t length = 3;
+    char* files[] = {"/proc/%d/oom_adj", "/proc/%d/oom_score", "/proc/%d/oom_score_adj"};
 
     char filenames[length][20];
 
     for (int i = 0; i < length; i++) {
         sprintf(filenames[i], files[i], pid);
-        char*     content = mem_parse_file(filenames[i], 8, READ_RAW);
-        const int value   = atoi(content);
+        char* content = mem_parse_file(filenames[i], 8, READ_RAW);
+        const int value = atoi(content);
         switch (i) {
             case 0:
-                pi->oomAdj = value;
+                mem_proc_info->oom_adj = value;
                 break;
             case 1:
-                pi->oomScore = value;
+                mem_proc_info->oom_score = value;
                 break;
             case 2:
-                pi->oomScoreAdj = value;
+                mem_proc_info->oom_score_adj = value;
                 break;
             default:
                 break;
@@ -112,17 +113,17 @@ void read_process_info(struct sMemProcessInfo* pi, const pid_t pid) {
         free(content);
     }
 
-    read_process_mem_info(pi, pid);
+    read_process_mem_info(mem_proc_info, pid);
 }
 
-void reset_process_info(struct sMemProcessInfo* pi) {
-    if (pi == NULL)
+void reset_process_info(MemProcInfo* mem_proc_info) {
+    if (mem_proc_info == NULL)
         return;
 
-    pi->size     = -1;
-    pi->resident = -1;
-    pi->shared   = -1;
-    pi->text     = -1;
-    pi->data     = -1;
-    pi->dirty    = -1;
+    mem_proc_info->size = -1;
+    mem_proc_info->resident = -1;
+    mem_proc_info->shared = -1;
+    mem_proc_info->text = -1;
+    mem_proc_info->data = -1;
+    mem_proc_info->dirty = -1;
 }

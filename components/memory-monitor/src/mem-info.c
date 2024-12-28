@@ -10,42 +10,25 @@
          //        might need to tweek for lower systems..
 
 
-static const size_t sizeUL = sizeof(unsigned long);
-
-
-void set_mem_struct_value(void* sStruct, const size_t structLength, const char* map[], const char* key,
+void set_mem_struct_value(void* struct_ptr, const size_t struct_length, const char* map[], const char* key,
                           const unsigned long value) {
-    for (int i = 0; i < structLength / sizeUL; i++) {
+    for (int i = 0; i < struct_length / SIZE_UL; i++) {
         if (strcmp(key, map[i]) == 0) {
-            const size_t valueOffset = i * sizeUL;
-            if (valueOffset >= structLength) {
+            const size_t valueOffset = i * SIZE_UL;
+            if (valueOffset >= struct_length) {
                 perror("Failed to write to struct!");
                 return;
             }
             // This looks disgusting.. I thought I understood C but pointer arithmetic needs casting to 1 byte char?
-            *(unsigned long*) ((char*) sStruct + valueOffset) = value;
+            *(unsigned long*) ((char*) struct_ptr + valueOffset) = value;
 
             break;
         }
     }
 }
 
-unsigned long get_mem_struct_value(void* sStruct, const size_t structLength, const char* map[], const char* key) {
-    for (int i = 0; i < structLength / sizeUL; i++) {
-        if (strcmp(key, map[i]) == 0) {
-            const size_t valueOffset = i * sizeUL;
-            if (valueOffset >= structLength) {
-                perror("Failed to read from struct!");
-            }
-            return *(unsigned long*) ((char*) sStruct + valueOffset);
-        }
-    }
 
-    return -1; // Error memory stat should not be possible for negative?
-}
-
-
-char* mem_parse_file(const char* filename, size_t bufferSize, uint8_t value) {
+char* mem_parse_file(const char* filename, size_t buffer_size, const uint8_t value) {
     char read_type[3];
     if (value == READ_RAW) {
         read_type[0] = 'r';
@@ -64,11 +47,11 @@ char* mem_parse_file(const char* filename, size_t bufferSize, uint8_t value) {
     }
 
     size_t content_size = 0;
-    if (bufferSize == -1) {
-        bufferSize = BUFFER_SIZE;
+    if (buffer_size == -1) {
+        buffer_size = BUFFER_SIZE;
     }
 
-    char* content = malloc(bufferSize);
+    char* content = malloc(buffer_size);
 
 
     if (content == NULL) {
@@ -78,7 +61,7 @@ char* mem_parse_file(const char* filename, size_t bufferSize, uint8_t value) {
     }
 
     size_t bytes_read;
-    while ((bytes_read = fread(content + content_size, 1, bufferSize - content_size - 1, fp)) > 0) {
+    while ((bytes_read = fread(content + content_size, 1, buffer_size - content_size - 1, fp)) > 0) {
         content_size += bytes_read;
     }
     content[content_size] = '\0';

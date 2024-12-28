@@ -70,7 +70,7 @@ int test_struct_writer() {
     struct testStruct t1 = {1, 2, 3, 4};
 
     size_t length = sizeof(struct testStruct) / sizeof(unsigned long);
-    size_t size   = sizeof(struct testStruct);
+    size_t size = sizeof(struct testStruct);
 
     char* buffer = malloc(length + 4);
 
@@ -138,24 +138,24 @@ int test_timeval_diff_ms() {
     struct timeval time_1 = {1629387587, 500000};
     struct timeval time_2 = {1629387587, 510000};
 
-    short milliseconds1 = timeval_diff_ms(&time_1, &time_2);
+    ushort milliseconds1 = timeval_diff_ms(&time_1, &time_2);
 
     ASSERT_EQUAL(milliseconds1, 10);
 
-    short milliseconds2 = timeval_diff_ms(&time_2, &time_1);
+    ushort milliseconds2 = timeval_diff_ms(&time_2, &time_1);
 
     ASSERT_EQUAL(milliseconds2, 0)
 
     return PASS;
 }
 
-struct mem_value* init_test_mem_value(struct mem_value* next, void* data, unsigned int length) {
-    struct mem_value* test_value = malloc(sizeof(struct mem_value));
-    test_value->next             = next;
+struct mem_value_s* init_test_mem_value(struct mem_value_s* next, void* data, unsigned int length) {
+    struct mem_value_s* test_value = malloc(sizeof(struct mem_value_s));
+    test_value->next = next;
 
-    struct mtc_value* test_mtc_value = malloc(sizeof(struct mtc_value));
-    test_mtc_value->data             = data;
-    test_mtc_value->length           = length;
+    struct mtc_value_s* test_mtc_value = malloc(sizeof(struct mtc_value_s));
+    test_mtc_value->data = data;
+    test_mtc_value->length = length;
 
     test_value->value = test_mtc_value;
 
@@ -164,17 +164,17 @@ struct mem_value* init_test_mem_value(struct mem_value* next, void* data, unsign
 
 
 int test_writer_routine() {
-    struct mem_queue test_queue;
+    MemQueue test_queue;
 
     mem_queue_init(&test_queue);
 
-    struct sMemWriter test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
+    struct mem_writer_s test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
 
     void* buffer = malloc(5);
 
     test_writer.file = buffer;
 
-    struct mem_value* tailValue = init_test_mem_value(NULL, NULL, 0);
+    struct mem_value_s* tail_value = init_test_mem_value(NULL, NULL, 0);
 
     unsigned char* values = malloc(5);
 
@@ -182,12 +182,12 @@ int test_writer_routine() {
         values[i] = i + 1;
     }
 
-    struct mem_value* headValue = init_test_mem_value(tailValue, values, 5);
+    struct mem_value_s* head_value = init_test_mem_value(tail_value, values, 5);
 
 
     test_queue.size = 2;
-    test_queue.head = headValue;
-    test_queue.tail = tailValue;
+    test_queue.head = head_value;
+    test_queue.tail = tail_value;
 
     writer_routine(&test_writer);
 
@@ -202,7 +202,7 @@ int test_writer_routine() {
 
 
 int test_create_destroy_mem_writer() {
-    struct sMemWriter* mw = new_mem_writer();
+    struct mem_writer_s* mw = new_mem_writer();
 
     char* filename = "test.file";
 
@@ -213,8 +213,8 @@ int test_create_destroy_mem_writer() {
 
     ASSERT_NOT_NULL((void*) mw->file);
 
-    ASSERT_EQUAL(mw->hasWrittenHeader, 0)
-    ASSERT_NULL(mw->prevTimestamp)
+    ASSERT_EQUAL(mw->has_written_header, 0)
+    ASSERT_NULL(mw->prev_timestamp)
 
     ASSERT_NOT_NULL(mw->writer_queue)
 
@@ -240,7 +240,7 @@ int test_write_mtc_header() {
         perror("Failed to allocated time memory");
         return FAIL;
     }
-    time->tv_sec  = 1629387587;
+    time->tv_sec = 1629387587;
     time->tv_usec = 510000;
 
     unsigned char* buffer = write_mtc_header(time);
@@ -263,24 +263,24 @@ int test_write_mtc_header() {
 
 
 int test_write_mem_header() {
-    struct mem_queue test_queue;
+    MemQueue test_queue;
 
     mem_queue_init(&test_queue);
 
-    struct sMemWriter test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
+    struct mem_writer_s test_writer = {"test", NULL, 0, 0, NULL, &test_queue, 0};
 
-    struct sMemInfo   meminfo   = {0};
-    struct sMemVmInfo memvminfo = {0};
+    MemInfo meminfo = {0};
+    MemVmInfo memvminfo = {0};
 
     write_mem(&test_writer, &meminfo, &memvminfo, NULL);
 
-    ASSERT_EQUAL(test_writer.hasWrittenHeader, 1)
+    ASSERT_EQUAL(test_writer.has_written_header, 1)
 
     ASSERT_EQUAL(test_queue.size, 1);
     ASSERT_NOT_NULL(test_queue.head);
     ASSERT_NOT_NULL(test_queue.tail);
 
-    struct mem_value* header_value = test_queue.head;
+    struct mem_value_s* header_value = test_queue.head;
 
     ASSERT_EQUAL(header_value->value->length, 5);
     ushort* header_content = header_value->value->data;
@@ -291,39 +291,38 @@ int test_write_mem_header() {
     return PASS;
 }
 
-void set_struct_incremental_values(unsigned long* sStruct, const uint structLength, const uint offset) {
-    for (int i = 0; i < structLength / SIZE_UL; i++) {
-        sStruct[i] = i + 1 + offset;
+void set_struct_incremental_values(unsigned long* struct_ptr, const uint struct_length, const uint offset) {
+    for (int i = 0; i < struct_length / SIZE_UL; i++) {
+        struct_ptr[i] = i + 1 + offset;
     }
 }
 
 
 int test_write_mem_body_1() {
-    struct mem_queue test_queue;
+    MemQueue test_queue;
 
     mem_queue_init(&test_queue);
 
-    struct sMemWriter test_writer = {"test", NULL, 0, 1, get_current_time(), &test_queue, 0};
+    MemWriter test_writer = {"test", NULL, 0, 1, get_current_time(), &test_queue, 0};
 
-    struct sMemInfo   meminfo   = {0};
-    struct sMemVmInfo memvminfo = {0};
+    MemInfo mem_info = {0};
+    MemVmInfo mem_vm_info = {0};
 
-    set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), 0);
+    set_struct_incremental_values((unsigned long*) (&mem_vm_info), sizeof(MemVmInfo), 0);
 
-    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo),
-                                  sizeof(struct sMemVmInfo) / SIZE_UL);
+    set_struct_incremental_values((unsigned long*) (&mem_info), sizeof(MemInfo), sizeof(MemVmInfo) / SIZE_UL);
 
-    write_mem(&test_writer, &meminfo, &memvminfo, NULL);
+    write_mem(&test_writer, &mem_info, &mem_vm_info, NULL);
 
-    struct mem_value* header_value = test_queue.head;
+    struct mem_value_s* header_value = test_queue.head;
 
     // 4 is the subheader containing the millisecond offset and length.
-    uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemVmInfo) + STRUCT_WRITE_SIZE(struct sMemInfo);
+    uint total_size = 4 + STRUCT_WRITE_SIZE(MemVmInfo) + STRUCT_WRITE_SIZE(MemInfo);
 
     ASSERT_EQUAL(header_value->value->length, total_size);
 
     unsigned char* countBuffer = header_value->value->data + 2;
-    ushort         count       = countBuffer[0] << 8 | countBuffer[1];
+    ushort count = countBuffer[0] << 8 | countBuffer[1];
     ASSERT_EQUAL(count, total_size - 4);
 
     unsigned char* buffer = header_value->value->data + 4;
@@ -340,35 +339,35 @@ int test_write_mem_body_1() {
 }
 
 int test_write_mem_body_2() {
-    struct mem_queue test_queue;
+    MemQueue test_queue;
 
     mem_queue_init(&test_queue);
 
-    struct sMemWriter test_writer = {"test", NULL, 0, 1, get_current_time(), &test_queue, 0};
+    struct mem_writer_s test_writer = {"test", NULL, 0, 1, get_current_time(), &test_queue, 0};
 
-    struct sMemInfo        meminfo      = {0};
-    struct sMemVmInfo      memvminfo    = {0};
-    struct sMemProcessInfo process_info = {0};
+    MemInfo mem_info = {0};
+    MemVmInfo mem_vm_info = {0};
+    MemProcInfo mem_proc_info = {0};
 
-    set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), 0);
+    set_struct_incremental_values((unsigned long*) &mem_vm_info, sizeof(MemVmInfo), 0);
 
-    size_t value_length = sizeof(struct sMemVmInfo) / SIZE_UL;
-    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), value_length);
+    size_t value_length = sizeof(MemVmInfo) / SIZE_UL;
+    set_struct_incremental_values((unsigned long*) &mem_info, sizeof(MemInfo), value_length);
 
-    value_length += sizeof(struct sMemInfo) / SIZE_UL;
-    set_struct_incremental_values((unsigned long*) (&process_info), sizeof(struct sMemProcessInfo), value_length);
+    value_length += sizeof(MemInfo) / SIZE_UL;
+    set_struct_incremental_values((unsigned long*) &mem_proc_info, sizeof(MemProcInfo), value_length);
 
-    write_mem(&test_writer, &meminfo, &memvminfo, NULL);
+    write_mem(&test_writer, &mem_info, &mem_vm_info, NULL);
 
-    struct mem_value* header_value = test_queue.head;
+    struct mem_value_s* header_value = test_queue.head;
 
     // 4 is the subheader containing the millisecond offset and length.
-    uint total_size = 4 + STRUCT_WRITE_SIZE(struct sMemVmInfo) + STRUCT_WRITE_SIZE(struct sMemInfo);
+    uint total_size = 4 + STRUCT_WRITE_SIZE(MemVmInfo) + STRUCT_WRITE_SIZE(MemInfo);
 
     ASSERT_EQUAL(header_value->value->length, total_size);
 
-    unsigned char* countBuffer = header_value->value->data + 2;
-    ushort         count       = countBuffer[0] << 8 | countBuffer[1];
+    unsigned char* count_buffer = header_value->value->data + 2;
+    ushort count = count_buffer[0] << 8 | count_buffer[1];
     ASSERT_EQUAL(count, total_size - 4);
 
     unsigned char* buffer = header_value->value->data + 4;
@@ -385,32 +384,32 @@ int test_write_mem_body_2() {
 }
 
 int test_decoder() {
-    struct mem_queue test_queue;
+    MemQueue test_queue;
     mem_queue_init(&test_queue);
 
-    struct sMemWriter test_writer;
+    MemWriter test_writer;
 
 #undef MEM_TEST // TODO fix this
-    init_mem_writer(&test_writer, "test_wrting4.mtc");
+    init_mem_writer(&test_writer, "test_writing.mtc");
 
 
-    struct sMemInfo        meminfo      = {0};
-    struct sMemVmInfo      memvminfo    = {0};
-    struct sMemProcessInfo process_info = {0};
+    MemInfo mem_info = {0};
+    MemVmInfo mem_vm_info = {0};
+    MemProcInfo mem_proc_info = {0};
 
-    set_struct_incremental_values((unsigned long*) (&memvminfo), sizeof(struct sMemVmInfo), 0);
+    set_struct_incremental_values((unsigned long*) &mem_vm_info, sizeof(MemVmInfo), 0);
 
-    size_t value_length = sizeof(struct sMemVmInfo) / SIZE_UL;
-    set_struct_incremental_values((unsigned long*) (&meminfo), sizeof(struct sMemInfo), value_length);
+    size_t value_length = sizeof(MemVmInfo) / SIZE_UL;
+    set_struct_incremental_values((unsigned long*) &mem_info, sizeof(MemInfo), value_length);
 
-    value_length += sizeof(struct sMemInfo) / SIZE_UL;
-    set_struct_incremental_values((unsigned long*) (&process_info), sizeof(struct sMemProcessInfo), value_length);
+    value_length += sizeof(MemInfo) / SIZE_UL;
+    set_struct_incremental_values((unsigned long*) &mem_proc_info, sizeof(MemProcInfo), value_length);
 
-    write_mem(&test_writer, &meminfo, &memvminfo, &process_info);
+    write_mem(&test_writer, &mem_info, &mem_vm_info, &mem_proc_info);
 
-    write_mem(&test_writer, &meminfo, &memvminfo, &process_info);
+    write_mem(&test_writer, &mem_info, &mem_vm_info, &mem_proc_info);
 
-    write_mem(&test_writer, &meminfo, &memvminfo, &process_info);
+    write_mem(&test_writer, &mem_info, &mem_vm_info, &mem_proc_info);
 
 
     return PASS;

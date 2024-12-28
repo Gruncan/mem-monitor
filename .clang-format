@@ -14,8 +14,8 @@ SpaceBeforeParens: ControlStatements
 SpacesInParentheses: false
 SpacesInAngles: false
 SpaceAfterCStyleCast: true
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
 AlignTrailingComments: true
 AlignOperands: true
 SortIncludes: true

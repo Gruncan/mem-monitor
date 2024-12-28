@@ -15,10 +15,10 @@
 #define READS_BEFORE 100
 
 
-const char* argp_program_version     = "1.5";
+const char* argp_program_version = "1.5";
 const char* argp_program_bug_address = "<bug@example.com>";
 
-static char doc[]      = "Pull memory information";
+static char doc[] = "Pull memory information";
 static char args_doc[] = "-f <filename> -t <delay time> -p <program to run>";
 
 static struct argp_option options[] = {{"time", 't', "VALUE", 0, "The time delay between reads"},
@@ -30,12 +30,12 @@ static struct argp_option options[] = {{"time", 't', "VALUE", 0, "The time delay
 
 struct arguments {
     unsigned long time;
-    char*         filename;
-    char*         command;
-    long int      processid;
-    char*         processname;
-    char**        args;
-    int           is_collecting_args;
+    char* filename;
+    char* command;
+    long int process_id;
+    char* process_name;
+    char** args;
+    int is_collecting_args;
 };
 
 static MemWriter* mw;
@@ -46,10 +46,10 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
 
     switch (key) {
         case 't': {
-            char*         endptr;
-            unsigned long value = strtoul(arg, &endptr, 10);
-            if (*endptr != '\0') {
-                printf("Invalid time: %s\n", endptr);
+            char* end_ptr;
+            unsigned long value = strtoul(arg, &end_ptr, 10);
+            if (*end_ptr != '\0') {
+                printf("Invalid time: %s\n", end_ptr);
                 return ARGP_KEY_ERROR;
             }
             arguments->time = value;
@@ -59,22 +59,22 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
             arguments->filename = arg;
             break;
         case 'p':
-            arguments->command            = arg;
+            arguments->command = arg;
             arguments->is_collecting_args = 1;
             break;
 
         case 'i': {
-            char*    pendptr;
-            long int pvalue = strtol(arg, &pendptr, 10);
-            if (*pendptr != '\0') {
-                printf("Invalid process id: %s\n", pendptr);
+            char* p_end_ptr;
+            long int p_value = strtol(arg, &p_end_ptr, 10);
+            if (*p_end_ptr != '\0') {
+                printf("Invalid process id: %s\n", p_end_ptr);
                 return ARGP_KEY_ERROR;
             }
-            arguments->processid = pvalue;
+            arguments->process_id = p_value;
             break;
         }
         case 'n':
-            arguments->processname = arg;
+            arguments->process_name = arg;
             break;
         case ARGP_KEY_ARG:
             if (arguments->args == NULL) {
@@ -102,8 +102,8 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
                     return ARGP_ERR_UNKNOWN;
                 }
 
-                arguments->args            = new_args;
-                arguments->args[count]     = arg;
+                arguments->args = new_args;
+                arguments->args[count] = arg;
                 arguments->args[count + 1] = NULL;
             }
             break;
@@ -121,7 +121,7 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
 static struct argp argp = {options, parse_opt, args_doc, doc};
 
 
-void handle_signal(int sig) {
+void handle_signal(const int sig) {
     // Check which signal was received and handle accordingly
     switch (sig) {
         case SIGTERM:
@@ -197,12 +197,12 @@ int main(int argc, char* argv[]) {
 
     struct arguments arguments;
 
-    arguments.time               = 5000;
-    arguments.filename           = "memlog.json";
-    arguments.command            = NULL;
-    arguments.args               = NULL;
-    arguments.processid          = -1;
-    arguments.processname        = NULL;
+    arguments.time = 5000;
+    arguments.filename = "memlog.json";
+    arguments.command = NULL;
+    arguments.args = NULL;
+    arguments.process_id = -1;
+    arguments.process_name = NULL;
     arguments.is_collecting_args = 0;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
@@ -216,34 +216,34 @@ int main(int argc, char* argv[]) {
             return -1;
         }
         is_child_proc = 1;
-    } else if (arguments.processid != -1) {
-        pid = (pid_t) arguments.processid;
-    } else if (arguments.processname != NULL) {
-        pid = get_pid_by_name(arguments.processname);
+    } else if (arguments.process_id != -1) {
+        pid = (pid_t) arguments.process_id;
+    } else if (arguments.process_name != NULL) {
+        pid = get_pid_by_name(arguments.process_name);
     }
 
 
-    struct sMemInfo*        mi = malloc(sizeof(struct sMemInfo));
-    struct sMemVmInfo*      mp = malloc(sizeof(struct sMemVmInfo));
-    struct sMemProcessInfo* pi = NULL;
+    MemInfo* mem_info = malloc(sizeof(MemInfo));
+    MemVmInfo* mem_vm_info = malloc(sizeof(MemVmInfo));
+    MemProcInfo* mem_proc_info = NULL;
 
     if (pid == -2) {
         return -1;
     }
     if (pid != -1) {
-        pi = malloc(sizeof(struct sMemProcessInfo));
-        if (init_process_info(pi, pid) == -1) {
+        mem_proc_info = malloc(sizeof(MemProcInfo));
+        if (init_process_info(mem_proc_info, pid) == -1) {
             return -1;
         }
     }
 
-    read_mem_info(mi);
+    read_mem_info(mem_info);
 
 
     printf("Memory info:\n");
-    printf(" - Total: %lu\n", mi->total);
-    printf(" - Free: %lu\n", mi->free);
-    printf(" - Available: %lu\n", mi->available);
+    printf(" - Total: %lu\n", mem_info->total);
+    printf(" - Free: %lu\n", mem_info->free);
+    printf(" - Available: %lu\n", mem_info->available);
 
     mw = new_mem_writer();
 
@@ -251,22 +251,22 @@ int main(int argc, char* argv[]) {
 
     printf("Writing memory info to file...\n");
 
-    int processTerminated = 0;
-    int counter           = 0;
+    int process_terminated = 0;
+    int counter = 0;
 
     while (1) {
-        read_mem_info(mi);
-        read_mem_vm_info(mp);
+        read_mem_info(mem_info);
+        read_mem_vm_info(mem_vm_info);
         if (pid != -1) {
-            read_process_info(pi, pid);
+            read_process_info(mem_proc_info, pid);
         }
-        write_mem(mw, mi, mp, pi);
+        write_mem(mw, mem_info, mem_vm_info, mem_proc_info);
 
         usleep(arguments.time);
 
         if (counter >= READS_BEFORE) {
             break;
-        } else if (processTerminated == 1) {
+        } else if (process_terminated == 1) {
             counter++;
         } else if (pid != -1) {
             int result;
@@ -300,18 +300,17 @@ int main(int argc, char* argv[]) {
                 }
                 printf("Collecting %d more data points..\n", READS_BEFORE);
                 pid = -1;
-                reset_process_info(pi);
-                processTerminated = 1;
+                reset_process_info(mem_proc_info);
+                process_terminated = 1;
             }
         }
     }
 
-    free(mi);
-    free(mp);
-    if (pi != NULL) {
-        free(pi);
+    free(mem_info);
+    free(mem_vm_info);
+    if (mem_proc_info != NULL) {
+        free(mem_proc_info);
     }
-
 
     return 0;
 }
