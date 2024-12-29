@@ -26,6 +26,7 @@ typedef struct mem_writer_s {
 typedef unsigned int uint;
 typedef unsigned long long uint64;
 typedef unsigned short ushort;
+typedef unsigned long ulong;
 
 void writer_routine(MemWriter* mem_writer);
 
