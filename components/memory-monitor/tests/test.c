@@ -6,9 +6,11 @@
 
 #include "test.h"
 
+#include <map-reader.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/time.h>
 
 #define STRUCT_WRITE_SIZE(s) ((sizeof(s) / SIZE_UL) * 3)
@@ -26,6 +28,8 @@ int test_write_mem_header();
 int test_write_mem_body_1();
 int test_write_mem_body_2();
 int test_decoder();
+int test_map_parse_line();
+int test_read_map_info();
 
 static const uint SIZE_UL = sizeof(unsigned long);
 
@@ -52,6 +56,9 @@ int main(int argc, char* argv[]) {
 
     TEST(test_write_mem_body_2)
 
+    TEST_SKIP(test_map_parse_line)
+
+    TEST(test_read_map_info)
 
     PRINT_RESULTS
 
@@ -411,6 +418,42 @@ int test_decoder() {
 
     write_mem(&test_writer, &mem_info, &mem_vm_info, &mem_proc_info);
 
+
+    return PASS;
+}
+
+int test_map_parse_line() {
+    MemMapInfo mem_map_info;
+    init_mem_map_info(&mem_map_info);
+
+    char* line =  "57745f5f5000-57745f625000 r--p 00000000 103:02 49414700                  /usr/bin/bash";
+
+    map_parse_line(line, &mem_map_info);
+
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->start_address, 96157327904768)
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->end_address, 96157328101376)
+
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->permissions[0], READ)
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->permissions[3], PRIVATE)
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->mapping_offset, 0)
+
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->device_major, 103)
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->device_minor, 2)
+
+    ASSERT_EQUAL(mem_map_info.mem_page_info[0]->inode, 49414700)
+    ASSERT_STR_EQUAL(mem_map_info.mem_page_info[0]->pathname, "/usr/bin/bash")
+
+    return PASS;
+}
+
+
+int test_read_map_info() {
+    MemMapInfo mem_map_info;
+    init_mem_map_info(&mem_map_info);
+
+    read_map_info(&mem_map_info, 750045);
+
+    printf("%p", &mem_map_info);
 
     return PASS;
 }
