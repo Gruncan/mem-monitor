@@ -49,12 +49,12 @@ int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
 
 
 void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
-    char file[256];
+    char file[128];
     snprintf(file, sizeof(file), "/proc/%d/statm", pid);
 
     char* content = mem_parse_file(file, 64, READ_BINARY);
     if (content == NULL) {
-        printf("mem_parse_file failed\n");
+        perror("Failed statm read\n");
         return;
     }
 
