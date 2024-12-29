@@ -63,10 +63,23 @@ char* mem_parse_file(const char* filename, size_t buffer_size, const uint8_t val
     size_t bytes_read;
     while ((bytes_read = fread(content + content_size, 1, buffer_size - content_size - 1, fp)) > 0) {
         content_size += bytes_read;
+
+        if (content_size >= buffer_size -1) {
+            buffer_size *= 2;
+            char* new_content = realloc(content, buffer_size);
+            if (new_content == NULL) {
+                perror("Memory realloc failed");
+                free(content);
+                content = NULL;
+                goto cleanup;
+            }
+            content = new_content;
+        }
     }
+    // Should shrink this when we know size
     content[content_size] = '\0';
 
+cleanup:
     fclose(fp);
-
     return content;
 }
