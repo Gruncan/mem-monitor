@@ -453,7 +453,7 @@ int test_read_map_info() {
 
     read_map_info(&mem_map_info, 750045);
 
-    printf("%p", &mem_map_info);
+    printf("%p\n", &mem_map_info);
 
     return PASS;
 }

@@ -52,7 +52,7 @@ void map_parse_line(const char* line, MemMapInfo* mem_map_info) {
                                         start_address, end_address, permissions, &mem_page_info->mapping_offset,
                                         &mem_page_info->device_major, &mem_page_info->device_minor, &mem_page_info->inode,
                                         pathname);
-    if (items != 8) {
+    if (items != 8 && items != 7) {
         perror("Failed to parse line");
         free(pathname);
         return;
