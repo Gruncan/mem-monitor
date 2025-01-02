@@ -17,11 +17,14 @@ namespace mtc {
 
     public:
 
-        explicit MemoryDecoder(const std::string& filename);
+        MemoryDecoder(const std::string& filename);
+        MemoryDecoder();
 
         virtual ~MemoryDecoder();
 
         void load_file();
+        void setFilename(const std::string& filename);
+        std::string getFilename();
 
         virtual std::shared_ptr<MtcObject> decode() = 0;
 
