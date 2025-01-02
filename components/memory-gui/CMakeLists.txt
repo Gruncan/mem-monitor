@@ -7,16 +7,19 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_PREFIX_PATH /home/duncan/Qt/6.8.1/gcc_64)
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS PrintSupport REQUIRED)
 
 SET(PROJECT_SOURCES
-    src/main.cpp
-    src/mainwindow.cpp
-    include/mainwindow.h
-    include/decoder-worker.h
-    src/decoder-worker.cpp
+        src/main.cpp
+        src/mainwindow.cpp
+        include/mainwindow.h
+        include/decoder-worker.h
+        src/decoder-worker.cpp
         include/decoder-monitor.h
         src/decoder-monitor.cpp
-    src/ui/mainwindow.ui
+        src/ui/mainwindow.ui
+        src/qcustomplot.cpp
+        include/qcustomplot.h
 )
 include_directories(include/
                     ../common/mtc/include)
@@ -25,9 +28,12 @@ include_directories(include/
 qt_add_executable(MemoryGUI MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
 target_link_libraries(MemoryGUI PRIVATE Qt::Widgets)
+target_link_libraries(MemoryGUI PRIVATE Qt::PrintSupport)
 target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}/common/mtc/libmtc_decoder.so)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/MemoryGUI_autogen/include)
+
+target_compile_definitions(MemoryGUI PRIVATE QCUSTOMPLOT_COMPILE_LIBRARY)
 
 
 qt_finalize_executable(MemoryGUI)
