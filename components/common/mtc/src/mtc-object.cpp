@@ -18,7 +18,17 @@ namespace mtc {
         points.push_back(point);
     }
 
+    int MtcObject::get_version() const {
+        return version;
+    }
 
+    std::tm MtcObject::get_date() const {
+        return date;
+    }
+
+    std::vector<MtcPoint> MtcObject::get_points() const {
+        return points;
+    }
 
 
 }
