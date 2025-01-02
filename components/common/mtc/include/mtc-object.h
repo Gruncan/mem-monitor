@@ -21,6 +21,11 @@ namespace mtc {
 
           void add_point(const MtcPoint& point);
 
+          int get_version() const;
+
+          std::tm get_date() const;
+
+          std::vector<MtcPoint> get_points() const;
     };
 
 }

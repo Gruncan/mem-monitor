@@ -2,6 +2,8 @@
 
 #include "mtc-decoder.h"
 
+#include <iostream>
+
 
 #define BIT_MASK_2 0b11
 #define BIT_MASK_4 0b1111
@@ -17,6 +19,10 @@ namespace mtc {
             object(nullptr)
 
     {
+
+    }
+
+    MtcDecoder::~MtcDecoder() {
 
     }
 
@@ -38,18 +44,18 @@ namespace mtc {
     }
 
     uint64_t MtcDecoder::decode_mem_time_offset(const uint64_t offset) const {
-        return buffer->at(offset) << 8 | buffer->at(offset + 1);
+        return static_cast<unsigned char>(buffer->at(offset)) << 8 | static_cast<unsigned char>(buffer->at(offset + 1));
     }
 
     uint64_t MtcDecoder::decode_data_length(const uint64_t offset) const {
-        return buffer->at(offset) << 8 | buffer->at(offset + 1);
+        return static_cast<unsigned char>(buffer->at(offset)) << 8 | static_cast<unsigned char>(buffer->at(offset + 1));
     }
 
     void MtcDecoder::decode_mem_data(uint64_t data_length, uint64_t time_offset, const uint64_t offset) {
         MtcPoint point;
         for (uint64_t i = 0; i < data_length; i += 3) {
-            uint8_t data_key = buffer->at(offset + i);
-            const uint16_t data_value = buffer->at(offset + i + 1) << 8 | buffer->at(offset + i + 2);
+            uint8_t data_key = static_cast<uint8_t>(buffer->at(offset + i));
+            const uint16_t data_value = static_cast<uint8_t>(buffer->at(offset + i + 1)) << 8 | static_cast<uint8_t>(buffer->at(offset + i + 2));
             point.data[data_key] = data_value;
         }
 
@@ -59,7 +65,7 @@ namespace mtc {
 
 
 
-    std::shared_ptr<MtcObject> MtcDecoder::decode() override {
+    std::shared_ptr<MtcObject> MtcDecoder::decode() {
         if (buffer == nullptr) {
             load_file();
             if (buffer == nullptr || buffer->empty()) {
@@ -71,18 +77,22 @@ namespace mtc {
         decode_header(offset);
         offset += 5;
 
-        while (offset < length) {
-            const uint64_t time_offset = decode_mem_time_offset(offset);
-            offset += 2;
+        while (offset < buffer->size()) {
+            try {
+                const uint64_t time_offset = decode_mem_time_offset(offset);
+                offset += 2;
 
-            const uint64_t data_length = decode_data_length(offset);
-            offset += 2;
+                const uint64_t data_length = decode_data_length(offset);
+                offset += 2;
 
-            decode_mem_data(data_length, time_offset, offset);
+                decode_mem_data(data_length, time_offset, offset);
 
-            offset += data_length;
+                offset += data_length;
+            } catch (...) {
+                std::cout << "MtcDecoder::decode: Failed to decode data length" << std::endl;
+                break;
+            }
         }
-
 
         return object;
     }

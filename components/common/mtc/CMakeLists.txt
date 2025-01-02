@@ -11,3 +11,4 @@ set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE CXX)
 include_directories(include/)
 
 add_library(mtc_decoder SHARED ${MTC_SOURCES})
+add_subdirectory(tests)

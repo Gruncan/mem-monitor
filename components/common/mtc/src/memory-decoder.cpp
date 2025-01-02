@@ -33,6 +33,8 @@ namespace mtc {
         input.seekg(0, std::ios::beg);
 
         buffer = std::make_shared<std::vector<char>>(length);
+        buffer->reserve(length);
+
         input.read(buffer->data(), length);
 
         input.close();
