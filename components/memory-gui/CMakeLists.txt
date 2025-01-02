@@ -12,14 +12,20 @@ SET(PROJECT_SOURCES
     src/main.cpp
     src/mainwindow.cpp
     include/mainwindow.h
+    include/decoder-worker.h
+    src/decoder-worker.cpp
+        include/decoder-monitor.h
+        src/decoder-monitor.cpp
     src/ui/mainwindow.ui
 )
-include_directories(include/)
+include_directories(include/
+                    ../common/mtc/include)
 
 
 qt_add_executable(MemoryGUI MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
 target_link_libraries(MemoryGUI PRIVATE Qt::Widgets)
+target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}/common/mtc/libmtc_decoder.so)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/MemoryGUI_autogen/include)
 
