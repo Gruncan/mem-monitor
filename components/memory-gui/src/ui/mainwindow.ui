@@ -36,6 +36,9 @@
    <property name="enabled">
     <bool>true</bool>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>450</x>
@@ -48,7 +51,7 @@
     <bool>true</bool>
    </property>
    <property name="value">
-    <number>24</number>
+    <number>0</number>
    </property>
    <property name="textVisible">
     <bool>true</bool>
