@@ -13,12 +13,16 @@ namespace mtc {
     class MtcDecoder : public MemoryDecoder {
     private:
       std::shared_ptr<MtcObject> object;
+      uint64_t offset;
 
     public:
           MtcDecoder(const std::string& filename);
-          ~MtcDecoder();
+          MtcDecoder();
+          ~MtcDecoder() override;
 
           std::shared_ptr<MtcObject> decode() override;
+          double getProgress() const;
+
 
     protected:
           void decode_header(uint64_t offset);

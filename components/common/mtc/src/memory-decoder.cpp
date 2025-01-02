@@ -15,6 +15,14 @@ namespace mtc {
 
     }
 
+    MemoryDecoder::MemoryDecoder() :
+            buffer(nullptr),
+            filename(""),
+            length(0)
+    {
+
+    }
+
     MemoryDecoder::~MemoryDecoder() {
         buffer.reset();
     }
@@ -41,5 +49,13 @@ namespace mtc {
 
     }
 
+    void MemoryDecoder::setFilename(const std::string& filename) {
+        this->filename = filename;
+    }
 
-}
+    std::string MemoryDecoder::getFilename() {
+        return this->filename;
+    }
+
+
+} // namespace mtc

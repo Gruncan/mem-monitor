@@ -16,8 +16,14 @@ namespace mtc {
 
     MtcDecoder::MtcDecoder(const std::string& filename) :
             MemoryDecoder(filename),
-            object(nullptr)
+            object(nullptr),
+            offset(0)
 
+    {
+
+    }
+
+    MtcDecoder::MtcDecoder() : object(nullptr), offset(0)
     {
 
     }
@@ -73,7 +79,7 @@ namespace mtc {
             }
         }
 
-        uint64_t offset = 0;
+        offset = 0;
         decode_header(offset);
         offset += 5;
 
@@ -96,6 +102,14 @@ namespace mtc {
 
         return object;
     }
+
+    double MtcDecoder::getProgress() const {
+        if (buffer == nullptr || buffer->empty()) {
+            return 0.0;
+        }
+        return (static_cast<double>(offset) / static_cast<double>(buffer->size())) * 100;
+    }
+
 
 
 
