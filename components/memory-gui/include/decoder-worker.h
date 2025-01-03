@@ -13,14 +13,11 @@ class DecoderWorker : public QObject {
 public:
     DecoderWorker(QObject* parent, const std::shared_ptr<mtc::MtcDecoder>& decoder);
 
-    void setDecodeFilename(const std::string& filename) const;
-
 public Q_SLOTS:
-
-    void workerDecode();
+    void workerDecode(const std::string& filename);
 
 Q_SIGNALS:
-    void workerDecodeFinished();
+    void workerDecodeFinished(std::shared_ptr<mtc::MtcObject> data);
 
 private:
     std::shared_ptr<mtc::MtcDecoder> decoder;

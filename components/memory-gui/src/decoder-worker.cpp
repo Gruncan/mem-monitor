@@ -16,12 +16,9 @@ DecoderWorker::DecoderWorker(QObject* parent, const std::shared_ptr<MtcDecoder>&
 
 }
 
-void DecoderWorker::workerDecode(){
+void DecoderWorker::workerDecode(const std::string& filename){
     printf("DecoderWorker::workerDecode()\n");
-    decodedData = decoder->decode();
-    emit workerDecodeFinished();
-}
-
-void DecoderWorker::setDecodeFilename(const std::string& filename) const {
     decoder->setFilename(filename);
+    decodedData = decoder->decode();
+    emit workerDecodeFinished(decodedData);
 }
