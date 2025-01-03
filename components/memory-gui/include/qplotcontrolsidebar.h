@@ -17,7 +17,7 @@ public:
     void setCategories(const std::vector<mtc::MtcCategories>& categories);
 
 signals:
-     void plotCategoriesChanged(const QString& category, const QString& plot, bool enabled);
+     void categoriesChanged(const QString& category, const QString& plot, bool enabled);
 
 private:
     QTreeWidget* treeWidget;

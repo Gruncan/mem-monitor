@@ -28,7 +28,7 @@ namespace mtc {
 
           std::vector<MtcPoint> get_points() const;
 
-             uint64_t get_length() const;
+            uint64_t get_length() const;
     };
 
 }

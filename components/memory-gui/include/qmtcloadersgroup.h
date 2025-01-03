@@ -16,6 +16,10 @@ public:
     explicit QMtcLoadersGroup(QWidget* parent = nullptr, std::vector<QMtcLoader*> widgets = {});
     ~QMtcLoadersGroup();
 
+    QMtcLoader* getLoader(uint8_t index) const;
+
+private:
+    std::vector<QMtcLoader*> mtcLoaders;
 
 };
 
