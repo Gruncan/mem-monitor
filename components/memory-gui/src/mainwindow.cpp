@@ -5,8 +5,10 @@
 #include "qmtcloadersgroup.h"
 #include "qplotcontrolsidebar.h"
 #include "ui/ui_mainwindow.h"
+
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
                         QMainWindow(parent),
@@ -30,37 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QPlotControlSidebar* sidebar = new QPlotControlSidebar(this);
     sidebar->setGeometry(QRect(10, 10, 200, 900));
-    std::vector<PlotCategory> categories = {
-        {"Temperature", {
-                {"Sensor 1", false, {1.0, 2.0, 3.0}},
-                {"Sensor 2", true, {2.0, 3.0, 4.0}}
-        }},
-        {"Pressure", {
-                {"Main Line", false, {10.0, 11.0, 12.0}},
-                {"Backup Line", false, {9.0, 10.0, 11.0}}
-        }}
-    };
-    sidebar->setPlotCategories(categories);
-    // decoderWorker->moveToThread(decoderThread);
-    // decoderMonitor->moveToThread(monitorThread);
-    //
-    // connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::loadButtonClick);
-    //
-    // // connect(decoderThread, &QThread::started, decoderWorker, &DecoderWorker::workerDecode);
-    // connect(decoderWorker, &DecoderWorker::workerDecodeFinished, this, &MainWindow::loaded);
-    // connect(decoderWorker, &DecoderWorker::workerDecodeFinished, decoderThread, &QThread::quit);
-    // connect(decoderThread, &QThread::finished, decoderWorker, &QObject::deleteLater);
-    //
-    // // connect(monitorThread, &QThread::started, decoderMonitor, &DecodeMonitor::monitorProgress);
-    // connect(decoderMonitor, &DecodeMonitor::progressQueried, this, &MainWindow::updateProgress);
-    // connect(monitorThread, &QThread::finished, decoderMonitor, &QObject::deleteLater);
-    //
-    // connect(this, &MainWindow::startDecoding, decoderMonitor, &DecodeMonitor::monitorProgress);
-    // connect(this, &MainWindow::startDecoding, decoderWorker, &DecoderWorker::workerDecode);
-    //
-    // decoderThread->start();
-    // monitorThread->start();
-
+    sidebar->setCategories(mtc::MTC_CATEGORIES);
 
 
 }

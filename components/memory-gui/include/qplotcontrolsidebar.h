@@ -1,9 +1,11 @@
 
 #ifndef QPLOTCONTROLSIDEBAR_H
 #define QPLOTCONTROLSIDEBAR_H
-#include <QWidget>
-#include <qtreewidget.h>
+#include "mtc-config.h"
+
+
 #include "plotdata.h"
+#include <qtreewidget.h>
 
 
 class QPlotControlSidebar : public QWidget {
@@ -12,7 +14,7 @@ class QPlotControlSidebar : public QWidget {
 public:
     explicit QPlotControlSidebar(QWidget* parent = nullptr);
 
-    void setPlotCategories(const std::vector<PlotCategory>& plotCategories);
+    void setCategories(const std::vector<mtc::MtcCategories>& categories);
 
 signals:
      void plotCategoriesChanged(const QString& category, const QString& plot, bool enabled);
@@ -20,7 +22,7 @@ signals:
 private:
     QTreeWidget* treeWidget;
 
-    QTreeWidgetItem* createCategoryItem(const PlotCategory& plotCategory);
+    QTreeWidgetItem* createCategoryItem(const mtc::MtcCategories& categories);
 
 };
 

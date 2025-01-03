@@ -80,8 +80,13 @@ void QMtcLoader::load() {
         qDebug() << "No file selected";
         return;
     }
-
-    emit decode(filePath.toStdString());
+    std::string extension = std::filesystem::path(filePath.toStdString()).extension().string();
+    if (extension == ".mtc") {
+        emit decode(filePath.toStdString());
+    }else {
+        label->setText("Not a valid .mtc file");
+        label->setStyleSheet("QLabel { color: rgb(255, 0, 0); }");
+    }
 
 }
 
@@ -93,4 +98,5 @@ void QMtcLoader::updateProgress(int progress) {
 void QMtcLoader::loaded(const std::shared_ptr<mtc::MtcObject>& data, const std::string& filePath) {
     progressBar->setValue(100);
     label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(data->get_version()).arg(data->get_length()));
+    label->setStyleSheet("");
 }

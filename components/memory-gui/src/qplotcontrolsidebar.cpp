@@ -7,11 +7,12 @@
 
 QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent){
     QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins(0, 0, 0, 10);
 
     treeWidget = new QTreeWidget(this);
     treeWidget->setHeaderHidden(true);
     treeWidget->setMinimumWidth(200);
+    treeWidget->setContentsMargins(0, 0, 0, 10);
     layout->addWidget(treeWidget);
 
     connect(treeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item) {
@@ -23,26 +24,32 @@ QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent){
     });
 }
 
-void QPlotControlSidebar::setPlotCategories(const std::vector<PlotCategory>& plotCategories) {
+void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& categories) {
     treeWidget->clear();
 
-    for (auto& plotCategory : plotCategories) {
-        const auto item = createCategoryItem(plotCategory);
+    for (auto& category : categories) {
+        const auto item = createCategoryItem(category);
         treeWidget->addTopLevelItem(item);
-        item->setExpanded(true);
+        item->setExpanded(false);
     }
 }
 
 
-QTreeWidgetItem* QPlotControlSidebar::createCategoryItem(const PlotCategory& plotCategory) {
-    auto item = new QTreeWidgetItem();
-    item->setText(0, plotCategory.name);
+QTreeWidgetItem* QPlotControlSidebar::createCategoryItem(const mtc::MtcCategories& categories) {
+    QTreeWidgetItem* item = new QTreeWidgetItem();
+    item->setText(0, QString::fromStdString(categories.name));
     item->setFlags(item->flags() | Qt::ItemIsUserTristate | Qt::ItemIsUserCheckable);
 
-    for (auto plot : plotCategory.data) {
+    for (const uint32_t id : categories.ids) {
         auto plotItem = new QTreeWidgetItem();
-        plotItem->setText(0, plot.name);
-        plotItem->setCheckState(0, plot.enabled ? Qt::Checked : Qt::Unchecked);
+        auto value = mtc::MTC_INDEX_MAPPING.find(id);
+        if (value == mtc::MTC_INDEX_MAPPING.end()) {
+            qDebug() << id;
+            continue;
+        }
+        std::string name = value->second;
+        plotItem->setText(0, QString::fromStdString(name));
+        plotItem->setCheckState(0, Qt::Unchecked);
         item->addChild(plotItem);
     }
 
