@@ -5,6 +5,7 @@ set(MTC_SOURCES
     src/mtc-decoder.cpp
     src/memory-decoder.cpp
     src/mtc-object.cpp
+#    include/mtc-config.h
 )
 set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE CXX)
 
