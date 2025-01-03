@@ -3,6 +3,7 @@
 
 #include "QPushButton"
 #include "qmtcloadersgroup.h"
+#include "qplotcontrolsidebar.h"
 #include "ui/ui_mainwindow.h"
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -27,7 +28,19 @@ MainWindow::MainWindow(QWidget *parent) :
     QMtcLoadersGroup* loaderGroup = new QMtcLoadersGroup(this, loaders);
     loaderGroup->setGeometry(QRect(300, 720, 900, 150));
 
-
+    QPlotControlSidebar* sidebar = new QPlotControlSidebar(this);
+    sidebar->setGeometry(QRect(10, 10, 200, 900));
+    std::vector<PlotCategory> categories = {
+        {"Temperature", {
+                {"Sensor 1", false, {1.0, 2.0, 3.0}},
+                {"Sensor 2", true, {2.0, 3.0, 4.0}}
+        }},
+        {"Pressure", {
+                {"Main Line", false, {10.0, 11.0, 12.0}},
+                {"Backup Line", false, {9.0, 10.0, 11.0}}
+        }}
+    };
+    sidebar->setPlotCategories(categories);
     // decoderWorker->moveToThread(decoderThread);
     // decoderMonitor->moveToThread(monitorThread);
     //
