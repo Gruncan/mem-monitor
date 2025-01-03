@@ -19,10 +19,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private Q_SLOTS:
-    void loadButtonClick();
-    void loaded();
-    void updateProgress(int progress) const;
+// private Q_SLOTS:
+//     void loadButtonClick();
+//     void loaded();
+//     void updateProgress(int progress) const;
 
 Q_SIGNALS:
     void startDecoding();

@@ -3,7 +3,7 @@
 
 namespace mtc {
 
-    MtcObject::MtcObject(int version, std::tm timestamp): version(version), date(timestamp) {
+    MtcObject::MtcObject(int version, std::tm timestamp): version(version), date(timestamp), length(0) {
 
     }
 
@@ -11,11 +11,13 @@ namespace mtc {
         version = object.version;
         date = object.date;
         points = object.points;
+        length = object.length;
     }
 
 
     void MtcObject::add_point(const MtcPoint& point) {
         points.push_back(point);
+        length++;
     }
 
     int MtcObject::get_version() const {
@@ -28,6 +30,10 @@ namespace mtc {
 
     std::vector<MtcPoint> MtcObject::get_points() const {
         return points;
+    }
+
+    uint64_t MtcObject::get_length() const {
+        return length;
     }
 
 

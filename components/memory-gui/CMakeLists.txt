@@ -20,6 +20,10 @@ SET(PROJECT_SOURCES
         src/ui/mainwindow.ui
         src/qcustomplot.cpp
         include/qcustomplot.h
+        include/qmtcloader.h
+        src/qmtcloader.cpp
+        src/qmtcloadersgroup.cpp
+        include/qmtcloadersgroup.h
 )
 include_directories(include/
                     ../common/mtc/include)

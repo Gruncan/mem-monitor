@@ -14,6 +14,7 @@ namespace mtc {
         std::tm date{};
 
         std::vector<MtcPoint> points;
+        uint64_t length;
 
     public:
           MtcObject(int version, std::tm timestamp);
@@ -26,6 +27,8 @@ namespace mtc {
           std::tm get_date() const;
 
           std::vector<MtcPoint> get_points() const;
+
+             uint64_t get_length() const;
     };
 
 }
