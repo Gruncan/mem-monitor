@@ -3,8 +3,10 @@
 
 #include "decoder-worker.h"
 
-#include <utility>
 #include "mtc-decoder.h"
+#include <filesystem>
+
+
 
 using namespace mtc;
 
@@ -20,5 +22,5 @@ void DecoderWorker::workerDecode(const std::string& filename){
     printf("DecoderWorker::workerDecode()\n");
     decoder->setFilename(filename);
     decodedData = decoder->decode();
-    emit workerDecodeFinished(decodedData);
+    emit workerDecodeFinished(decodedData, std::filesystem::path(filename).filename().string());
 }

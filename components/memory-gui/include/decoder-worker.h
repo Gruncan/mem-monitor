@@ -17,7 +17,7 @@ public Q_SLOTS:
     void workerDecode(const std::string& filename);
 
 Q_SIGNALS:
-    void workerDecodeFinished(std::shared_ptr<mtc::MtcObject> data);
+    void workerDecodeFinished(std::shared_ptr<mtc::MtcObject> data, const std::string& filePath);
 
 private:
     std::shared_ptr<mtc::MtcDecoder> decoder;
