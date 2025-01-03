@@ -26,7 +26,7 @@ public:
 
 public Q_SLOTS:
     void load();
-    void loaded(const std::shared_ptr<mtc::MtcObject>& data);
+    void loaded(const std::shared_ptr<mtc::MtcObject>& data, const std::string& filePath);
     void updateProgress(int progress);
 
 Q_SIGNALS:

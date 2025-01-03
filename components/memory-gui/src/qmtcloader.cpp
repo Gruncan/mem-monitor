@@ -90,6 +90,7 @@ void QMtcLoader::updateProgress(int progress) {
     progressBar->setValue(progress);
 }
 
-void QMtcLoader::loaded(const std::shared_ptr<mtc::MtcObject>& data) {
-    label->setText(QString("Version %1\n: Length: %2").arg(data->get_version()).arg(data->get_length()));
+void QMtcLoader::loaded(const std::shared_ptr<mtc::MtcObject>& data, const std::string& filePath) {
+    progressBar->setValue(100);
+    label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(data->get_version()).arg(data->get_length()));
 }
