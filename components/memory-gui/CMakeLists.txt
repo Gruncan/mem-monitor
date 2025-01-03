@@ -24,6 +24,9 @@ SET(PROJECT_SOURCES
         src/qmtcloader.cpp
         src/qmtcloadersgroup.cpp
         include/qmtcloadersgroup.h
+        include/qplotcontrolsidebar.h
+        src/qplotcontrolsidebar.cpp
+        include/plotdata.h
 )
 include_directories(include/
                     ../common/mtc/include)
