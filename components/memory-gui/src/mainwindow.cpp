@@ -27,14 +27,58 @@ MainWindow::MainWindow(QWidget *parent) :
         loaders.push_back(new QMtcLoader(this, QString("Load %1").arg(i).toStdString().c_str()));
     }
 
-    QMtcLoadersGroup* loaderGroup = new QMtcLoadersGroup(this, loaders);
-    loaderGroup->setGeometry(QRect(300, 720, 900, 150));
+    loadersGroup = new QMtcLoadersGroup(this, loaders);
+    loadersGroup->setGeometry(QRect(300, 720, 900, 150));
 
     QPlotControlSidebar* sidebar = new QPlotControlSidebar(this);
     sidebar->setGeometry(QRect(10, 10, 200, 900));
     sidebar->setCategories(mtc::MTC_CATEGORIES);
 
 
+    connect(sidebar, &QPlotControlSidebar::categoriesChanged, this, &MainWindow::mtcCategoriesChanged);
+
+}
+
+
+void MainWindow::mtcCategoriesChanged(const QString& category, const QString& plot, bool enabled) {
+    auto value = mtc::MTC_KEY_MAPPING.find(plot.toStdString());
+    if (value == mtc::MTC_KEY_MAPPING.end()) {
+        qDebug() << "Unable to find plot name: " << plot;
+        return;
+    }
+    if (!enabled) {
+        ui->plot->clearGraphs();
+        return;
+    }
+
+    uint32_t key = value->second;
+    std::shared_ptr<mtc::MtcObject> object = loadersGroup->getLoader(0)->getMtcData();
+
+    std::vector<mtc::MtcPoint> mtcPoints = object->get_points();
+
+    double time_sum = 0;
+    double max_value = 0;
+    QVector<double> time, values;
+    for (int i = 0; i < mtcPoints.size(); i += 50) {
+        mtc::MtcPoint p = mtcPoints.at(i);
+        time_sum += p.time_offset;
+        time.push_back(time_sum);
+        if (p.data[key] > max_value) {
+            max_value = p.data[key];
+        }
+        values.push_back(p.data[key]);
+    }
+
+    qDebug() << time.size();
+
+    ui->plot->addGraph();
+    ui->plot->graph(0)->setData(time, values);
+    ui->plot->xAxis->setLabel("Time");
+    ui->plot->yAxis->setLabel("Memory");
+
+    ui->plot->xAxis->setRange(0, time_sum);
+    ui->plot->yAxis->setRange(0, max_value);
+    ui->plot->replot();
 }
 
 

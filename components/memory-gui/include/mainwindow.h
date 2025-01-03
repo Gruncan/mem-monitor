@@ -3,6 +3,7 @@
 
 #include "decoder-monitor.h"
 #include "decoder-worker.h"
+#include "qmtcloadersgroup.h"
 
 
 #include <QMainWindow>
@@ -19,10 +20,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-// private Q_SLOTS:
-//     void loadButtonClick();
-//     void loaded();
-//     void updateProgress(int progress) const;
+private Q_SLOTS:
+     void mtcCategoriesChanged(const QString& category, const QString& plot, bool enabled);
 
 Q_SIGNALS:
     void startDecoding();
@@ -34,6 +33,7 @@ private:
     DecoderWorker* decoderWorker;
     DecodeMonitor* decoderMonitor;
     std::shared_ptr<mtc::MtcDecoder> decoder;
+    QMtcLoadersGroup* loadersGroup;
 
 };
 

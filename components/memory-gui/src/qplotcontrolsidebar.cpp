@@ -17,7 +17,7 @@ QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent){
 
     connect(treeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item) {
         if (item->parent()) {
-            emit plotCategoriesChanged(item->parent()->text(0), item->text(0),
+            emit categoriesChanged(item->parent()->text(0), item->text(0),
                 item->checkState(0) == Qt::Checked);
 
         }
@@ -44,7 +44,7 @@ QTreeWidgetItem* QPlotControlSidebar::createCategoryItem(const mtc::MtcCategorie
         auto plotItem = new QTreeWidgetItem();
         auto value = mtc::MTC_INDEX_MAPPING.find(id);
         if (value == mtc::MTC_INDEX_MAPPING.end()) {
-            qDebug() << id;
+            qDebug() << "id:" << id << "is not mapped";
             continue;
         }
         std::string name = value->second;

@@ -23,6 +23,7 @@ public:
     explicit QMtcLoader(QWidget* parent = nullptr, const char* name = nullptr);
     ~QMtcLoader();
 
+    std::shared_ptr<mtc::MtcObject> getMtcData();
 
 public Q_SLOTS:
     void load();
@@ -48,6 +49,8 @@ private:
 
     QThread* workerThread;
     QThread* monitorThread;
+
+    std::shared_ptr<mtc::MtcObject> data;
 
 
 };
