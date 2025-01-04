@@ -7,33 +7,32 @@ namespace mtc {
 
     }
 
-    MtcObject::MtcObject(const MtcObject& object) {
-        version = object.version;
-        date = object.date;
-        points = object.points;
-        length = object.length;
+    inline void MtcObject::add_point(const uint8_t key, MtcPoint* point) {
+        if (!points_maps.contains(key)) {
+            points_maps[key] = new std::vector<MtcPoint*>(length + 1);
+        }
+        points_maps[key]->push_back(point);
     }
 
-
-    void MtcObject::add_point(const MtcPoint& point) {
-        points.push_back(point);
-        length++;
-    }
-
-    int MtcObject::get_version() const {
+    inline int MtcObject::get_version() const {
         return version;
     }
 
-    std::tm MtcObject::get_date() const {
+    inline std::tm MtcObject::get_date() const {
         return date;
     }
 
-    std::vector<MtcPoint> MtcObject::get_points() const {
-        return points;
+    inline std::vector<MtcPoint*>* MtcObject::get_points(const uint8_t key){
+        return points_maps[key];
     }
 
-    uint64_t MtcObject::get_length() const {
+    inline uint64_t MtcObject::get_length() const {
         return length;
+    }
+
+    inline void MtcObject::add_time(uint16_t* time) {
+        time_pointers.push_back(time);
+        length++;
     }
 
 
