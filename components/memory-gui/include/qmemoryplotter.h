@@ -2,8 +2,9 @@
 #ifndef QMEMORYPLOTTER_H
 #define QMEMORYPLOTTER_H
 #include "qcustomplot.h"
+#include "qmtcloader.h"
+#include "qplotrender.h"
 
-#include <mtc-object.h>
 #include <mtc-point.h>
 
 
@@ -12,37 +13,25 @@ class QMemoryPlotter : public QObject {
 
 public:
 
-    explicit QMemoryPlotter(QCustomPlot* plot);
+    explicit QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader);
 
-    void togglePlot(const QString& category, const QString& plot, bool enabled, std::shared_ptr<mtc::MtcObject> object);
+    void addPlot(uint8_t key);
 
-    void clearPlots();
+    void removePlot(uint8_t key);
+
+public Q_SLOTS:
+
+    void plotToggleChange(const QString& category, const QString& plotString, bool enabled);
 
 private:
 
     QCustomPlot* _plot;
-    QTimer _timer;
-    QVector<double> times;
-    QVector<double> values;
-    double valueMax;
 
-    std::map<uint8_t, QString> plotsEnabled;
+    std::map<uint8_t, QCPGraph*> plotsEnabled;
 
-    void processBatch(const std::vector<mtc::MtcPoint*>* points, size_t start, uint64_t skipFactor,
-                            size_t end, double& timeSum);
+    QMtcLoader* _loader;
 
-    void plotData(const std::vector<mtc::MtcPoint*>* points, uint64_t length);
-
-    void updatePlots(const std::shared_ptr<mtc::MtcObject>& object);
-
-    static uint64_t getSkipFactor(size_t length);
-
-    void requestUpdate();
-
-    void updatePlot();
-
-    void finalisePlot();
-
+    QPlotRender* _plotRender;
 
 };
 

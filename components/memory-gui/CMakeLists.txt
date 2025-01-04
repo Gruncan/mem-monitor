@@ -29,6 +29,8 @@ SET(PROJECT_SOURCES
         include/plotdata.h
         src/qmemoryplotter.cpp
         include/qmemoryplotter.h
+        src/qplotrenderer.cpp
+        include/qplotrender.h
 )
 include_directories(include/
                     ../common/mtc/include)
