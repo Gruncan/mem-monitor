@@ -4,6 +4,7 @@
 #include "decoder-monitor.h"
 #include "decoder-worker.h"
 #include "qmtcloadersgroup.h"
+#include "qmemoryplotter.h"
 
 
 #include <QMainWindow>
@@ -34,6 +35,8 @@ private:
     DecodeMonitor* decoderMonitor;
     std::shared_ptr<mtc::MtcDecoder> decoder;
     QMtcLoadersGroup* loadersGroup;
+
+    std::unique_ptr<QMemoryPlotter> plotter;
 
 };
 
