@@ -11,6 +11,9 @@
 #define BIT_MASK_6 0b111111
 #define BIT_MASK_7 0b1111111
 
+
+#define CAST_UINT16(v1, v2) static_cast<uint16_t>(static_cast<uint8_t>(v1) << 8 | static_cast<uint8_t>(v2))
+
 namespace mtc {
 
 
@@ -50,18 +53,18 @@ namespace mtc {
     }
 
     inline uint16_t* MtcDecoder::decode_mem_time_offset(const uint64_t offset) const {
-        return new uint16_t(static_cast<uint16_t>(buffer->at(offset)) << 8 | static_cast<uint16_t>(buffer->at(offset + 1)));
+        return new uint16_t(CAST_UINT16(buffer->at(offset), buffer->at(offset + 1)));
     }
 
     inline uint16_t MtcDecoder::decode_data_length(const uint64_t offset) const {
-        return static_cast<uint16_t>(buffer->at(offset)) << 8 | static_cast<uint16_t>(buffer->at(offset + 1));
+        return CAST_UINT16(buffer->at(offset), buffer->at(offset + 1));
     }
 
     void MtcDecoder::decode_mem_data(const uint16_t data_length, uint16_t* time_offset, const uint64_t offset) const {
         object->add_time(time_offset);
         for (uint64_t i = 0; i < data_length; i += 3) {
             const uint8_t data_key = static_cast<uint8_t>(buffer->at(offset + i));
-            const uint16_t data_value = static_cast<uint8_t>(buffer->at(offset + i + 1)) << 8 | static_cast<uint8_t>(buffer->at(offset + i + 2));
+            const uint16_t data_value = CAST_UINT16(buffer->at(offset + i + 1), buffer->at(offset + i + 2));
             MtcPoint* point = new MtcPoint{time_offset, data_value};
             object->add_point(data_key, point);
         }
