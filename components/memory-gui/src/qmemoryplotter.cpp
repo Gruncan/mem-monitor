@@ -16,7 +16,12 @@ QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(pl
     _plot->setPlottingHints(QCP::phFastPolylines);
     _plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 
+    renderThread = new QThread;
+    _plotRender->moveToThread(renderThread);
 
+    connect(this, &QMemoryPlotter::queueRendering, _plotRender, &QPlotRender::queueRendering);
+
+    renderThread->start();
     plotsEnabled.clear();
 }
 
@@ -28,7 +33,8 @@ void QMemoryPlotter::addPlot(uint8_t key) {
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
     auto object = _loader->getMtcData();
-    _plotRender->queueRendering(object->get_points(key), object->get_length(), graph);
+
+    emit queueRendering(object->get_points(key), object->get_length(), graph);
 }
 
 void QMemoryPlotter::removePlot(uint8_t key) {

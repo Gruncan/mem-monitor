@@ -6,13 +6,15 @@
 #include <mtc-point.h>
 
 
-class QPlotRender {
+class QPlotRender : public QObject {
+    Q_OBJECT
+
 public:
     explicit QPlotRender(QCustomPlot* plot);
 
     ~QPlotRender();
 
-
+public Q_SLOTS:
     void queueRendering(const std::vector<mtc::MtcPoint*>* points, uint64_t length, QCPGraph* graph);
 
 private:

@@ -8,13 +8,18 @@
 static constexpr size_t BATCH_SIZE = 5000;
 static constexpr size_t TARGET_CHUNK = 1000;
 
-QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0)  {
+QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0)  {
+
+}
+
+QPlotRender::~QPlotRender() {
 
 }
 
 void QPlotRender::queueRendering(const std::vector<mtc::MtcPoint*>* points, const uint64_t length, QCPGraph* graph) {
     timeSum = 0;
-    valueMax = 0;
+
+    // valueMax = 0;
     const uint64_t sampleRate = getSampleRate(length);
 
     times.clear();
