@@ -23,6 +23,10 @@ public Q_SLOTS:
 
     void plotToggleChange(const QString& category, const QString& plotString, bool enabled);
 
+Q_SIGNALS:
+    void queueRendering(const std::vector<mtc::MtcPoint*>* points, uint64_t length, QCPGraph* graph);
+
+
 private:
 
     QCustomPlot* _plot;
@@ -32,6 +36,8 @@ private:
     QMtcLoader* _loader;
 
     QPlotRender* _plotRender;
+
+    QThread* renderThread;
 
 };
 
