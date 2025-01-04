@@ -34,24 +34,14 @@ MainWindow::MainWindow(QWidget *parent) :
     sidebar->setGeometry(QRect(10, 10, 200, 900));
     sidebar->setCategories(mtc::MTC_CATEGORIES);
 
+    //TODO update this index
+    plotter = new QMemoryPlotter(ui->plot, loadersGroup->getLoader(0));
 
-    connect(sidebar, &QPlotControlSidebar::categoriesChanged, this, &MainWindow::mtcCategoriesChanged);
+    connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
 
 }
 
 
-void MainWindow::mtcCategoriesChanged(const QString& category, const QString& plot, bool enabled) {
-    if (plotter == nullptr) {
-        plotter = std::make_unique<QMemoryPlotter>(ui->plot);
-    }
-    std::shared_ptr<mtc::MtcObject> object = loadersGroup->getLoader(0)->getMtcData();
-    plotter->togglePlot(category, plot, enabled, object);
-}
-
-
-// void MainWindow::updateProgress(const int progress) const {
-//     ui->progressBar->setValue(progress);
-// }
 
 MainWindow::~MainWindow() {
     // delete ui;
@@ -66,41 +56,5 @@ MainWindow::~MainWindow() {
 }
 
 
-// void MainWindow::loadButtonClick() {
-//     const QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Memory Time Encoding (*.mtc);;All Files (*)");
-//     if (!filePath.isEmpty()) {
-//         qDebug() << "Selected file:" << filePath;
-//     }else {
-//         qDebug() << "No file selected";
-//     }
-//     decoderWorker->setDecodeFilename(filePath.toStdString());
-//     ui->progressBar->setVisible(true);
-//
-//     emit startDecoding();
-// }
-
-
-// void MainWindow::loaded() {
-//     qDebug() << "Loaded";
-//     ui->progressBar->setValue(100);
-//     QVector<double> x(101), y(101); // initialize with entries 0..100
-//     for (int i=0; i<101; ++i)
-//     {
-//         x[i] = i/50.0 - 1; // x goes from -1 to 1
-//         y[i] = x[i]*x[i]; // let's plot a quadratic function
-//     }
-//     // create graph and assign data to it:
-//     ui->plot->addGraph();
-//     ui->plot->graph(0)->setData(x, y);
-//     // give the axes some labels:
-//     ui->plot->xAxis->setLabel("x");
-//     ui->plot->yAxis->setLabel("y");
-//     // set axes ranges, so we see all data:
-//     ui->plot->xAxis->setRange(-1, 1);
-//     ui->plot->yAxis->setRange(0, 1);
-//     ui->plot->replot();
-//     // monitorThread->terminate();
-//     // decoderThread->terminate();
-// };
 
 

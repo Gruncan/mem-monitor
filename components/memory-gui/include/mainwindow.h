@@ -21,8 +21,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private Q_SLOTS:
-     void mtcCategoriesChanged(const QString& category, const QString& plot, bool enabled);
 
 Q_SIGNALS:
     void startDecoding();
@@ -36,7 +34,7 @@ private:
     std::shared_ptr<mtc::MtcDecoder> decoder;
     QMtcLoadersGroup* loadersGroup;
 
-    std::unique_ptr<QMemoryPlotter> plotter;
+    QMemoryPlotter* plotter;
 
 };
 
