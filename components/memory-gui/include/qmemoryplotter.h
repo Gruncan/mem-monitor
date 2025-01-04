@@ -26,15 +26,16 @@ private:
     QVector<double> values;
     double valueMax;
 
-    std::map<uint32_t, QString> plotsEnabled;
+    std::map<uint8_t, QString> plotsEnabled;
 
-    void processBatch(const std::vector<mtc::MtcPoint>& points, uint64_t key, size_t start, uint64_t skipFactor, size_t end, double& timeSum);
+    void processBatch(const std::vector<mtc::MtcPoint*>* points, size_t start, uint64_t skipFactor,
+                            size_t end, double& timeSum);
 
-    void plotData(const std::vector<mtc::MtcPoint>& points, uint32_t key);
+    void plotData(const std::vector<mtc::MtcPoint*>* points, uint64_t length);
 
-    void updatePlots(std::shared_ptr<mtc::MtcObject> object);
+    void updatePlots(const std::shared_ptr<mtc::MtcObject>& object);
 
-    uint64_t getSkipFactor(size_t length);
+    static uint64_t getSkipFactor(size_t length);
 
     void requestUpdate();
 
