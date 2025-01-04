@@ -46,7 +46,6 @@ namespace mtc {
         input.read(buffer->data(), length);
 
         input.close();
-
     }
 
     void MemoryDecoder::setFilename(const std::string& filename) {

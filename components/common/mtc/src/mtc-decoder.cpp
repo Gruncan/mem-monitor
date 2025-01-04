@@ -38,35 +38,33 @@ namespace mtc {
         int version = header_bytes[0];
 
         std::tm timeinfo = {};
-        timeinfo.tm_year = (header_bytes[1] >> 2) - 100;
-        timeinfo.tm_mon = (header_bytes[1] & BIT_MASK_2) << 6 | (header_bytes[2] >> 6);
-        timeinfo.tm_mday = (header_bytes[2] >> 1) & BIT_MASK_5;
-        timeinfo.tm_hour = (header_bytes[2] & BIT_MASK_7) >> 3 | header_bytes[3] >> 4;
-        timeinfo.tm_min = (header_bytes[3] & BIT_MASK_4) << 2 | header_bytes[4] >> 6;
-        timeinfo.tm_sec = header_bytes[4] & BIT_MASK_6;
+        timeinfo.tm_year = static_cast<unsigned char>(header_bytes[1] >> 2) - 100;
+        timeinfo.tm_mon = static_cast<unsigned char>((header_bytes[1] & BIT_MASK_2) << 6 | (header_bytes[2] >> 6));
+        timeinfo.tm_mday = static_cast<unsigned char>((header_bytes[2] >> 1) & BIT_MASK_5);
+        timeinfo.tm_hour = static_cast<unsigned char>((header_bytes[2] & BIT_MASK_7) >> 3 | header_bytes[3] >> 4);
+        timeinfo.tm_min = static_cast<unsigned char>((header_bytes[3] & BIT_MASK_4) << 2 | header_bytes[4] >> 6);
+        timeinfo.tm_sec = static_cast<unsigned char>(header_bytes[4] & BIT_MASK_6);
 
         object = std::make_shared<MtcObject>(version, timeinfo);
 
     }
 
-    uint64_t MtcDecoder::decode_mem_time_offset(const uint64_t offset) const {
-        return static_cast<unsigned char>(buffer->at(offset)) << 8 | static_cast<unsigned char>(buffer->at(offset + 1));
+    inline uint16_t* MtcDecoder::decode_mem_time_offset(const uint64_t offset) const {
+        return new uint16_t(static_cast<uint16_t>(buffer->at(offset)) << 8 | static_cast<uint16_t>(buffer->at(offset + 1)));
     }
 
-    uint64_t MtcDecoder::decode_data_length(const uint64_t offset) const {
-        return static_cast<unsigned char>(buffer->at(offset)) << 8 | static_cast<unsigned char>(buffer->at(offset + 1));
+    inline uint16_t MtcDecoder::decode_data_length(const uint64_t offset) const {
+        return static_cast<uint16_t>(buffer->at(offset)) << 8 | static_cast<uint16_t>(buffer->at(offset + 1));
     }
 
-    void MtcDecoder::decode_mem_data(uint64_t data_length, uint64_t time_offset, const uint64_t offset) {
-        MtcPoint point;
+    void MtcDecoder::decode_mem_data(const uint16_t data_length, uint16_t* time_offset, const uint64_t offset) const {
+        object->add_time(time_offset);
         for (uint64_t i = 0; i < data_length; i += 3) {
-            uint8_t data_key = static_cast<uint8_t>(buffer->at(offset + i));
+            const uint8_t data_key = static_cast<uint8_t>(buffer->at(offset + i));
             const uint16_t data_value = static_cast<uint8_t>(buffer->at(offset + i + 1)) << 8 | static_cast<uint8_t>(buffer->at(offset + i + 2));
-            point.data[data_key] = data_value;
+            MtcPoint* point = new MtcPoint{time_offset, data_value};
+            object->add_point(data_key, point);
         }
-
-        point.time_offset = time_offset;
-        object->add_point(point);
     }
 
 
@@ -85,7 +83,7 @@ namespace mtc {
 
         while (offset < buffer->size()) {
             try {
-                const uint64_t time_offset = decode_mem_time_offset(offset);
+                uint16_t* time_offset = decode_mem_time_offset(offset);
                 offset += 2;
 
                 const uint64_t data_length = decode_data_length(offset);

@@ -11,9 +11,8 @@
 namespace mtc {
 
 struct MtcPoint {
-    uint8_t time_offset;
-    std::map<uint8_t, uint16_t> data;
-
+    uint16_t* time_offset;
+    uint16_t value;
 };
 
 
