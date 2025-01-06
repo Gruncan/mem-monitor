@@ -17,6 +17,7 @@ namespace mtc {
         std::vector<uint16_t*> time_pointers;
 
         std::map<uint8_t, std::vector<MtcPoint*>*> points_maps;
+        std::map<uint8_t, bool>* point_default;
         uint64_t length;
 
     public:
@@ -29,6 +30,10 @@ namespace mtc {
         std::tm get_date() const;
 
         std::vector<MtcPoint*>* get_points(uint8_t key);
+
+        bool is_point_default(uint8_t key);
+
+        std::map<uint8_t, bool>* get_default_points() const;
 
         uint64_t get_length() const;
 
