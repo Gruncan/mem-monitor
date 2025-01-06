@@ -6,6 +6,7 @@
 #include <mtc-config.h>
 
 
+static constexpr int QUALITY = 1000;
 
 QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(plot), _loader(loader), gen(1)  {
 
@@ -25,7 +26,7 @@ QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(pl
     plotsEnabled.clear();
 }
 
-void QMemoryPlotter::addPlot(uint8_t key) {
+void QMemoryPlotter::addPlot(mk_size_t key) {
     QCPGraph* graph = _plot->addGraph();
     plotsEnabled[key] = graph;
     if (_plot->graphCount() == 1) {
@@ -44,7 +45,7 @@ void QMemoryPlotter::addPlot(uint8_t key) {
     emit queueRendering(object->get_points(key), object->get_length(), graph);
 }
 
-void QMemoryPlotter::removePlot(uint8_t key) {
+void QMemoryPlotter::removePlot(mk_size_t key) {
     if (_plot->graphCount() == 1) {
         _plot->legend->setVisible(false);
     }
@@ -63,7 +64,7 @@ void QMemoryPlotter::plotToggleChange(const QString& category, const QString& pl
         return;
     }
 
-    const uint8_t key = value->second;
+    const mk_size_t key = value->second;
 
     if (enabled) {
         addPlot(key);

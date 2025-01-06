@@ -60,7 +60,7 @@ QTreeWidgetItem* QPlotControlSidebar::createCategoryItem(const mtc::MtcCategorie
     return item;
 }
 
-void QPlotControlSidebar::enableNonDefaultFields(const std::map<uint8_t, bool>* defaultFields) {
+void QPlotControlSidebar::enableNonDefaultFields(const std::map<mk_size_t, bool>* defaultFields) {
     for (uint16_t i = 0; i < treeWidget->topLevelItemCount(); i++) {
         QTreeWidgetItem* item = treeWidget->topLevelItem(i);
         for (uint16_t j = 0; j < item->childCount(); j++) {

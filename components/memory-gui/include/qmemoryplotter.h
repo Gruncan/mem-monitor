@@ -15,9 +15,9 @@ public:
 
     explicit QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader);
 
-    void addPlot(uint8_t key);
+    void addPlot(mk_size_t key);
 
-    void removePlot(uint8_t key);
+    void removePlot(mk_size_t key);
 
 public Q_SLOTS:
 
@@ -31,7 +31,7 @@ private:
 
     QCustomPlot* _plot;
 
-    std::map<uint8_t, QCPGraph*> plotsEnabled;
+    std::map<mk_size_t, QCPGraph*> plotsEnabled;
 
     QMtcLoader* _loader;
 

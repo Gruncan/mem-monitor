@@ -1,5 +1,6 @@
 
 include_directories("include/")
+include_directories(${COMMON_DIR})
 
 add_executable(mem_monitor
         src/main.c

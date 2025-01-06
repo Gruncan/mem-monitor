@@ -34,7 +34,7 @@ QMtcLoadersGroup::~QMtcLoadersGroup() {
 }
 
 
-QMtcLoader* QMtcLoadersGroup::getLoader(const uint8_t index) const {
+QMtcLoader* QMtcLoadersGroup::getLoader(const mk_size_t index) const {
     return mtcLoaders.at(index);
 }
 

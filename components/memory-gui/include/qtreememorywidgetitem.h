@@ -3,14 +3,16 @@
 #define QTREEMEMORYWIDGETITEM_H
 #include <qtreewidget.h>
 
+#include "mtc-config.h"
+
 class QTreeMemoryWidgetItem : public QTreeWidgetItem {
 public:
-    explicit QTreeMemoryWidgetItem(uint8_t key);
+    explicit QTreeMemoryWidgetItem(mk_size_t key);
 
-    uint8_t get_key() const;
+    mk_size_t get_key() const;
 
 private:
-    uint8_t _key;
+    mk_size_t _key;
 
 
 

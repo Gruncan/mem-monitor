@@ -6,10 +6,11 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "../../mem-monitor-config.h"
 
 namespace mtc {
 
-static const std::map<std::string, uint32_t> MTC_KEY_MAPPING = {
+static const std::map<std::string, mk_size_t> MTC_KEY_MAPPING = {
     {"nr_free_pages", 0x0},
     {"nr_zone_inactive_anon", 0x1},
     {"nr_zone_active_anon", 0x2},
@@ -236,7 +237,7 @@ static const std::map<std::string, uint32_t> MTC_KEY_MAPPING = {
     {"p_data", 0xdf},
     {"p_dirty", 0xe0},
 };
-static const std::map<uint32_t, std::string> MTC_INDEX_MAPPING {
+static const std::map<mk_size_t, std::string> MTC_INDEX_MAPPING {
     {0x0, "nr_free_pages"},
     {0x1, "nr_zone_inactive_anon"},
     {0x2, "nr_zone_active_anon"},
@@ -466,7 +467,7 @@ static const std::map<uint32_t, std::string> MTC_INDEX_MAPPING {
 
 struct MtcCategories {
     std::string name;
-    std::vector<uint32_t> ids;
+    std::vector<mk_size_t> ids;
 };
 
 const static std::vector<MtcCategories> MTC_CATEGORIES = {
