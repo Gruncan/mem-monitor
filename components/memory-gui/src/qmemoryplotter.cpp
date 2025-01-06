@@ -2,12 +2,12 @@
 
 
 #include "qmemoryplotter.h"
-
+#include <random>
 #include <mtc-config.h>
 
 
 
-QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(plot), _loader(loader)  {
+QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(plot), _loader(loader), gen(1)  {
 
     _plotRender = new QPlotRender(_plot);
 
@@ -28,16 +28,26 @@ QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(pl
 void QMemoryPlotter::addPlot(uint8_t key) {
     QCPGraph* graph = _plot->addGraph();
     plotsEnabled[key] = graph;
+    if (_plot->graphCount() == 1) {
+        _plot->legend->setVisible(true);
+        _plot->legend->setBrush(QBrush(QColor(255, 255, 255, 230)));
+        _plot->legend->setBorderPen(QPen(Qt::black));
+    }
 
     // _plot->xAxis->setRange(0, times.last());
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
     std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
+    graph->setPen(QPen(generateRandomColor()));
+    graph->setName(QString::fromStdString(mtc::MTC_INDEX_MAPPING.at(key)));
 
     emit queueRendering(object->get_points(key), object->get_length(), graph);
 }
 
 void QMemoryPlotter::removePlot(uint8_t key) {
+    if (_plot->graphCount() == 1) {
+        _plot->legend->setVisible(false);
+    }
     _plot->removeGraph(plotsEnabled[key]);
     plotsEnabled.erase(key);
     // Maybe we should tell reender about this
@@ -60,4 +70,14 @@ void QMemoryPlotter::plotToggleChange(const QString& category, const QString& pl
     }else {
         removePlot(key);
     }
+}
+
+QColor QMemoryPlotter::generateRandomColor() {
+    std::uniform_int_distribution<> dis(30, 225);
+    QColor color;
+    do {
+        color = QColor(dis(gen), dis(gen), dis(gen));
+    } while (usedColors.end() != std::find(usedColors.begin(), usedColors.end(), color));
+    usedColors.push_back(color);
+    return color;
 }
