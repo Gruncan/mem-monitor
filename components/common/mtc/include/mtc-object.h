@@ -3,6 +3,8 @@
 #define MTC_OBJECT_H
 
 #include <chrono>
+#include <vector>
+#include <map>
 #include "mtc-point.h"
 
 namespace mtc {
@@ -11,7 +13,7 @@ namespace mtc {
 
     private:
         int version;
-        std::tm date{};
+        std::tm date;
         std::vector<uint16_t*> time_pointers;
 
         std::map<uint8_t, std::vector<MtcPoint*>*> points_maps;

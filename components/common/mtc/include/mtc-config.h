@@ -9,7 +9,7 @@
 
 namespace mtc {
 
-static const std::map<std::string, u_int32_t> MTC_KEY_MAPPING = {
+static const std::map<std::string, uint32_t> MTC_KEY_MAPPING = {
     {"nr_free_pages", 0x0},
     {"nr_zone_inactive_anon", 0x1},
     {"nr_zone_active_anon", 0x2},
@@ -466,7 +466,7 @@ static const std::map<uint32_t, std::string> MTC_INDEX_MAPPING {
 
 struct MtcCategories {
     std::string name;
-    std::vector<u_int32_t> ids;
+    std::vector<uint32_t> ids;
 };
 
 const static std::vector<MtcCategories> MTC_CATEGORIES = {

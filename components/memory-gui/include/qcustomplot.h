@@ -650,7 +650,7 @@ protected:
 
 
 #ifdef QCP_OPENGL_FBO
-class QCP_LIB_DECL QCPPaintBufferGlFbo : public QCPAbstractPaintBuffer
+class QCP_LIB_DECL QCPPaintBufferGlFbo : public QCPAbstractPaintBuffer, protected QOpenGLFunctions
 {
 public:
   explicit QCPPaintBufferGlFbo(const QSize &size, double devicePixelRatio, QWeakPointer<QOpenGLContext> glContext, QWeakPointer<QOpenGLPaintDevice> glPaintDevice);
