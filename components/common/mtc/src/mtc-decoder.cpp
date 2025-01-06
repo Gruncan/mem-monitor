@@ -63,7 +63,7 @@ namespace mtc {
     void MtcDecoder::decode_mem_data(const uint16_t data_length, uint16_t* time_offset, const uint64_t offset) const {
         object->add_time(time_offset);
         for (uint64_t i = 0; i < data_length; i += 3) {
-            const uint8_t data_key = static_cast<uint8_t>(buffer->at(offset + i));
+            const mk_size_t data_key = static_cast<mk_size_t>(buffer->at(offset + i));
             const uint16_t data_value = CAST_UINT16(buffer->at(offset + i + 1), buffer->at(offset + i + 2));
             MtcPoint* point = new MtcPoint{time_offset, data_value};
             object->add_point(data_key, point);

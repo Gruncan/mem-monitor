@@ -36,7 +36,7 @@ void QPlotRender::queueRendering(const std::vector<mtc::MtcPoint*>* points, cons
             QApplication::processEvents();
         }
         graph->setData(times, values);
-        plot->xAxis->setRange(0, times.last());
+        plot->xAxis->setRange(0, 10000, Qt::AlignLeft);
         plot->yAxis->setRange(0, valueMax * 1.1);
         plot->replot(QCustomPlot::rpQueuedReplot);
 

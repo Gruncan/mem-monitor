@@ -42,6 +42,7 @@ SET(PROJECT_SOURCES
         include/qplotcontrolsidebar.h
         include/qplotrender.h
         include/qtreememorywidgetitem.h
+        ../common/mem-monitor-config.h
 )
 include_directories(include/
                     ../common/mtc/include)

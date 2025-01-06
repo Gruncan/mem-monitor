@@ -34,7 +34,7 @@ Q_SIGNALS:
     void decode(const std::string& filename);
     void removeFile();
     void displayMetaInfo();
-    void enableNonDefaultFields(std::map<uint8_t, bool>* defaultFields);
+    void enableNonDefaultFields(std::map<mk_size_t, bool>* defaultFields);
 
 private:
     QVBoxLayout* mainLayout;
