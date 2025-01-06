@@ -38,6 +38,11 @@ private:
     QPlotRender* _plotRender;
 
     QThread* renderThread;
+    std::mt19937 gen;
+    std::vector<QColor> usedColors;
+
+
+    QColor generateRandomColor();
 
 };
 
