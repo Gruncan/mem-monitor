@@ -17,7 +17,7 @@ namespace mtc {
         uint64_t offset;
 
     public:
-        MtcDecoder(const std::string& filename);
+        explicit MtcDecoder(const std::string& filename);
         MtcDecoder();
         ~MtcDecoder() override;
 
