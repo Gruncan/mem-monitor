@@ -10,6 +10,9 @@ set(MTC_SOURCES
 set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE CXX)
 
 include_directories(include/)
-
-add_library(mtc_decoder SHARED ${MTC_SOURCES})
+if (UNIX)
+    add_library(mtc_decoder SHARED ${MTC_SOURCES})
+else (WIN32)
+    add_library(mtc_decoder STATIC ${MTC_SOURCES})
+endif ()
 add_subdirectory(tests)

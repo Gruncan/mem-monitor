@@ -2,9 +2,10 @@
 #ifndef MEMORY_DECODER_H
 #define MEMORY_DECODER_H
 
-#include <vector>
-#include <string>
 #include "mtc-object.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace mtc {
 
