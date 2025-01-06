@@ -1,23 +1,28 @@
 
 #ifndef QPLOTCONTROLSIDEBAR_H
 #define QPLOTCONTROLSIDEBAR_H
-#include "mtc-config.h"
 
+
+#include "mtc-config.h"
+#include <QTreeWidgetItem>
 
 #include "plotdata.h"
-#include <qtreewidget.h>
 
 
 class QPlotControlSidebar : public QWidget {
     Q_OBJECT
 
 public:
-    explicit QPlotControlSidebar(QWidget* parent = nullptr);
+    explicit QPlotControlSidebar(QWidget* parent);
 
     void setCategories(const std::vector<mtc::MtcCategories>& categories);
 
-signals:
+public Q_SLOTS:
+    void enableNonDefaultFields(const std::map<uint8_t, bool>* activeFields);
+
+Q_SIGNALS:
      void categoriesChanged(const QString& category, const QString& plot, bool enabled);
+     void initialisePlot();
 
 private:
     QTreeWidget* treeWidget;

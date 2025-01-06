@@ -4,24 +4,24 @@
 
 #include "decoder-monitor.h"
 #include "decoder-worker.h"
+#include "qplotcontrolsidebar.h"
+#include <mtc-decoder.h>
 
 
 #include <QProgressBar>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QWidget>
 #include <QPushButton>
-#include <mtc-decoder.h>
-#include <qboxlayout.h>
-#include <qlabel.h>
-#include <qwidget.h>
 
 
 class QMtcLoader : public QWidget {
-
     Q_OBJECT
 
 public:
 
-    explicit QMtcLoader(QWidget* parent = nullptr, const char* name = nullptr);
-    ~QMtcLoader();
+    explicit QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar);
+    ~QMtcLoader() override;
 
     std::shared_ptr<mtc::MtcObject> getMtcData();
 
@@ -34,6 +34,7 @@ Q_SIGNALS:
     void decode(const std::string& filename);
     void removeFile();
     void displayMetaInfo();
+    void enableNonDefaultFields(std::map<uint8_t, bool>* defaultFields);
 
 private:
     QVBoxLayout* mainLayout;
