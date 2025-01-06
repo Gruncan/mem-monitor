@@ -32,7 +32,7 @@ void QMemoryPlotter::addPlot(uint8_t key) {
     // _plot->xAxis->setRange(0, times.last());
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
-    auto object = _loader->getMtcData();
+    std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
 
     emit queueRendering(object->get_points(key), object->get_length(), graph);
 }

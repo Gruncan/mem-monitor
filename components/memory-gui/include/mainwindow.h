@@ -5,7 +5,7 @@
 #include "decoder-worker.h"
 #include "qmtcloadersgroup.h"
 #include "qmemoryplotter.h"
-
+#include "qplotcontrolsidebar.h"
 
 #include <QMainWindow>
 #include <QThread>
@@ -21,6 +21,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public Q_SLOTS:
+
+    void initialisePlot();
 
 Q_SIGNALS:
     void startDecoding();
@@ -33,6 +36,7 @@ private:
     DecodeMonitor* decoderMonitor;
     std::shared_ptr<mtc::MtcDecoder> decoder;
     QMtcLoadersGroup* loadersGroup;
+    QPlotControlSidebar* sidebar;
 
     QMemoryPlotter* plotter;
 

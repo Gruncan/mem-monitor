@@ -6,11 +6,10 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QThread>
-#include <qboxlayout.h>
-#include <qlabel.h>
 
 
-QMtcLoader::QMtcLoader(QWidget* parent, const char* name) : QWidget(parent){
+
+QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent){
     setObjectName(name);
 
     mainLayout = new QVBoxLayout(this);
@@ -58,6 +57,8 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name) : QWidget(parent){
     connect(this, &QMtcLoader::decode, monitor, &DecodeMonitor::monitorProgress);
     connect(monitor, &DecodeMonitor::progressQueried, this, &QMtcLoader::updateProgress);
 
+    connect(this, &QMtcLoader::enableNonDefaultFields, sidebar, &QPlotControlSidebar::enableNonDefaultFields);
+
     workerThread->start();
     monitorThread->start();
 }
@@ -91,7 +92,7 @@ void QMtcLoader::load() {
 }
 
 
-void QMtcLoader::updateProgress(int progress) {
+void QMtcLoader::updateProgress(const int progress) {
     progressBar->setValue(progress);
 }
 
@@ -100,6 +101,7 @@ void QMtcLoader::loaded(const std::shared_ptr<mtc::MtcObject>& data, const std::
     label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(data->get_version()).arg(data->get_length()));
     label->setStyleSheet("");
     this->data = data;
+    emit enableNonDefaultFields(data->get_default_points());
 }
 
 std::shared_ptr<mtc::MtcObject> QMtcLoader::getMtcData() {

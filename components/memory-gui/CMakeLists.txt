@@ -21,25 +21,27 @@ find_package(Qt6 COMPONENTS PrintSupport REQUIRED)
 SET(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp
-        include/mainwindow.h
-        include/decoder-worker.h
         src/decoder-worker.cpp
-        include/decoder-monitor.h
         src/decoder-monitor.cpp
         src/ui/mainwindow.ui
         src/qcustomplot.cpp
-        include/qcustomplot.h
-        include/qmtcloader.h
+        src/qplotcontrolsidebar.cpp
         src/qmtcloader.cpp
         src/qmtcloadersgroup.cpp
+        src/qmemoryplotter.cpp
+        src/qplotrenderer.cpp
+        src/qtreememorywidgetitem.cpp
+        include/mainwindow.h
+        include/decoder-worker.h
+        include/decoder-monitor.h
+        include/plotdata.h
+        include/qcustomplot.h
+        include/qmemoryplotter.h
+        include/qmtcloader.h
         include/qmtcloadersgroup.h
         include/qplotcontrolsidebar.h
-        src/qplotcontrolsidebar.cpp
-        include/plotdata.h
-        src/qmemoryplotter.cpp
-        include/qmemoryplotter.h
-        src/qplotrenderer.cpp
         include/qplotrender.h
+        include/qtreememorywidgetitem.h
 )
 include_directories(include/
                     ../common/mtc/include)
