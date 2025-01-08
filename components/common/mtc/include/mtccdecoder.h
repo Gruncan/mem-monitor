@@ -33,7 +33,12 @@ struct MtcObject {
 
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 struct MtcObject* decode(const char* filename);
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif //MTCCDECODER_H
