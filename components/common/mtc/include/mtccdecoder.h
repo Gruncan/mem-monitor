@@ -24,10 +24,11 @@ struct MtcTime {
 struct MtcObject {
     struct MtcPointMap* point_map;
     struct MtcTime* times;
-    uint16_t length;
+    uint64_t size;
     uint8_t version;
-    uint64_t alloc_size_points;
-    uint64_t alloc_size_times;
+    uint16_t _times_length;
+    uint64_t _alloc_size_points;
+    uint64_t _alloc_size_times;
 };
 
 
