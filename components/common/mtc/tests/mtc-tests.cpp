@@ -1,12 +1,11 @@
 
 
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
-#include <memory-decoder.h>
-#include <mtc-decoder.h>
+#include "mtccdecoder.h"
 
-using namespace mtc;
 
 void printMemoryUsage() {
     std::ifstream statusFile("/proc/self/status");
@@ -27,13 +26,12 @@ void printMemoryUsage() {
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
-    MtcDecoder mtc = MtcDecoder("/home/duncan/Desktop/uwb_test1.mtc");
-    std::shared_ptr<MtcObject> object = mtc.decode();
+    struct MtcObject* object = decode("/home/duncan/Desktop/uwb_test1.mtc");
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
     std::cout << duration.count() << " seconds" << std::endl;
-    std::cout << object->get_length() << std::endl;
+    std::cout << object->size << std::endl;
     printMemoryUsage();
     return 0;
 }
