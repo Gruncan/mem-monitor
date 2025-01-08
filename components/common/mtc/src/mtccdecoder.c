@@ -16,18 +16,18 @@ typedef unsigned char byte;
 
 inline static void initalise(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
-    object->alloc_size_points = INIT_SIZE;
+    object->_alloc_size_points = INIT_SIZE;
     for (mk_size_t i = 0; i < KEY_SIZE; i++) {
-        object->point_map[i].points = malloc(sizeof(struct MtcPoint) * object->alloc_size_points);
+        object->point_map[i].points = malloc(sizeof(struct MtcPoint) * object->_alloc_size_points);
         object->point_map[i].points[0].repeated = 0;
         object->point_map[i].points[0].time_offset = malloc(sizeof(uint16_t));
         object->point_map[i].length = 0;
     }
-    object->alloc_size_times = INIT_SIZE;
-    object->times = malloc(sizeof(struct MtcTime) * object->alloc_size_times);
+    object->_alloc_size_times = INIT_SIZE;
+    object->times = malloc(sizeof(struct MtcTime) * object->_alloc_size_times);
     object->times[0].repeated = 0;
     object->times[0].time_offset = malloc(sizeof(uint16_t));
-    object->length = 0;
+    object->_times_length = 0;
     object->version = 0;
 }
 
@@ -42,26 +42,26 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
     }
 
     const uint16_t time_offset = buffer[0] << 8 | buffer[1];
-    if (object->length == object->alloc_size_times) {
-        object->alloc_size_times *= 2;
-        void* new_ptr = realloc(object->times, object->alloc_size_times * sizeof(struct MtcTime));
+    if (object->_times_length == object->_alloc_size_times) {
+        object->_alloc_size_times *= 2;
+        void* new_ptr = realloc(object->times, object->_alloc_size_times * sizeof(struct MtcTime));
         if (new_ptr == NULL) {
             perror("Failed to realloc point times");
         }
         object->times = new_ptr;
     }
-    if (object->length == 0) {
+    if (object->_times_length == 0) {
         *object->times[0].time_offset = time_offset;
-        object->length++;
+        object->_times_length++;
     } else {
-        if (*object->times[object->length-1].time_offset == time_offset) {
-            object->times[object->length-1].repeated++;
+        if (*object->times[object->_times_length-1].time_offset == time_offset) {
+            object->times[object->_times_length-1].repeated++;
         } else {
-            object->times[object->length].time_offset = malloc(sizeof(uint16_t));
-            *object->times[object->length].time_offset = time_offset;
+            object->times[object->_times_length].time_offset = malloc(sizeof(uint16_t));
+            *object->times[object->_times_length].time_offset = time_offset;
 
-            object->times[object->length].repeated = 0;
-            object->length++;
+            object->times[object->_times_length].repeated = 0;
+            object->_times_length++;
         }
     }
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
@@ -69,10 +69,10 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
     for (uint16_t i = 4; i < length_offset + 4; i += 3) {
         const mk_size_t key = buffer[i];
         const uint16_t value = buffer[i + 1] << 8 | buffer[i + 2];
-        if (object->point_map[key].length == object->alloc_size_points) {
-            object->alloc_size_points *= 2;
+        if (object->point_map[key].length == object->_alloc_size_points) {
+            object->_alloc_size_points *= 2;
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {
-                void* new_ptr =  realloc(object->point_map[j].points, object->alloc_size_points * sizeof(struct MtcPoint));
+                void* new_ptr =  realloc(object->point_map[j].points, object->_alloc_size_points * sizeof(struct MtcPoint));
                 if (new_ptr == NULL) {
                     perror("Failed to realloc point map");
                 }
@@ -82,7 +82,7 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         }
 
         if (object->point_map[key].length == 0) {
-            object->point_map[key].points[0].time_offset = object->times[object->length].time_offset;
+            object->point_map[key].points[0].time_offset = object->times[object->_times_length].time_offset;
             object->point_map[key].points[0].value = value;
             object->point_map[key].length++;
         } else {
@@ -91,7 +91,7 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
                 object->point_map[key].points[*length-1].repeated++;
                 object->point_map[key].length++;
             }else {
-                object->point_map[key].points[*length].time_offset = object->times[object->length].time_offset;
+                object->point_map[key].points[*length].time_offset = object->times[object->_times_length].time_offset;
                 object->point_map[key].points[*length].value = value;
                 object->point_map[key].points[*length].repeated = 0;
                 object->point_map[key].length++;
@@ -129,22 +129,14 @@ struct MtcObject* decode(const char* filename) {
 
     decode_header(buffer, object);
 
-    int offset = 0;
+    uint64_t size = 0;
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
-        printf("%d\n", offset);
         decode_chunk(buffer, object);
-        offset++;
+        size++;
     }
 
+    object->size = size;
     free(buffer);
     fclose(fp);
     return object;
-}
-
-
-int main() {
-    struct MtcObject* object = decode("/home/duncan/Desktop/uwb_test1.mtc");
-    printf("%d\n", object->length);
-
-    return 0;
 }
