@@ -77,7 +77,7 @@
 #define CPP_17 201703L
 
 
-#define FILE_NAME "/tmp/memory_tracker.tmtc"
+#define FILE_NAME "/home/instrument/fw/memory_tracker.tmtc"
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
 #define DEBUG_PREFIX "[MEMORY_TRACKER] DEBUG: "
 

@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++17 -fPIC -O3 -march=native -funroll-loops -flto -ffast-math
+CFLAGS = -std=c++17 -fPIC -O3
 
 LIB_NAME = lib_mem_tracker.so
 LIB_TEST = mem_tracker_test
