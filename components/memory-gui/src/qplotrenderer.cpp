@@ -16,7 +16,7 @@ QPlotRender::~QPlotRender() {
 
 }
 
-void QPlotRender::queueRendering(const std::vector<mtc::MtcPoint*>* points, const uint64_t length, QCPGraph* graph) {
+void QPlotRender::queueRendering(MtcPointMap* points, const uint64_t length, QCPGraph* graph) {
     timeSum = 0;
 
     // valueMax = 0;
@@ -43,9 +43,9 @@ void QPlotRender::queueRendering(const std::vector<mtc::MtcPoint*>* points, cons
     }
 }
 
-void QPlotRender::processBatch(const std::vector<mtc::MtcPoint*>* points, size_t start_index, size_t end_index, uint64_t sample_rate) {
+void QPlotRender::processBatch(MtcPointMap* points, size_t start_index, size_t end_index, uint64_t sample_rate) {
     for (size_t i = start_index; i < end_index; i += sample_rate) {
-        const mtc::MtcPoint* point = (*points)[i];
+        MtcPoint* point = &points->points[i];
 
         timeSum += *point->time_offset;
         times.push_back(static_cast<double>(timeSum));

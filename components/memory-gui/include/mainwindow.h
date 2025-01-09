@@ -34,7 +34,7 @@ private:
     QThread* monitorThread;
     DecoderWorker* decoderWorker;
     DecodeMonitor* decoderMonitor;
-    std::shared_ptr<mtc::MtcDecoder> decoder;
+    // std::shared_ptr<mtc::MtcDecoder> decoder;
     QMtcLoadersGroup* loadersGroup;
     QPlotControlSidebar* sidebar;
 

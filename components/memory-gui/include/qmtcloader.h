@@ -5,14 +5,14 @@
 #include "decoder-monitor.h"
 #include "decoder-worker.h"
 #include "qplotcontrolsidebar.h"
-#include <mtc-decoder.h>
+#include "mtccdecoder.h"
 
 
-#include <QProgressBar>
-#include <QVBoxLayout>
 #include <QLabel>
-#include <QWidget>
+#include <QProgressBar>
 #include <QPushButton>
+#include <QVBoxLayout>
+#include <QWidget>
 
 
 class QMtcLoader : public QWidget {
@@ -23,11 +23,11 @@ public:
     explicit QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar);
     ~QMtcLoader() override;
 
-    std::shared_ptr<mtc::MtcObject> getMtcData();
+    MtcObject* getMtcObject();
 
 public Q_SLOTS:
     void load();
-    void loaded(const std::shared_ptr<mtc::MtcObject>& data, const std::string& filePath);
+    void loaded(const std::string& filePath);
     void updateProgress(int progress);
 
 Q_SIGNALS:
@@ -44,14 +44,13 @@ private:
     QProgressBar* progressBar;
     QPushButton* button;
 
-    std::shared_ptr<mtc::MtcDecoder> decoder;
     DecoderWorker* worker;
     DecodeMonitor* monitor;
 
     QThread* workerThread;
     QThread* monitorThread;
 
-    std::shared_ptr<mtc::MtcObject> data;
+    MtcObject* object;
 
 
 };

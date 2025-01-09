@@ -14,10 +14,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);  // Move this first
     ui->plot->setDisabled(true);
 
-    decoder = std::make_shared<mtc::MtcDecoder>();
-    decoderWorker = new DecoderWorker(nullptr, decoder);
-    decoderMonitor = new DecodeMonitor(nullptr, decoder);
-
     sidebar = new QPlotControlSidebar(this);
     sidebar->setGeometry(QRect(10, 10, 200, 900));
     sidebar->setCategories(mtc::MTC_CATEGORIES);

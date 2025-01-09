@@ -5,7 +5,6 @@
 #include "qmtcloader.h"
 #include "qplotrender.h"
 
-#include <mtc-point.h>
 
 
 class QMemoryPlotter : public QObject {
@@ -24,7 +23,7 @@ public Q_SLOTS:
     void plotToggleChange(const QString& category, const QString& plotString, bool enabled);
 
 Q_SIGNALS:
-    void queueRendering(const std::vector<mtc::MtcPoint*>* points, uint64_t length, QCPGraph* graph);
+    void queueRendering(MtcPointMap* points, uint64_t length, QCPGraph* graph);
 
 
 private:
