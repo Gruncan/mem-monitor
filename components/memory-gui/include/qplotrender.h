@@ -3,7 +3,7 @@
 #define QPLOTRENDER_H
 #include "qcustomplot.h"
 
-
+#include "mtccdecoder.h"
 
 class QPlotRender : public QObject {
     Q_OBJECT
@@ -14,7 +14,7 @@ public:
     ~QPlotRender();
 
 public Q_SLOTS:
-    void queueRendering(MtcPointMap* points, uint64_t length, QCPGraph* graph);
+    void queueRendering(MtcPointMap* point_map, const QVector<double>& times, uint64_t length, QCPGraph* graph);
 
 private:
 

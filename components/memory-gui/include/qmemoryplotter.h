@@ -1,10 +1,11 @@
 
 #ifndef QMEMORYPLOTTER_H
 #define QMEMORYPLOTTER_H
+
 #include "qcustomplot.h"
 #include "qmtcloader.h"
 #include "qplotrender.h"
-
+#include "mtccdecoder.h"
 
 
 class QMemoryPlotter : public QObject {
@@ -23,7 +24,7 @@ public Q_SLOTS:
     void plotToggleChange(const QString& category, const QString& plotString, bool enabled);
 
 Q_SIGNALS:
-    void queueRendering(MtcPointMap* points, uint64_t length, QCPGraph* graph);
+    void queueRendering(MtcPointMap* points, const QVector<double>& times, uint64_t length, QCPGraph* graph);
 
 
 private:

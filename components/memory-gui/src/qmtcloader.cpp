@@ -104,6 +104,12 @@ void QMtcLoader::loaded(const std::string& filePath) {
     progressBar->setValue(100);
     label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(object->version).arg(object->size));
     label->setStyleSheet("");
+    std::map<mk_size_t, bool>* nonDefaultFields = new std::map<mk_size_t, bool>();
+
+    for (mk_size_t i = 0; i < KEY_SIZE; i++) {
+        (*nonDefaultFields)[i] = object->point_map[i].points[0].value == 0 && object->point_map[i].length == 1;
+    }
+    emit enableNonDefaultFields(nonDefaultFields);
 }
 
 MtcObject* QMtcLoader::getMtcObject() {
