@@ -26,12 +26,15 @@ void printMemoryUsage() {
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
-    struct MtcObject* object = decode("/home/duncan/Desktop/uwb_test1.mtc");
+    MtcObject object;
+    initaliseMtcObject(&object);
+
+    decode("/home/duncan/Desktop/uwb_test3.mtc",  &object);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
     std::cout << duration.count() << " seconds" << std::endl;
-    std::cout << object->size << std::endl;
+    std::cout << object.size << std::endl;
     printMemoryUsage();
     return 0;
 }

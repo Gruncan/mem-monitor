@@ -14,7 +14,7 @@ const static uint16_t CHUNK_SIZE = 679;
 
 typedef unsigned char byte;
 
-inline static void initalise(struct MtcObject* object) {
+inline void initaliseMtcObject(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
     object->_alloc_size_points = INIT_SIZE;
     for (mk_size_t i = 0; i < KEY_SIZE; i++) {
@@ -29,6 +29,8 @@ inline static void initalise(struct MtcObject* object) {
     object->times[0].time_offset = malloc(sizeof(uint16_t));
     object->_times_length = 0;
     object->version = 0;
+    object->file_length = 0;
+    object->size = 0;
 }
 
 inline static void decode_header(const byte* buffer, struct MtcObject* object) {
@@ -36,10 +38,19 @@ inline static void decode_header(const byte* buffer, struct MtcObject* object) {
     //todo add time decoding here
 }
 
+inline uint8_t queryDecodeProgress(struct MtcObject* object) {
+    if (object->file_length == 0 || object->size == 0) {
+        return 0;
+    }
+    const uint8_t value = ((object->size * CHUNK_SIZE) / object->file_length) / 100;
+    return value;
+}
+
 static void decode_chunk(const byte* buffer, struct MtcObject* object) {
     if (object == NULL) {
         return;
     }
+
 
     const uint16_t time_offset = buffer[0] << 8 | buffer[1];
     if (object->_times_length == object->_alloc_size_times) {
@@ -101,23 +112,22 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
 }
 
 
-struct MtcObject* decode(const char* filename) {
+void decode(const char* filename, struct MtcObject* object) {
     FILE* fp = fopen(filename, "rb");
     if (fp == NULL) {
         perror("Failed to open file!");
-        return NULL;
+        return;
     }
+
+
 
     byte* buffer = malloc(CHUNK_SIZE);
     if (buffer == NULL) {
         perror("Failed to allocate buffer!");
         fclose(fp);
-        return NULL;
+        return;
     }
 
-
-    struct MtcObject* object = malloc(sizeof(struct MtcObject));
-    initalise(object);
 
     size_t bytesRead = 0;
     bytesRead = fread(buffer, 1, HEADER_SIZE, fp);
@@ -129,14 +139,19 @@ struct MtcObject* decode(const char* filename) {
 
     decode_header(buffer, object);
 
-    uint64_t size = 0;
+    // fseek(fp, 0, SEEK_END);
+    // object->file_length = ftell(fp);
+    // fseek(fp, 0, SEEK_SET);
+
+
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
+        if (bytesRead != CHUNK_SIZE) {
+            break;
+        }
         decode_chunk(buffer, object);
-        size++;
+        object->size++;
     }
 
-    object->size = size;
     free(buffer);
     fclose(fp);
-    return object;
 }

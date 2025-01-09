@@ -2,8 +2,9 @@
 #ifndef MTCCDECODER_H
 #define MTCCDECODER_H
 
-#include <stdint.h>
+#include "stdint.h"
 
+#include <bits/pthreadtypes.h>
 
 struct MtcPoint {
     uint16_t* time_offset;
@@ -29,6 +30,9 @@ struct MtcObject {
     uint16_t _times_length;
     uint64_t _alloc_size_points;
     uint64_t _alloc_size_times;
+    uint64_t file_length;
+    pthread_mutex_t _size_lock;
+
 };
 
 
@@ -36,7 +40,11 @@ struct MtcObject {
 #ifdef __cplusplus
 extern "C" {
 #endif
-struct MtcObject* decode(const char* filename);
+void decode(const char* filename, struct MtcObject* object);
+
+void initaliseMtcObject(struct MtcObject* object);
+
+uint8_t queryDecodeProgress(struct MtcObject* object);
 #ifdef __cplusplus
 }
 #endif
