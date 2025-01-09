@@ -152,6 +152,23 @@ void decode(const char* filename, struct MtcObject* object) {
         object->size++;
     }
 
+    void* new_times_ptr = realloc(object->times, object->_times_length * sizeof(struct MtcTime));
+    if (new_times_ptr == NULL) {
+        perror("Failed to realloc point times");
+        return;
+    }
+    object->times = new_times_ptr;
+
+    for (mk_size_t i = 0; i < KEY_SIZE; i++) {
+        void* new_points_ptr =  realloc(object->point_map[i].points, object->point_map[i].length * sizeof(struct MtcPoint));
+        if (new_points_ptr == NULL) {
+            perror("Failed to realloc point map");
+            return;
+        }
+        object->point_map[i].points = new_points_ptr;
+    }
+
+
     free(buffer);
     fclose(fp);
 }
