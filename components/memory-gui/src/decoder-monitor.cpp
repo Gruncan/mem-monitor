@@ -7,18 +7,16 @@
 
 #include <QThread>
 
-DecodeMonitor::DecodeMonitor(QObject* parent, const std::shared_ptr<mtc::MtcDecoder>& decoder):
-                                                    QObject(parent),
-                                                    decoder(decoder)
+DecodeMonitor::DecodeMonitor(QObject* parent, MtcObject* object): QObject(parent), _object(object)
 {
 
 }
 
 void DecodeMonitor::monitorProgress() {
-    double progress;
+    uint8_t progress;
     do {
-        progress = decoder->getProgress();
-        emit progressQueried(static_cast<int>(progress));
+        progress = queryDecodeProgress(_object);
+        emit progressQueried(progress);
         QThread::msleep(100);
     }while (progress <= 99);
 

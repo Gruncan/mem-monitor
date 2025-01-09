@@ -39,9 +39,11 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     workerThread = new QThread;
     monitorThread = new QThread;
 
-    decoder = std::make_shared<mtc::MtcDecoder>();
-    worker = new DecoderWorker(nullptr, decoder);
-    monitor = new DecodeMonitor(nullptr, decoder);
+    object = static_cast<MtcObject*>(malloc(sizeof(MtcObject)));
+    initaliseMtcObject(object);
+
+    worker = new DecoderWorker(nullptr, object);
+    monitor = new DecodeMonitor(nullptr, object);
 
     worker->moveToThread(workerThread);
     monitor->moveToThread(monitorThread);
@@ -54,7 +56,7 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     // connect(workerThread, &QThread::finished, decoderWorker, &QObject::deleteLater);
 
     connect(this, &QMtcLoader::decode, worker, &DecoderWorker::workerDecode);
-    connect(this, &QMtcLoader::decode, monitor, &DecodeMonitor::monitorProgress);
+    // connect(this, &QMtcLoader::decode, monitor, &DecodeMonitor::monitorProgress);
     connect(monitor, &DecodeMonitor::progressQueried, this, &QMtcLoader::updateProgress);
 
     connect(this, &QMtcLoader::enableNonDefaultFields, sidebar, &QPlotControlSidebar::enableNonDefaultFields);
@@ -70,6 +72,8 @@ QMtcLoader::~QMtcLoader() {
     delete frameLayout;
     delete frame;
     delete mainLayout;
+    // TODO destroy threads
+    free(object);
 }
 
 
@@ -96,14 +100,12 @@ void QMtcLoader::updateProgress(const int progress) {
     progressBar->setValue(progress);
 }
 
-void QMtcLoader::loaded(const std::shared_ptr<mtc::MtcObject>& data, const std::string& filePath) {
+void QMtcLoader::loaded(const std::string& filePath) {
     progressBar->setValue(100);
-    label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(data->get_version()).arg(data->get_length()));
+    label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(object->version).arg(object->size));
     label->setStyleSheet("");
-    this->data = data;
-    emit enableNonDefaultFields(data->get_default_points());
 }
 
-std::shared_ptr<mtc::MtcObject> QMtcLoader::getMtcData() {
-    return data;
+MtcObject* QMtcLoader::getMtcObject() {
+    return object;
 }

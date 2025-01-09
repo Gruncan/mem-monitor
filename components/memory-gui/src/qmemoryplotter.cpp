@@ -38,11 +38,11 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     // _plot->xAxis->setRange(0, times.last());
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
-    std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
+    // std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
     graph->setPen(QPen(generateRandomColor()));
     graph->setName(QString::fromStdString(mtc::MTC_INDEX_MAPPING.at(key)));
 
-    emit queueRendering(object->get_points(key), object->get_length(), graph);
+    // emit queueRendering(object->get_points(key), object->get_length(), graph);
 }
 
 void QMemoryPlotter::removePlot(mk_size_t key) {
