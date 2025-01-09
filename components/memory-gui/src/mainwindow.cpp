@@ -5,7 +5,7 @@
 #include "ui/ui_mainwindow.h"
 
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget* parent) :
                         QMainWindow(parent),
                         ui(new Ui::MainWindow),
                         decoderThread(new QThread),
@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //TODO update this index
-    plotter = new QMemoryPlotter(ui->plot, loadersGroup->getLoader(0));
+    plotter = new QMemoryPlotter(this, ui->plot, loadersGroup->getLoader(0));
 
     // connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
 }

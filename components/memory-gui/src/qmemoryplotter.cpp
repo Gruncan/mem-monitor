@@ -4,11 +4,13 @@
 #include "qmemoryplotter.h"
 #include <random>
 #include <mtc-config.h>
+#include <QDoubleSpinBox>
+#include <QLabel>
 
 
 static constexpr int QUALITY = 1000;
 
-QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(plot), _loader(loader), gen(1)  {
+QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader) : QWidget(parent), _plot(plot), _loader(loader), gen(1)  {
 
     _plotRender = new QPlotRender(_plot);
 
@@ -24,6 +26,45 @@ QMemoryPlotter::QMemoryPlotter(QCustomPlot* plot, QMtcLoader* loader) : _plot(pl
 
     renderThread->start();
     plotsEnabled.clear();
+
+    QWidget* controlsWidget = new QWidget(parent);
+    controlsWidget->setGeometry(QRect(200, 520, 100, 150));
+
+    // Create layout for the container
+    QVBoxLayout* controlsLayout = new QVBoxLayout(controlsWidget);
+
+    // Add controls to the layout
+    QLabel* xRangeLabel = new QLabel("X Range:", controlsWidget);
+    xMinInput = new QDoubleSpinBox(controlsWidget);
+    xMaxInput = new QDoubleSpinBox(controlsWidget);
+
+    QLabel* yRangeLabel = new QLabel("Y Range:", controlsWidget);
+    yMinInput = new QDoubleSpinBox(controlsWidget);
+    yMaxInput = new QDoubleSpinBox(controlsWidget);
+
+    controlsLayout->addWidget(xRangeLabel);
+    controlsLayout->addWidget(xMinInput);
+    controlsLayout->addWidget(xMaxInput);
+    controlsLayout->addWidget(yRangeLabel);
+    controlsLayout->addWidget(yMinInput);
+    controlsLayout->addWidget(yMaxInput);
+
+    setupSpinBox(xMaxInput);
+    setupSpinBox(xMinInput);
+    setupSpinBox(yMaxInput);
+    setupSpinBox(yMinInput);
+
+    connect(xMinInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &QMemoryPlotter::updateXRange);
+    connect(xMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &QMemoryPlotter::updateXRange);
+    connect(yMinInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &QMemoryPlotter::updateYRange);
+    connect(yMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &QMemoryPlotter::updateYRange);
+
+    updateInputsFromPlot();
+
 }
 
 void QMemoryPlotter::addPlot(mk_size_t key) {
@@ -99,4 +140,46 @@ QColor QMemoryPlotter::generateRandomColor() {
     } while (usedColors.end() != std::find(usedColors.begin(), usedColors.end(), color));
     usedColors.push_back(color);
     return color;
+}
+
+void QMemoryPlotter::setSpinBoxRanges(double xMin, double xMax, double yMin, double yMax) {
+    xMinInput->setRange(xMin, xMax);
+    xMaxInput->setRange(xMin, xMax);
+    yMinInput->setRange(yMin, yMax);
+    yMaxInput->setRange(yMin, yMax);
+}
+
+
+void QMemoryPlotter::setupSpinBox(QDoubleSpinBox* spinBox) {
+    spinBox->setDecimals(2);
+    spinBox->setRange(0, 90000000000);
+    spinBox->setSingleStep(1.0);
+}
+
+void QMemoryPlotter::updateInputsFromPlot() {
+    QCPRange xRange = _plot->xAxis->range();
+    QCPRange yRange = _plot->yAxis->range();
+
+    xMinInput->setValue(xRange.lower);
+    xMaxInput->setValue(xRange.upper);
+    yMinInput->setValue(yRange.lower);
+    yMaxInput->setValue(yRange.upper);
+}
+
+void QMemoryPlotter::updateXRange() {
+    double min = xMinInput->value();
+    double max = xMaxInput->value();
+    if (min < max) {
+        _plot->xAxis->setRange(min, max);
+        _plot->replot();
+    }
+}
+
+void QMemoryPlotter::updateYRange() {
+    double min = yMinInput->value();
+    double max = yMaxInput->value();
+    if (min < max) {
+        _plot->yAxis->setRange(min, max);
+        _plot->replot();
+    }
 }
