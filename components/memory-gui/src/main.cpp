@@ -1,8 +1,10 @@
 #include "mainwindow.h"
 
 #include <QApplication>
-#include <execinfo.h>
 #include <iostream>
+
+#ifndef _WIN32
+#include <execinfo.h>
 
 
 void printBacktrace() {
@@ -29,7 +31,7 @@ void printBacktrace() {
     free(symbols);
 }
 
-
+#endif
 int main(int argc, char *argv[]) {
     try {
         QApplication app(argc, argv);
