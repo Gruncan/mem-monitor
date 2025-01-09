@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1347</width>
-    <height>900</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,24 +19,11 @@
   <widget class="QCustomPlot" name="plot" native="true">
    <property name="geometry">
     <rect>
-     <x>240</x>
-     <y>20</y>
+     <x>210</x>
+     <y>10</y>
      <width>1061</width>
-     <height>671</height>
+     <height>511</height>
     </rect>
-   </property>
-  </widget>
-  <widget class="QScrollBar" name="horizontalScrollBar">
-   <property name="geometry">
-    <rect>
-     <x>500</x>
-     <y>690</y>
-     <width>531</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Orientation::Horizontal</enum>
    </property>
   </widget>
  </widget>
