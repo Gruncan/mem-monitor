@@ -93,16 +93,15 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         }
 
         if (object->point_map[key].length == 0) {
-            object->point_map[key].points[0].time_offset = object->times[object->_times_length].time_offset;
+            object->point_map[key].points[0].time_offset = object->times[object->_times_length-1].time_offset;
             object->point_map[key].points[0].value = value;
             object->point_map[key].length++;
         } else {
             const uint16_t* length = &object->point_map[key].length;
             if (object->point_map[key].points[*length-1].value == value) {
                 object->point_map[key].points[*length-1].repeated++;
-                object->point_map[key].length++;
             }else {
-                object->point_map[key].points[*length].time_offset = object->times[object->_times_length].time_offset;
+                object->point_map[key].points[*length].time_offset = object->times[object->_times_length-1].time_offset;
                 object->point_map[key].points[*length].value = value;
                 object->point_map[key].points[*length].repeated = 0;
                 object->point_map[key].length++;
