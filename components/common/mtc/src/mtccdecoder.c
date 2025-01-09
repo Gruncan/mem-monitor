@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #define HEADER_SIZE 5
-#define KEY_SIZE 225
 #define INIT_SIZE 5120
 
 const static uint16_t CHUNK_SIZE = 679;
@@ -76,7 +75,6 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         }
     }
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
-
     for (uint16_t i = 4; i < length_offset + 4; i += 3) {
         const mk_size_t key = buffer[i];
         const uint16_t value = buffer[i + 1] << 8 | buffer[i + 2];
@@ -86,6 +84,7 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
                 void* new_ptr =  realloc(object->point_map[j].points, object->_alloc_size_points * sizeof(struct MtcPoint));
                 if (new_ptr == NULL) {
                     perror("Failed to realloc point map");
+                    return;
                 }
                 object->point_map[j].points = new_ptr;
             }
@@ -95,15 +94,16 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         if (object->point_map[key].length == 0) {
             object->point_map[key].points[0].time_offset = object->times[object->_times_length-1].time_offset;
             object->point_map[key].points[0].value = value;
+            object->point_map[key].points[0].repeated = 0;
             object->point_map[key].length++;
         } else {
-            const uint16_t* length = &object->point_map[key].length;
-            if (object->point_map[key].points[*length-1].value == value) {
-                object->point_map[key].points[*length-1].repeated++;
+            const uint64_t length = object->point_map[key].length;
+            if (object->point_map[key].points[length-1].value == value) {
+                object->point_map[key].points[length-1].repeated++;
             }else {
-                object->point_map[key].points[*length].time_offset = object->times[object->_times_length-1].time_offset;
-                object->point_map[key].points[*length].value = value;
-                object->point_map[key].points[*length].repeated = 0;
+                object->point_map[key].points[length].time_offset = object->times[object->_times_length-1].time_offset;
+                object->point_map[key].points[length].value = value;
+                object->point_map[key].points[length].repeated = 0;
                 object->point_map[key].length++;
             }
         }
@@ -118,15 +118,12 @@ void decode(const char* filename, struct MtcObject* object) {
         return;
     }
 
-
-
     byte* buffer = malloc(CHUNK_SIZE);
     if (buffer == NULL) {
         perror("Failed to allocate buffer!");
         fclose(fp);
         return;
     }
-
 
     size_t bytesRead = 0;
     bytesRead = fread(buffer, 1, HEADER_SIZE, fp);

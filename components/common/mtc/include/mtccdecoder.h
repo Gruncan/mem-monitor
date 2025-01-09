@@ -2,6 +2,9 @@
 #ifndef MTCCDECODER_H
 #define MTCCDECODER_H
 
+
+#define KEY_SIZE 225
+
 #include "stdint.h"
 
 #include <bits/pthreadtypes.h>
@@ -14,7 +17,7 @@ struct MtcPoint {
 
 struct MtcPointMap {
     struct MtcPoint* points;
-    uint16_t length;
+    uint64_t length;
 };
 
 struct MtcTime {
@@ -27,11 +30,10 @@ struct MtcObject {
     struct MtcTime* times;
     uint64_t size;
     uint8_t version;
-    uint16_t _times_length;
+    uint64_t _times_length;
     uint64_t _alloc_size_points;
     uint64_t _alloc_size_times;
     uint64_t file_length;
-    pthread_mutex_t _size_lock;
 
 };
 
