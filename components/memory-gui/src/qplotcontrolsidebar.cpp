@@ -32,7 +32,11 @@ void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& c
     for (auto& category : categories) {
         const auto item = createCategoryItem(category);
         treeWidget->addTopLevelItem(item);
-        item->setExpanded(false);
+        if (category.name == "General"){
+            item->setExpanded(true);
+        }else{
+            item->setExpanded(false);
+        }
         item->setDisabled(true);
     }
 }
