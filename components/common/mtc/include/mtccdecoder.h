@@ -7,8 +7,6 @@
 
 #include "stdint.h"
 
-#include <bits/pthreadtypes.h>
-
 struct MtcPoint {
     uint16_t* time_offset;
     uint16_t value;
