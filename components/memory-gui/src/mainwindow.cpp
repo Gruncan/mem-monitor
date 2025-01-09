@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->plot->setDisabled(true);
 
     sidebar = new QPlotControlSidebar(this);
-    sidebar->setGeometry(QRect(10, 10, 200, 900));
+    sidebar->setGeometry(QRect(10, 10, 175, 710));
     sidebar->setCategories(mtc::MTC_CATEGORIES);
 
     std::vector<QMtcLoader*> loaders;
@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     loadersGroup = new QMtcLoadersGroup(this, loaders);
-    loadersGroup->setGeometry(QRect(300, 720, 900, 150));
+    loadersGroup->setGeometry(QRect(300, 520, 900, 150));
 
 
 
