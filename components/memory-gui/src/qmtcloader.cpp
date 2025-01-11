@@ -56,7 +56,7 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     // connect(workerThread, &QThread::finished, decoderWorker, &QObject::deleteLater);
 
     connect(this, &QMtcLoader::decode, worker, &DecoderWorker::workerDecode);
-    // connect(this, &QMtcLoader::decode, monitor, &DecodeMonitor::monitorProgress);
+    connect(this, &QMtcLoader::decode, monitor, &DecodeMonitor::monitorProgress);
     connect(monitor, &DecodeMonitor::progressQueried, this, &QMtcLoader::updateProgress);
 
     connect(this, &QMtcLoader::enableNonDefaultFields, sidebar, &QPlotControlSidebar::enableNonDefaultFields);
