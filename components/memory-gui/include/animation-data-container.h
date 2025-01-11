@@ -4,6 +4,7 @@
 #include <QVector>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <mtccdecoder.h>
 #include <vector>
 
@@ -13,12 +14,15 @@ template <typename T> class AnimationDataContainer {
 public:
 
     explicit AnimationDataContainer(const uint32_t timeSpacing, const uint32_t stepSize)
-      : timeSpacing(timeSpacing), head(stepSize), tail(0), stepSize(stepSize), data_all(nullptr), times_all(nullptr) {
-        index = 1;
+      : timeSpacing(timeSpacing), head(timeSpacing), tail(0), stepSize(stepSize), data_all(nullptr), times_all(nullptr) {
+        index = timeSpacing;
+        data_slice = new QVector<double>();
+        time_slice = new QVector<double>();
     }
 
     ~AnimationDataContainer() {
-
+        delete data_slice;
+        delete time_slice;
     }
 
     uint32_t getTimeSpacing() const {
@@ -39,26 +43,25 @@ public:
         auto v1 = getTimeWindow();
         auto v2 = getDataWindow();
 
-        head++;
-        if (head >= timeSpacing) {
-            tail++;
-        }
+        tail += stepSize;
+        head += stepSize;
 
         return std::make_pair(v1, v2);
     }
 
 
-
 private:
 
     QVector<double>* getTimeWindow() {
-        auto vec = times_all->mid(tail, head);
-        return new QVector<double>(vec.begin(), vec.end());
+        auto vec = times_all->mid(0, timeSpacing);
+        time_slice->swap(vec);
+        return time_slice;
     }
 
     QVector<double>* getDataWindow() {
-        auto vec = data_all->mid(tail, head);
-        return new QVector<double>(vec.begin(), vec.end());
+        auto vec = data_all->mid(tail, timeSpacing);
+        data_slice->swap(vec);
+        return data_slice;
     }
 
     uint32_t timeSpacing;
@@ -69,6 +72,8 @@ private:
 
     QVector<double>* data_all;
     QVector<double>* times_all;
+    QVector<double>* data_slice;
+    QVector<double>* time_slice;
 
 };
 
