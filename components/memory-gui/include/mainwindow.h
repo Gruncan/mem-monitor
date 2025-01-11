@@ -6,6 +6,7 @@
 #include "qmtcloadersgroup.h"
 #include "qmemoryplotter.h"
 #include "qplotcontrolsidebar.h"
+#include "qmemoryanimatecontrols.h"
 
 #include <QMainWindow>
 #include <QThread>
@@ -39,6 +40,8 @@ private:
     QPlotControlSidebar* sidebar;
 
     QMemoryPlotter* plotter;
+
+    QMemoryAnimateControls* animateControls;
 
 };
 
