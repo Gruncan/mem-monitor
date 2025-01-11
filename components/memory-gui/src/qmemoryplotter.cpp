@@ -210,14 +210,11 @@ void QMemoryPlotter::playClicked(){
     }
 
     _plot->xAxis->setRange(0, timeSpacing);
-    QCPGraph* graph = _plot->addGraph();
     const mk_size_t key = plotsEnabled.begin()->first;
-    //
-    //
     const MtcObject* object = _loader->getMtcObject();
 
     emit queueAnimationRendering(&object->point_map[key], object->times, object->size,
-        object->_times_length, graph, 10000);
+        object->_times_length, plotsEnabled[key], 10000);
 
 }
 
