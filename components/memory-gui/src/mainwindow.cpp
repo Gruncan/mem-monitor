@@ -19,23 +19,25 @@ MainWindow::MainWindow(QWidget* parent) :
     sidebar->setCategories(mtc::MTC_CATEGORIES);
 
     std::vector<QMtcLoader*> loaders;
-    for (int i = 1; i <= 5; i++) {
+    for (int i = 1; i <= 3; i++) {
         loaders.push_back(new QMtcLoader(this, QString("Load %1").arg(i).toStdString().c_str(), sidebar));
     }
 
     loadersGroup = new QMtcLoadersGroup(this, loaders);
-    loadersGroup->setGeometry(QRect(300, 520, 900, 150));
+    loadersGroup->setGeometry(QRect(600, 520, 600, 150));
 
-
+    animateControls = new QMemoryAnimateControls(this);
+    animateControls->setGeometry(QRect(400, 520, 130, 120));
 
     //TODO update this index
-    plotter = new QMemoryPlotter(this, ui->plot, loadersGroup->getLoader(0));
+    plotter = new QMemoryPlotter(this, ui->plot, loadersGroup->getLoader(0), animateControls);
 
     // connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
 }
 
 void MainWindow::initialisePlot() {
     ui->plot->setDisabled(false);
+    plotter->setIsLoaded(true);
     connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
 }
 
