@@ -15,6 +15,8 @@ public:
     explicit QMemoryAnimateControls(QWidget* parent = nullptr);
     ~QMemoryAnimateControls();
 
+    QPushButton* exportButton;
+
 
 public Q_SLOTS:
 

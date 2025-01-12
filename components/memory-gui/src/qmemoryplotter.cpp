@@ -81,7 +81,7 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     connect(animateControls, &QMemoryAnimateControls::rewindClicked, this, &QMemoryPlotter::rewindClicked);
     connect(animateControls, &QMemoryAnimateControls::forwardClicked, this, &QMemoryPlotter::forwardClicked);
     connect(animateControls, &QMemoryAnimateControls::timeSpacingChange, this, &QMemoryPlotter::onTimeSpacingUpdate);
-
+    connect(animateControls->exportButton, &QPushButton::clicked, this, &QMemoryPlotter::exportPlot);
     hasPlayed = false;
     timeSpacing = 1000;
     updateInputsFromPlot();
@@ -249,4 +249,13 @@ void QMemoryPlotter::onTimeSpacingUpdate(int timeSpacing){
 
 void QMemoryPlotter::setIsLoaded(const bool isLoaded) {
     this->isLoaded = isLoaded;
+}
+
+void QMemoryPlotter::exportPlot() {
+    QString filename = "plot.png";
+    if (_plot->savePng(filename, 1061, 511)) {
+        qDebug() << "Plot saved to" << filename;
+    } else {
+        qDebug() << "Failed to save plot.";
+    }
 }
