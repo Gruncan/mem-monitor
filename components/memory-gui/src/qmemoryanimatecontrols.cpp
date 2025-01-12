@@ -45,6 +45,9 @@ QMemoryAnimateControls::QMemoryAnimateControls(QWidget* parent) :
     layout->addWidget(label);
     layout->addWidget(spinBox);
 
+    exportButton = new QPushButton("Export to Image", this);
+    layout->addWidget(exportButton);
+
     connect(playPauseButton, &QPushButton::clicked, this, &QMemoryAnimateControls::onPlayPauseClicked);
     connect(rewindButton, &QPushButton::clicked, this, &QMemoryAnimateControls::onRewindClicked);
     connect(forwardButton, &QPushButton::clicked, this, &QMemoryAnimateControls::onForwardClicked);

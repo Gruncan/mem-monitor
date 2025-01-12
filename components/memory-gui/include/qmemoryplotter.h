@@ -42,6 +42,7 @@ public Q_SLOTS:
     void forwardClicked();
     void onTimeSpacingUpdate(int timeSpacing);
 
+    void exportPlot();
 
 Q_SIGNALS:
     void queueRendering(MtcPointMap* points, const QVector<double>& times, uint64_t length, QCPGraph* graph);
