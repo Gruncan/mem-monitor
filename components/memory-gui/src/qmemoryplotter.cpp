@@ -33,6 +33,8 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
 
     connect(this, &QMemoryPlotter::queueRendering, _plotRender, &QPlotRender::queueRendering);
     connect(this, &QMemoryPlotter::queueAnimationRendering, _plotRender, &QPlotRender::queueAnimationRendering);
+    connect(this, &QMemoryPlotter::startAnimation, _plotRender, &QPlotRender::startAnimation);
+    connect(this, &QMemoryPlotter::stopAnimation, _plotRender, &QPlotRender::stopAnimation);
 
     renderThread->start();
     plotsEnabled.clear();
@@ -80,7 +82,8 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     connect(animateControls, &QMemoryAnimateControls::forwardClicked, this, &QMemoryPlotter::forwardClicked);
     connect(animateControls, &QMemoryAnimateControls::timeSpacingChange, this, &QMemoryPlotter::onTimeSpacingUpdate);
 
-
+    hasPlayed = false;
+    timeSpacing = 1000;
     updateInputsFromPlot();
 
 }
@@ -128,6 +131,9 @@ void QMemoryPlotter::removePlot(mk_size_t key) {
     }
     _plot->removeGraph(plotsEnabled[key]);
     plotsEnabled.erase(key);
+    if (plotsEnabled.empty()) {
+        hasPlayed = false;
+    }
     // Maybe we should tell reender about this
     _plot->replot();
 
@@ -212,27 +218,33 @@ void QMemoryPlotter::playClicked(){
     _plot->xAxis->setRange(0, timeSpacing);
     const mk_size_t key = plotsEnabled.begin()->first;
     const MtcObject* object = _loader->getMtcObject();
-
-    emit queueAnimationRendering(&object->point_map[key], object->times, object->size,
-        object->_times_length, plotsEnabled[key], 10000);
+    if (!hasPlayed) {
+        hasPlayed = true;
+        emit queueAnimationRendering(&object->point_map[key], object->times, object->size,
+                object->_times_length, plotsEnabled[key], this->timeSpacing);
+    }else {
+        emit startAnimation();
+    }
 
 }
 
 void QMemoryPlotter::pauseClicked(){
-    qDebug() << "pauseClicked";
+    emit stopAnimation();
 }
 
 void QMemoryPlotter::rewindClicked(){
-    qDebug() << "rewindClicked";
+    _plotRender->rewind();
 }
 
 void QMemoryPlotter::forwardClicked(){
-    qDebug() << "forwardClicked";
+    _plotRender->forward();
 }
 
 void QMemoryPlotter::onTimeSpacingUpdate(int timeSpacing){
     this->timeSpacing = timeSpacing;
-    qDebug() << "forwardClicked: " << timeSpacing;
+    _plotRender->setTimeSpacing(timeSpacing);
+    hasPlayed = false;
+    animateControls->onPlayPauseClicked();
 }
 
 void QMemoryPlotter::setIsLoaded(const bool isLoaded) {

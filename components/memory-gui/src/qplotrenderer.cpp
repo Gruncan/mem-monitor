@@ -12,8 +12,8 @@ static constexpr size_t TARGET_CHUNK = 1000;
 QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0)  {
     animationTimer = new QTimer(this);
     connect(animationTimer, &QTimer::timeout, this, &QPlotRender::updatePlot);
-    animationData = new AnimationDataContainer<double>(1000, 100);
-
+    timeSpacing = 1000;
+    animationData = new AnimationDataContainer<double>(timeSpacing, timeSpacing / 10);
 }
 
 QPlotRender::~QPlotRender() {
@@ -72,10 +72,8 @@ void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times
     values.clear();
     this->times.clear();
 
-    // Reserve space for the data
     values.reserve(length / sampleRate);
     this->times.reserve(length / sampleRate);
-    // Process time points - these will remain fixed
     uint64_t timeSum = 0;
     uint64_t c = 0;
     for (uint64_t i = 0; i < timesLength; i++) {
@@ -108,32 +106,57 @@ void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times
 
     animationData->setData(&values);
     animationData->setTimes(&this->times);
+    this->timeSpacing = timeSpacing;
 
-    // int numPoints = 1000;
-    // double xMin = 0, xMax = 100;
-    // double step = (xMax - xMin) / (numPoints - 1);
-    //
-    // for (int i = 0; i < numPoints; ++i) {
-    //     double x = xMin + (i % 500) * step;
-    //     double y = std::sin(x);
-    //     values.push_back(y);
-    //     this->times.push_back(x);
-    // }
     currentGraph = graph;
-    // graph->setData(this->times, values);
     plot->setOpenGl(false);
-    plot->xAxis->setRange(0, this->times[1000]);
+    plot->xAxis->setRange(0, this->times[this->timeSpacing]);
     plot->yAxis->setRange(0, valueMax * 1.1);
     // plot->replot(QCustomPlot::rpQueuedReplot);
     animationTimer->start(250);
 }
 
 
+void QPlotRender::startAnimation() {
+    plot->xAxis->setRange(0, this->times[this->timeSpacing]);
+    plot->yAxis->setRange(0, valueMax * 1.1);
+    animationTimer->start(250);
+}
+
+void QPlotRender::stopAnimation() {
+    animationTimer->stop();
+}
+
+void QPlotRender::rewind() {
+    animationData->rewind();
+    auto [times, data] = animationData->getWindow();
+    currentGraph->setData(*times, *data);
+    plot->replot(QCustomPlot::rpImmediateRefresh);
+}
+
+void QPlotRender::forward() {
+    animationData->forward();
+    auto [times, data] = animationData->getWindow();
+    currentGraph->setData(*times, *data);
+    plot->replot(QCustomPlot::rpImmediateRefresh);
+}
+
+void QPlotRender::setTimeSpacing(int spacing) {
+    animationTimer->stop();
+    this->timeSpacing = spacing;
+    animationData->restart(spacing);
+}
+
 void QPlotRender::updatePlot() {
 
     auto [times, data] = animationData->getWindow();
     if (data->size() == 0) return;
     currentGraph->setData(*times, *data);
+    // auto [lower, upper] = animationData->getTimeRange();
+    // QCPRange range = QCPRange(lower, upper);
+    // qDebug() << range.lower << " " << range.upper;
+    // plot->xAxis->mTicker->generate(range, plot->xAxis->mParentPlot->locale(), plot->xAxis->mNumberFormatChar, plot->xAxis->mNumberPrecision, plot->xAxis->mTickVector, plot->xAxis->mSubTicks ? &plot->xAxis->mSubTickVector : nullptr, plot->xAxis->mTickLabels ? &plot->xAxis->mTickVectorLabels : nullptr);
+    // plot->xAxis->setRange()
     plot->replot(QCustomPlot::rpImmediateRefresh);
 }
 

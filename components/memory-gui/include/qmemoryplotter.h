@@ -48,6 +48,9 @@ Q_SIGNALS:
 
     void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength, QCPGraph* graph, int timeSpacing);
 
+    void startAnimation();
+    void stopAnimation();
+
 private:
 
     QCustomPlot* _plot;
@@ -75,6 +78,7 @@ private:
     bool isLoaded;
 
     int timeSpacing;
+    bool hasPlayed;
 
 };
 

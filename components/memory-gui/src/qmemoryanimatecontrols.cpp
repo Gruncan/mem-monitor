@@ -9,7 +9,7 @@
 
 QMemoryAnimateControls::QMemoryAnimateControls(QWidget* parent) :
                     QWidget(parent),
-                    isPlaying(true)
+                    isPlaying(false)
 {
     playPauseButton = new QPushButton(this);
     rewindButton = new QPushButton(this);
@@ -36,7 +36,7 @@ QMemoryAnimateControls::QMemoryAnimateControls(QWidget* parent) :
     QVBoxLayout* layout = new QVBoxLayout(this);
     spinBox = new QSpinBox(this);
     spinBox->setRange(0, INT_MAX);
-    spinBox->setValue(10000);
+    spinBox->setValue(1000);
     spinBox->setSingleStep(10);
     QLabel* label = new QLabel("Time spacing:", this);
     layout->addLayout(buttonLayout);
@@ -61,7 +61,7 @@ QMemoryAnimateControls::~QMemoryAnimateControls() {
 
 void QMemoryAnimateControls::onPlayPauseClicked(){
     isPlaying = !isPlaying;
-    playPauseButton->setIcon(isPlaying ? playIcon : pauseIcon);
+    playPauseButton->setIcon(isPlaying ? pauseIcon : playIcon);
     if(isPlaying) {
         emit playClicked();
     }else {

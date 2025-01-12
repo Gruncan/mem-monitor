@@ -101,6 +101,7 @@ void QMtcLoader::updateProgress(const int progress) {
 }
 
 void QMtcLoader::loaded(const std::string& filePath) {
+    monitorThread->exit();
     progressBar->setValue(100);
     label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(object->version).arg(object->size));
     label->setStyleSheet("");
