@@ -47,28 +47,28 @@
 #  endif
 #endif
 
+#include <QtCore/QCache>
+#include <QtCore/QDateTime>
+#include <QtCore/QDebug>
+#include <QtCore/QFlags>
+#include <QtCore/QMargins>
+#include <QtCore/QMultiMap>
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QStack>
+#include <QtCore/QString>
 #include <QtCore/QTimer>
+#include <QtCore/QVector>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPainterPath>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QWheelEvent>
 #include <QtGui/QPixmap>
-#include <QtCore/QVector>
-#include <QtCore/QString>
-#include <QtCore/QDateTime>
-#include <QtCore/QMultiMap>
-#include <QtCore/QFlags>
-#include <QtCore/QDebug>
-#include <QtCore/QStack>
-#include <QtCore/QCache>
-#include <QtCore/QMargins>
-#include <qmath.h>
-#include <limits>
+#include <QtGui/QWheelEvent>
 #include <algorithm>
+#include <limits>
+#include <qmath.h>
 #ifdef QCP_OPENGL_FBO
 #  include <QtGui/QOpenGLContext>
 #  if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -127,6 +127,8 @@ class QCPPolarAxisRadial;
 class QCPPolarAxisAngular;
 class QCPPolarGrid;
 class QCPPolarGraph;
+
+class QPlotRender;
 
 /* including file 'src/global.h'            */
 /* modified 2022-11-06T12:45:57, size 18102 */
@@ -1731,6 +1733,7 @@ Q_DECLARE_METATYPE(QCPLabelPainterPrivate::AnchorSide)
 
 class QCP_LIB_DECL QCPAxisTicker
 {
+    friend class QPlotRender;
   Q_GADGET
 public:
   /*!
@@ -2119,6 +2122,8 @@ protected:
 
 class QCP_LIB_DECL QCPAxis : public QCPLayerable
 {
+
+    friend class QPlotRender;
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(AxisType axisType READ axisType)
@@ -2229,6 +2234,7 @@ public:
   int numberPrecision() const { return mNumberPrecision; }
   QVector<double> tickVector() const { return mTickVector; }
   QVector<QString> tickVectorLabels() const { return mTickVectorLabels; }
+   void setTickVectorLabels(QVector<QString> vector) { this->mTickVectorLabels = vector; }
   int tickLengthIn() const;
   int tickLengthOut() const;
   bool subTicks() const { return mSubTicks; }
@@ -2398,7 +2404,7 @@ protected:
   virtual void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
   
   // non-virtual methods:
-  void setupTickVectors();
+  void setupTickVectors(QCPRange* range = nullptr);
   QPen getBasePen() const;
   QPen getTickPen() const;
   QPen getSubTickPen() const;

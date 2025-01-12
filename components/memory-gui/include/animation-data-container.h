@@ -39,16 +39,31 @@ public:
 
 
     std::pair<QVector<double>*, QVector<double>*> getWindow() {
-
         auto v1 = getTimeWindow();
         auto v2 = getDataWindow();
 
         tail += stepSize;
-        head += stepSize;
 
         return std::make_pair(v1, v2);
     }
 
+    std::pair<double, double> getTimeRange() {
+        return std::make_pair(times_all->at(tail), times_all->at(tail + timeSpacing));
+    }
+
+    void rewind() {
+        tail -= (2 * stepSize);
+    }
+
+    void forward() {
+        tail += stepSize;
+    }
+
+    void restart(int timeSpacing) {
+        tail = 0;
+        this->timeSpacing = timeSpacing;
+        this->timeSpacing /= 10;
+    }
 
 private:
 
