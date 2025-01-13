@@ -16,7 +16,7 @@
   <property name="windowTitle">
    <string notr="true">Horus</string>
   </property>
-  <widget class="QCustomPlot" name="plot" native="true">
+  <widget class="QMemoryTreeMapPlot" name="plot" native="true">
    <property name="geometry">
     <rect>
      <x>210</x>
@@ -29,9 +29,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QCustomPlot</class>
+   <class>QMemoryTreeMapPlot</class>
    <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
+   <header>qmemorytreemapplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

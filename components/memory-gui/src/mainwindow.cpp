@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget* parent) :
                         decoderThread(new QThread),
                         monitorThread(new QThread)
 {
-    ui->setupUi(this);  // Move this first
+    ui->setupUi(this);
     ui->plot->setDisabled(true);
 
     sidebar = new QPlotControlSidebar(this);
@@ -27,10 +27,13 @@ MainWindow::MainWindow(QWidget* parent) :
     loadersGroup->setGeometry(QRect(600, 520, 600, 150));
 
     animateControls = new QMemoryAnimateControls(this);
-    animateControls->setGeometry(QRect(400, 520, 130, 120));
+    animateControls->setGeometry(QRect(400, 520, 130, 150));
 
     //TODO update this index
     plotter = new QMemoryPlotter(this, ui->plot, loadersGroup->getLoader(0), animateControls);
+
+
+    // ui->plot->loadFromMapsFile("/home/duncan/Development/C/mem-monitor/maps.txt");
 
     // connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
 }
