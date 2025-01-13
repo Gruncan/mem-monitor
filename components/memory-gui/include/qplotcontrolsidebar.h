@@ -4,7 +4,7 @@
 
 
 #include "mtc-config.h"
-#include <QTreeWidgetItem>
+#include <QtWidgets/QTreeWidgetItem>
 
 #include "plotdata.h"
 

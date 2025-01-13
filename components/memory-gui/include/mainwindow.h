@@ -8,8 +8,8 @@
 #include "qplotcontrolsidebar.h"
 #include "qmemoryanimatecontrols.h"
 
-#include <QMainWindow>
-#include <QThread>
+#include <QtWidgets/QMainWindow>
+#include <QtCore/QThread>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

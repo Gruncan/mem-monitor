@@ -74,8 +74,8 @@
 #  if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #    include <QtGui/QOpenGLFramebufferObject>
 #  else
-#    include <QOpenGLFramebufferObject>
-#    include <QOpenGLPaintDevice>
+#    include <QtOpenGL/QOpenGLFramebufferObject>
+#    include <QtOpenGL/QOpenGLPaintDevice>
 #  endif
 #  ifdef QCP_OPENGL_OFFSCREENSURFACE
 #    include <QtGui/QOffscreenSurface>

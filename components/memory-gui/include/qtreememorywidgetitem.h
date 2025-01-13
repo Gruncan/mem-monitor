@@ -1,9 +1,12 @@
 
 #ifndef QTREEMEMORYWIDGETITEM_H
 #define QTREEMEMORYWIDGETITEM_H
-#include <qtreewidget.h>
 
 #include "mtc-config.h"
+
+#include <QtWidgets/QTreeWidgetItem>
+#include <QtWidgets/QTreeView>
+
 
 class QTreeMemoryWidgetItem : public QTreeWidgetItem {
 public:

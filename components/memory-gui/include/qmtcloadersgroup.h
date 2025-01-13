@@ -5,7 +5,7 @@
 #include "qmtcloader.h"
 
 
-#include <qwidget.h>
+#include <QtWidgets/QtWidgets>
 
 class QMtcLoadersGroup : public QWidget {
 

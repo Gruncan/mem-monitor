@@ -2,9 +2,9 @@
 
 #include "qmtcloader.h"
 
-#include <QFileDialog>
-#include <QProgressBar>
-#include <QPushButton>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QPushButton>
 #include <QThread>
 
 

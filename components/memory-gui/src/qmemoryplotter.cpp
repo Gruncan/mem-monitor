@@ -5,8 +5,8 @@
 
 #include "qmemoryanimatecontrols.h"
 
-#include <QDoubleSpinBox>
-#include <QLabel>
+#include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QLabel>
 #include <mtc-config.h>
 #include <random>
 
