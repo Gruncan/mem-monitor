@@ -32,6 +32,7 @@ SET(PROJECT_SOURCES
         src/qplotrenderer.cpp
         src/qtreememorywidgetitem.cpp
         src/qmemoryanimatecontrols.cpp
+        src/qmemorytreemapplot.cpp
         include/mainwindow.h
         include/decoder-worker.h
         include/decoder-monitor.h
@@ -44,8 +45,9 @@ SET(PROJECT_SOURCES
         include/qplotrender.h
         include/qtreememorywidgetitem.h
         include/qmemoryanimatecontrols.h
-        ../common/mem-monitor-config.h
         include/animation-data-container.h
+        include/qmemorytreemapplot.h
+        ../common/mem-monitor-config.h
 )
 include_directories(include/
                     ../common/mtc/include)
