@@ -2,15 +2,24 @@
 
 
 #include "qmemoryplotter.h"
-#include <random>
-#include <mtc-config.h>
+
+#include "qmemoryanimatecontrols.h"
+
 #include <QDoubleSpinBox>
 #include <QLabel>
+#include <mtc-config.h>
+#include <random>
 
 
 static constexpr int QUALITY = 1000;
 
-QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader) : QWidget(parent), _plot(plot), _loader(loader), gen(1)  {
+QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
+                                        QMemoryAnimateControls* animateControls) :
+                                QWidget(parent), _plot(plot), _loader(loader), gen(1),
+                                animateControls(animateControls),
+                                isAnimationRunning(false),
+                                isLoaded(false)
+{
 
     _plotRender = new QPlotRender(_plot);
 
@@ -23,6 +32,9 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     _plotRender->moveToThread(renderThread);
 
     connect(this, &QMemoryPlotter::queueRendering, _plotRender, &QPlotRender::queueRendering);
+    connect(this, &QMemoryPlotter::queueAnimationRendering, _plotRender, &QPlotRender::queueAnimationRendering);
+    connect(this, &QMemoryPlotter::startAnimation, _plotRender, &QPlotRender::startAnimation);
+    connect(this, &QMemoryPlotter::stopAnimation, _plotRender, &QPlotRender::stopAnimation);
 
     renderThread->start();
     plotsEnabled.clear();
@@ -63,6 +75,15 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     connect(yMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &QMemoryPlotter::updateYRange);
 
+
+    connect(animateControls, &QMemoryAnimateControls::playClicked, this, &QMemoryPlotter::playClicked);
+    connect(animateControls, &QMemoryAnimateControls::pauseClicked, this, &QMemoryPlotter::pauseClicked);
+    connect(animateControls, &QMemoryAnimateControls::rewindClicked, this, &QMemoryPlotter::rewindClicked);
+    connect(animateControls, &QMemoryAnimateControls::forwardClicked, this, &QMemoryPlotter::forwardClicked);
+    connect(animateControls, &QMemoryAnimateControls::timeSpacingChange, this, &QMemoryPlotter::onTimeSpacingUpdate);
+    connect(animateControls->exportButton, &QPushButton::clicked, this, &QMemoryPlotter::exportPlot);
+    hasPlayed = false;
+    timeSpacing = 1000;
     updateInputsFromPlot();
 
 }
@@ -110,6 +131,9 @@ void QMemoryPlotter::removePlot(mk_size_t key) {
     }
     _plot->removeGraph(plotsEnabled[key]);
     plotsEnabled.erase(key);
+    if (plotsEnabled.empty()) {
+        hasPlayed = false;
+    }
     // Maybe we should tell reender about this
     _plot->replot();
 
@@ -181,5 +205,57 @@ void QMemoryPlotter::updateYRange() {
     if (min < max) {
         _plot->yAxis->setRange(min, max);
         _plot->replot();
+    }
+}
+
+void QMemoryPlotter::playClicked(){
+    if (!isLoaded || isAnimationRunning || plotsEnabled.empty()) return;
+
+    if (_plot->graphCount() != 1) {
+        return;
+    }
+
+    _plot->xAxis->setRange(0, timeSpacing);
+    const mk_size_t key = plotsEnabled.begin()->first;
+    const MtcObject* object = _loader->getMtcObject();
+    if (!hasPlayed) {
+        hasPlayed = true;
+        emit queueAnimationRendering(&object->point_map[key], object->times, object->size,
+                object->_times_length, plotsEnabled[key], this->timeSpacing);
+    }else {
+        emit startAnimation();
+    }
+
+}
+
+void QMemoryPlotter::pauseClicked(){
+    emit stopAnimation();
+}
+
+void QMemoryPlotter::rewindClicked(){
+    _plotRender->rewind();
+}
+
+void QMemoryPlotter::forwardClicked(){
+    _plotRender->forward();
+}
+
+void QMemoryPlotter::onTimeSpacingUpdate(int timeSpacing){
+    this->timeSpacing = timeSpacing;
+    _plotRender->setTimeSpacing(timeSpacing);
+    hasPlayed = false;
+    animateControls->onPlayPauseClicked();
+}
+
+void QMemoryPlotter::setIsLoaded(const bool isLoaded) {
+    this->isLoaded = isLoaded;
+}
+
+void QMemoryPlotter::exportPlot() {
+    QString filename = "plot.png";
+    if (_plot->savePng(filename, 1061, 511)) {
+        qDebug() << "Plot saved to" << filename;
+    } else {
+        qDebug() << "Failed to save plot.";
     }
 }

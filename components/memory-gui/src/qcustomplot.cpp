@@ -9732,13 +9732,17 @@ void QCPAxis::draw(QCPPainter *painter)
   If a change in the label text/count is detected, the cached axis margin is invalidated to make
   sure the next margin calculation recalculates the label sizes and returns an up-to-date value.
 */
-void QCPAxis::setupTickVectors()
+void QCPAxis::setupTickVectors(QCPRange* range)
 {
   if (!mParentPlot) return;
+    if (range == nullptr) {
+        range = &mRange;
+    }
   if ((!mTicks && !mTickLabels && !mGrid->visible()) || mRange.size() <= 0) return;
-  
+
+
   QVector<QString> oldLabels = mTickVectorLabels;
-  mTicker->generate(mRange, mParentPlot->locale(), mNumberFormatChar, mNumberPrecision, mTickVector, mSubTicks ? &mSubTickVector : nullptr, mTickLabels ? &mTickVectorLabels : nullptr);
+  mTicker->generate(*range, mParentPlot->locale(), mNumberFormatChar, mNumberPrecision, mTickVector, mSubTicks ? &mSubTickVector : nullptr, mTickLabels ? &mTickVectorLabels : nullptr);
   mCachedMarginValid &= mTickVectorLabels == oldLabels; // if labels have changed, margin might have changed, too
 }
 
