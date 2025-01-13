@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string notr="true">Horus</string>
+   <string notr="true">MemoryGui</string>
   </property>
   <widget class="QCustomPlot" name="plot" native="true">
    <property name="geometry">
