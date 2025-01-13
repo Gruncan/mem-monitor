@@ -8,11 +8,11 @@
 #include "mtccdecoder.h"
 
 
-#include <QLabel>
-#include <QProgressBar>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QWidget>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 
 
 class QMtcLoader : public QWidget {

@@ -5,10 +5,10 @@
 #include "qmtcloader.h"
 
 
-#include <QProgressBar>
-#include <QPushButton>
-#include <qboxlayout.h>
-#include <qlabel.h>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QLabel>
 
 
 QMtcLoadersGroup::QMtcLoadersGroup(QWidget* parent, std::vector<QMtcLoader*> loaders) : QWidget(parent),

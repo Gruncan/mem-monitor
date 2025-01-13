@@ -3,10 +3,10 @@
 #ifndef QMEMORYANIMATECONTROLS_H
 #define QMEMORYANIMATECONTROLS_H
 
-#include <QPushButton>
-#include <QWidget>
-#include <qboxlayout.h>
-#include <qspinbox.h>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QSpinBox>
 
 class QMemoryAnimateControls : public QWidget {
     Q_OBJECT

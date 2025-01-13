@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <iostream>
 
 #ifndef _WIN32

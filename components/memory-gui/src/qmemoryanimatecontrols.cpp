@@ -1,10 +1,10 @@
 
 #include "qmemoryanimatecontrols.h"
 
-#include <QLabel>
-#include <qboxlayout.h>
-#include <qspinbox.h>
-#include <qstyle.h>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QStyle>
 
 
 QMemoryAnimateControls::QMemoryAnimateControls(QWidget* parent) :

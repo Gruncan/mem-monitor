@@ -4,7 +4,7 @@
 #include "qtreememorywidgetitem.h"
 #include "mainwindow.h"
 
-#include <qboxlayout.h>
+#include <QtWidgets/QBoxLayout>
 
 
 QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent){
