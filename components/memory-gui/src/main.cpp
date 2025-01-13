@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
         return app.exec();
     }catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
+#ifdef UNIX
         printBacktrace();
+#endif
     }
 }
