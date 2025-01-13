@@ -126,9 +126,14 @@ void decode(const char* filename, struct MtcObject* object) {
     }
 
     fseek(fp, 0, SEEK_END);
+#ifdef UNIX
     object->file_length = ftell(fp);
+#else
+    object->file_length = _ftelli64(fp);
+#endif
     fseek(fp, 0, SEEK_SET);
 
+    printf("File length: %llu\n", object->file_length);
     size_t bytesRead = 0;
     bytesRead = fread(buffer, 1, HEADER_SIZE, fp);
 
