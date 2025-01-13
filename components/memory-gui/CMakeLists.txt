@@ -1,24 +1,26 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(CMAKE_EXE_LINKER_FLAGS "-static")
+
+set(QT_ROOT "/home/duncan/Qt/6.8.1/build_static")
+set(QT_LIB_PATH "${QT_ROOT}/lib")
+set(QT_CMAKE_PATH "${QT_LIB_PATH}/cmake")
+
+set(Qt6Core_DIR "${QT_CMAKE_PATH}/Qt6Core")
+set(Qt6Gui_DIR "${QT_CMAKE_PATH}/Qt6Gui")
+set(Qt6Widgets_DIR "${QT_CMAKE_PATH}/Qt6Widgets")
+set(Qt6OpenGL_DIR "${QT_CMAKE_PATH}/Qt6OpenGL")
+set(Qt6PrintSupport_DIR "${QT_CMAKE_PATH}/Qt6PrintSupport")
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-if (WIN32)
+if(WIN32)
     add_compile_options(-static-libstdc++ -static-libgcc)
-endif ()
+endif()
 
-# Make this dynamic
-if(UNIX)
-    set(CMAKE_PREFIX_PATH /home/duncan/Qt/6.8.1/gcc_64)
-elseif (WIN32)
-    set(CMAKE_PREFIX_PATH C:\\Qt\\6.8.1\\mingw_64)
-else ()
-    message(FATAL_ERROR "Unsupported platform")
-endif ()
-find_package(Qt6 COMPONENTS Core Widgets OpenGL REQUIRED)
-find_package(Qt6 COMPONENTS PrintSupport REQUIRED)
-
-SET(PROJECT_SOURCES
+set(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp
         src/decoder-worker.cpp
@@ -46,26 +48,58 @@ SET(PROJECT_SOURCES
         include/qmemoryanimatecontrols.h
         ../common/mem-monitor-config.h
         include/animation-data-container.h
+        include/qmemorytreemapplot.h
 )
-include_directories(include/
-                    ../common/mtc/include)
 
+include_directories(
+        include/
+        ../common/mtc/include
+        ${QT_ROOT}/include
+)
+
+set(CMAKE_PREFIX_PATH "/home/duncan/Qt/6.8.1/gcc_64/lib/cmake")
+
+find_package(Qt6 COMPONENTS Core Gui Widgets OpenGL PrintSupport REQUIRED)
 qt_add_executable(MemoryGUI MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
-target_link_libraries(MemoryGUI PRIVATE Qt::Core Qt::Widgets Qt::OpenGL)
-target_link_libraries(MemoryGUI PRIVATE Qt::PrintSupport)
+set_property(TARGET MemoryGUI PROPERTY LINK_SEARCH_START_STATIC ON)
+set_property(TARGET MemoryGUI PROPERTY LINK_SEARCH_END_STATIC ON)
+set_property(TARGET MemoryGUI PROPERTY LINK_WHAT_YOU_USE ON)
 
-if (UNIX)
+target_link_libraries(MemoryGUI PRIVATE
+        ${QT_LIB_PATH}/libQt6Core.a
+        ${QT_LIB_PATH}/libQt6Gui.a
+        ${QT_LIB_PATH}/libQt6Widgets.a
+        ${QT_LIB_PATH}/libQt6OpenGL.a
+        ${QT_LIB_PATH}/libQt6PrintSupport.a
+        -static
+        -lX11
+        -lxcb
+        -lxkbcommon
+        -lxkbcommon-x11
+        -lfontconfig
+        -lfreetype
+        -lz
+        -luuid
+        -lXrender
+        -lXext
+        -lX11-xcb
+        -lSM
+        -lICE
+        -ldl
+        -lpthread
+)
+
+if(UNIX)
     target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}/common/mtc/libmtc_decoder.so)
 elseif(WIN32)
     target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}\\common\\mtc\\libmtc_decoder.a)
-else ()
+else()
     message(FATAL_ERROR "Can't link to decode library")
-endif ()
+endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/MemoryGUI_autogen/include)
 
 target_compile_definitions(MemoryGUI PRIVATE QCUSTOMPLOT_COMPILE_LIBRARY QCUSTOMPLOT_USE_OPENGL)
-
 
 qt_finalize_executable(MemoryGUI)
