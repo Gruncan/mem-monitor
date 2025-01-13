@@ -16,10 +16,10 @@ class AllocationPoint:
         self.timestamp = timestamp
 
     def __repr__(self):
-        return f"{self.__class__.__name__}: {getattr(self, "ptr")}"
+        return f"{self.__class__.__name__}: {getattr(self, 'ptr')}"
 
     def _format_timestamp(self):
-        return f"[{self.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")}] "
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')}] "
 
 class Malloc(AllocationPoint):
     def __init__(self, timestamp, ptr, size):
@@ -238,6 +238,7 @@ class TMtcDecoder:
             index += length * 8
 
             inst = cls(time, *values)
+            pprint(inst)
             yield inst
 
     def decode(self):
@@ -251,6 +252,6 @@ class TMtcDecoder:
 
         pprint(addresses)
 
-decoder = TMtcDecoder("memory_tracker.tmtc")
+decoder = TMtcDecoder("C:\\Users\\DJ223\\Downloads\\memory_tracker.tmtc")
 decoder.decode()
 
