@@ -41,7 +41,7 @@ inline uint8_t queryDecodeProgress(struct MtcObject* object) {
     if (object->file_length == 0 || object->size == 0) {
         return 0;
     }
-    const uint8_t value = ((object->size * CHUNK_SIZE) / object->file_length) / 100;
+    const uint8_t value = ((double)(object->size * CHUNK_SIZE) / (double) object->file_length) * 100;
     return value;
 }
 
@@ -125,6 +125,10 @@ void decode(const char* filename, struct MtcObject* object) {
         return;
     }
 
+    fseek(fp, 0, SEEK_END);
+    object->file_length = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
     size_t bytesRead = 0;
     bytesRead = fread(buffer, 1, HEADER_SIZE, fp);
 
@@ -135,9 +139,6 @@ void decode(const char* filename, struct MtcObject* object) {
 
     decode_header(buffer, object);
 
-    // fseek(fp, 0, SEEK_END);
-    // object->file_length = ftell(fp);
-    // fseek(fp, 0, SEEK_SET);
 
 
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
