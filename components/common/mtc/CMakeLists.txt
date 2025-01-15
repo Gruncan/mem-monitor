@@ -1,8 +1,11 @@
+cmake_minimum_required(VERSION 3.16)
+project(MTC)
 
 
 
 set(MTC_SOURCES
     src/mtccdecoder.c
+    src/tmtcdecoder.c
 )
 set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE C)
 

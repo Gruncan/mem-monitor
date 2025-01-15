@@ -6,7 +6,7 @@
 #include <iostream>
 #include "mtccdecoder.h"
 
-
+#ifdef linux
 void printMemoryUsage() {
     std::ifstream statusFile("/proc/self/status");
     std::string line;
@@ -23,20 +23,22 @@ void printMemoryUsage() {
     }
     statusFile.close();
 }
+#endif
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
     MtcObject object;
     initaliseMtcObject(&object);
 
-    decode("/home/duncan/Desktop/uwb_test3.mtc",  &object);
+    decode("C:\\Development\\University\\Thesis\\uwb_test3.mtc",  &object);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
     std::cout << duration.count() << " seconds" << std::endl;
     std::cout << object.size << std::endl;
+#ifdef linux
     printMemoryUsage();
-
+#endif
 
     uint64_t repeatCount = 0;
     for (int i=0; i < object.point_map[165].length; i++ ) {
