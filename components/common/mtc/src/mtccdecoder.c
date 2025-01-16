@@ -133,7 +133,6 @@ void decode(const char* filename, struct MtcObject* object) {
 #endif
     fseek(fp, 0, SEEK_SET);
 
-    printf("File length: %llu\n", object->file_length);
     size_t bytesRead = 0;
     bytesRead = fread(buffer, 1, HEADER_SIZE, fp);
 
@@ -148,6 +147,7 @@ void decode(const char* filename, struct MtcObject* object) {
 
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
         if (bytesRead != CHUNK_SIZE) {
+            // if we don't read full amount we assume corruption, write being killed part way through
             break;
         }
         decode_chunk(buffer, object);
