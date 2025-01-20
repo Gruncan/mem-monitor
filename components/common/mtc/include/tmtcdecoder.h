@@ -31,16 +31,12 @@
 #define DELETE_ALIGN 0x11
 #define DELETE_ARRAY_ALIGN 0x12
 
-struct TMtcTime {
-    __time_t seconds;
-    __suseconds_t microseconds;
-};
 
 struct TMtcPoint {
     uint8_t key;
     uint8_t length;
     uint64_t* values;
-    struct TMtcTime* time;
+    uint32_t time_offset;
 };
 
 
