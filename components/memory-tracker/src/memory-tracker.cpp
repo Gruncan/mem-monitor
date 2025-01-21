@@ -77,7 +77,6 @@
 #define CPP_17 201703L
 
 
-static char* FILE_NAME = "/home/instrument/fw/memory_tracker.tmtc"
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
 #define DEBUG_PREFIX "[MEMORY_TRACKER] DEBUG: "
 
@@ -165,7 +164,7 @@ static int log_fd = -1;
     unsigned char length = (unsigned char) sizeof(args) / sizeof(u_int64_t);                                           \
     unsigned char array[10 + (sizeof(u_int64_t) * length)];                                                            \
     WRITE_TIME_DIFFERENCE(array)                                                                                       \
-    array[8] = key;                                                                                                    \
+    array[8] = key;                                                                                                      \
     array[9] = length;                                                                                                 \
     for (unsigned char i = 0; i < length; i++) {                                                                       \
         for (int j = 0; j < 8; j++) {                                                                                  \
@@ -178,7 +177,7 @@ static int log_fd = -1;
         fprintf(stderr, ERROR_PREFIX "Error writing to log file\n");                                                   \
     }
 
-#define MEM_TEST
+//#define MEM_TEST
 #ifndef MEM_TEST
 // stderr is loaded before everything
 #define DEBUG(str, ...) fprintf(stderr, str, ##__VA_ARGS__);
@@ -187,17 +186,21 @@ static int log_fd = -1;
 #endif
 
 void __attribute__((constructor)) lib_init() {
-    for (int i = 0; i < 5; ++i) {
-        if (access(FILE_NAME, W_OK) != 0){
-            FILE_NAME = "/home/instrument/fw/memory_track2.tmtc";
-            FILE_NAME[32] = (char) ((i + 2) + '0');
-        }
-    }
+    DEBUG("before access")
+//    char* FILE_NAME = "/home/instrument/fw/memory_tracker1.tmtc";
+    int i = 1;
+    DEBUG("before access")
+//    while(access(FILE_NAME, X_OK) != 0){
+//        FILE_NAME = "/home/instrument/fw/memory_track2.tmtc";
+//        FILE_NAME[32] = (char) ((i + 2) + '0');
+//        i++;
+//    }
+    DEBUG("after access")
 
-    log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (log_fd < 0) {
-        fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);
-    }
+//    log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+//    if (log_fd < 0) {
+//        fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);
+//    }
 
 #ifdef __cplusplus
     real_new = (NewFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW);
