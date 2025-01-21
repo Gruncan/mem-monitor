@@ -129,7 +129,7 @@ void decode(const char* filename, struct MtcObject* object) {
     }
 
     fseek(fp, 0, SEEK_END);
-#ifdef UNIX
+#ifdef unix
     object->file_length = ftell(fp);
 #else
     object->file_length = _ftelli64(fp);
