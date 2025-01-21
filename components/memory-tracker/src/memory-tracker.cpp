@@ -76,6 +76,8 @@
 
 #define CPP_17 201703L
 
+#define FILE_PATH "memory_tracker1.tmtc"
+#define FILE_INDEX 14
 
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
 #define DEBUG_PREFIX "[MEMORY_TRACKER] DEBUG: "
@@ -177,7 +179,7 @@ static int log_fd = -1;
         fprintf(stderr, ERROR_PREFIX "Error writing to log file\n");                                                   \
     }
 
-//#define MEM_TEST
+#define MEM_TEST
 #ifndef MEM_TEST
 // stderr is loaded before everything
 #define DEBUG(str, ...) fprintf(stderr, str, ##__VA_ARGS__);
@@ -186,21 +188,17 @@ static int log_fd = -1;
 #endif
 
 void __attribute__((constructor)) lib_init() {
-    DEBUG("before access")
-//    char* FILE_NAME = "/home/instrument/fw/memory_tracker1.tmtc";
+    char FILE_NAME[] = FILE_PATH;
     int i = 1;
-    DEBUG("before access")
-//    while(access(FILE_NAME, X_OK) != 0){
-//        FILE_NAME = "/home/instrument/fw/memory_track2.tmtc";
-//        FILE_NAME[32] = (char) ((i + 2) + '0');
-//        i++;
-//    }
-    DEBUG("after access")
+    while(access(FILE_NAME, F_OK) == 0){
+        FILE_NAME[FILE_INDEX] = (char) (i + '0');
+        i++;
+    }
 
-//    log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-//    if (log_fd < 0) {
-//        fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);
-//    }
+    log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (log_fd < 0) {
+        fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);
+    }
 
 #ifdef __cplusplus
     real_new = (NewFuncType) dlsym(RTLD_NEXT, SYMBOL_NEW);
