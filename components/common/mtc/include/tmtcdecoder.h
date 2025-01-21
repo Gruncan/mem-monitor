@@ -47,10 +47,18 @@ struct TMtcObject {
     uint64_t _allocation_size;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void initaliseTMtcObject(struct TMtcObject* object);
 
 uint8_t queryTDecodeProgress(struct TMtcObject* object);
 
 void decode_tmtc(const char* filepath, struct TMtcObject* object);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //MEMORY_MONITOR_TMTCDECODER_H

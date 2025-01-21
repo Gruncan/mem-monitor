@@ -2,6 +2,7 @@
 #define MTC_CONFIG_H
 
 
+#ifdef __cplusplus
 #include <cstdint>
 #include <map>
 #include <string>
@@ -508,5 +509,7 @@ const static std::vector<MtcCategories> MTC_CATEGORIES = {
 
 
 }
+
+#endif
 
 #endif //MTC_CONFIG_H

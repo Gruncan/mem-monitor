@@ -3,7 +3,6 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include "tmtcdecoder.h"
-#include "mtc-config.h"
 
 #define MASK_32 0xFFFFFFFF
 #define LOG_SIZE 13
@@ -16,7 +15,7 @@ typedef unsigned char byte;
 
 static uint64_t prev_micro_seconds = 0;
 
-#define ARRAY_COMBINE4(array, index) ((array)[index] << 24) | ((array)[index + 1] << 16) | ((array)[index + 2] << 8) | ((array)[index + 3])
+#define ARRAY_COMBINE4(array, index) (((array)[index] << 24) | ((array)[(index) + 1] << 16) | ((array)[(index) + 2] << 8) | ((array)[(index) + 3]))
 
 
 inline void initaliseTMtcObject(struct TMtcObject* object) {
