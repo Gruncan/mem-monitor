@@ -86,8 +86,8 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     }
 
     fseek(fp, 0, SEEK_END);
-#ifdef UNIX
-    object->_file_length = ftell(fp)
+#ifdef unix
+    object->_file_length = ftell(fp);
 #else
     object->_file_length = _ftelli64(fp);
 #endif
