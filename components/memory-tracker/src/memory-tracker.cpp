@@ -76,8 +76,9 @@
 
 #define CPP_17 201703L
 
+#define FILE_PATH "memory_tracker1.tmtc"
+#define FILE_INDEX 14
 
-static char* FILE_NAME = "/home/instrument/fw/memory_tracker.tmtc"
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
 #define DEBUG_PREFIX "[MEMORY_TRACKER] DEBUG: "
 
@@ -165,7 +166,7 @@ static int log_fd = -1;
     unsigned char length = (unsigned char) sizeof(args) / sizeof(u_int64_t);                                           \
     unsigned char array[10 + (sizeof(u_int64_t) * length)];                                                            \
     WRITE_TIME_DIFFERENCE(array)                                                                                       \
-    array[8] = key;                                                                                                    \
+    array[8] = key;                                                                                                      \
     array[9] = length;                                                                                                 \
     for (unsigned char i = 0; i < length; i++) {                                                                       \
         for (int j = 0; j < 8; j++) {                                                                                  \
@@ -187,11 +188,11 @@ static int log_fd = -1;
 #endif
 
 void __attribute__((constructor)) lib_init() {
-    for (int i = 0; i < 5; ++i) {
-        if (access(FILE_NAME, W_OK) != 0){
-            FILE_NAME = "/home/instrument/fw/memory_track2.tmtc";
-            FILE_NAME[32] = (char) ((i + 2) + '0');
-        }
+    char FILE_NAME[] = FILE_PATH;
+    int i = 1;
+    while(access(FILE_NAME, F_OK) == 0){
+        FILE_NAME[FILE_INDEX] = (char) (i + '0');
+        i++;
     }
 
     log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
