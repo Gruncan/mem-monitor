@@ -1,4 +1,4 @@
-
+import time
 from datetime import datetime, timedelta
 from pprint import pprint
 
@@ -236,13 +236,12 @@ class TMtcDecoder:
                     value |= self.content[index + i + j] << (8 * (7 - j))
                 values.append(value)
             index += length * 8
-
             inst = cls(time, *values)
-            pprint(inst)
             yield inst
 
     def decode(self):
         allocations = self.parse()
+        return allocations
         addresses = {}
         while (curr := next(allocations, None)) is not None:
             if curr.ptr not in addresses:
@@ -250,8 +249,15 @@ class TMtcDecoder:
             else:
                 addresses[curr.ptr].append(curr)
 
-        pprint(addresses)
 
-decoder = TMtcDecoder("C:\\Users\\DJ223\\Downloads\\memory_tracker.tmtc")
-decoder.decode()
+start_time = time.time()
+
+decoder = TMtcDecoder("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc")
+print(sum(1 for _ in decoder.decode()))
+
+end_time = time.time()
+
+elapsed_time = end_time - start_time
+
+print(f"Elapsed time: {elapsed_time} seconds")
 

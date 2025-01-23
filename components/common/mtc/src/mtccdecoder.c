@@ -32,6 +32,8 @@ inline void initaliseMtcObject(struct MtcObject* object) {
     object->size = 0;
 }
 
+//TODO implement a destroy function
+
 inline static void decode_header(const byte* buffer, struct MtcObject* object) {
     object->version = buffer[0];
     //todo add time decoding here
@@ -56,7 +58,8 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         object->_alloc_size_times *= 2;
         void* new_ptr = realloc(object->times, object->_alloc_size_times * sizeof(struct MtcTime));
         if (new_ptr == NULL) {
-            perror("Failed to realloc point times");
+            perror("Failed to realloc MTC point times!");
+            exit(-1);
         }
         object->times = new_ptr;
     }
@@ -83,8 +86,8 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {
                 void* new_ptr =  realloc(object->point_map[j].points, object->_alloc_size_points * sizeof(struct MtcPoint));
                 if (new_ptr == NULL) {
-                    perror("Failed to realloc point map");
-                    return;
+                    perror("Failed to realloc MTC point map!");
+                    exit(-1);
                 }
                 object->point_map[j].points = new_ptr;
             }
@@ -126,20 +129,19 @@ void decode(const char* filename, struct MtcObject* object) {
     }
 
     fseek(fp, 0, SEEK_END);
-#ifdef UNIX
+#ifdef unix
     object->file_length = ftell(fp);
 #else
     object->file_length = _ftelli64(fp);
 #endif
     fseek(fp, 0, SEEK_SET);
 
-    printf("File length: %llu\n", object->file_length);
     size_t bytesRead = 0;
     bytesRead = fread(buffer, 1, HEADER_SIZE, fp);
 
     if (bytesRead != HEADER_SIZE) {
         perror("Failed to read header!");
-        fclose(fp);
+        goto cleanUpFunction;
     }
 
     decode_header(buffer, object);
@@ -148,6 +150,7 @@ void decode(const char* filename, struct MtcObject* object) {
 
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
         if (bytesRead != CHUNK_SIZE) {
+            // if we don't read full amount we assume corruption, write being killed part way through
             break;
         }
         decode_chunk(buffer, object);
@@ -157,7 +160,7 @@ void decode(const char* filename, struct MtcObject* object) {
     void* new_times_ptr = realloc(object->times, object->_times_length * sizeof(struct MtcTime));
     if (new_times_ptr == NULL) {
         perror("Failed to realloc point times");
-        return;
+        goto cleanUpFunction;
     }
     object->times = new_times_ptr;
 
@@ -165,12 +168,12 @@ void decode(const char* filename, struct MtcObject* object) {
         void* new_points_ptr =  realloc(object->point_map[i].points, object->point_map[i].length * sizeof(struct MtcPoint));
         if (new_points_ptr == NULL) {
             perror("Failed to realloc point map");
-            return;
+            goto cleanUpFunction;
         }
         object->point_map[i].points = new_points_ptr;
     }
 
-
+cleanUpFunction:
     free(buffer);
     fclose(fp);
 }

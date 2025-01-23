@@ -1,12 +1,14 @@
 
 
 
+#include "mtccdecoder.h"
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include "mtccdecoder.h"
 
+#include <tmtcdecoder.h>
 
+#ifdef unix
 void printMemoryUsage() {
     std::ifstream statusFile("/proc/self/status");
     std::string line;
@@ -23,32 +25,19 @@ void printMemoryUsage() {
     }
     statusFile.close();
 }
+#endif
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
-    MtcObject object;
-    initaliseMtcObject(&object);
+    TMtcObject object;
+    initaliseTMtcObject(&object);
 
-    decode("/home/duncan/Desktop/uwb_test3.mtc",  &object);
+    decode_tmtc("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc", &object);
 
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::cout << duration.count() << " seconds" << std::endl;
-    std::cout << object.size << std::endl;
-    printMemoryUsage();
-
-
-    uint64_t repeatCount = 0;
-    for (int i=0; i < object.point_map[165].length; i++ ) {
-        repeatCount += object.point_map[165].points[i].repeated + 1;
-    }
-    uint64_t  timesCount = 0;
-    for (int i=0; i < object._times_length; i++ ) {
-        timesCount += object.times[i].repeated + 1;
-    }
-
-    std::cout << "Total points " << repeatCount << std::endl;
-    std::cout << "Total times " << timesCount << std::endl;
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << duration.count() / 1'000'000.0 << " seconds" << std::endl;
     std::cout << "Size: " << object.size << std::endl;
+
     return 0;
 }
