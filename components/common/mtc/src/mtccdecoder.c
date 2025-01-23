@@ -32,18 +32,18 @@ inline void initaliseMtcObject(struct MtcObject* object) {
     object->size = 0;
 }
 
-//TODO implement a destroy function
+// TODO implement a destroy function
 
 inline static void decode_header(const byte* buffer, struct MtcObject* object) {
     object->version = buffer[0];
-    //todo add time decoding here
+    // todo add time decoding here
 }
 
 inline uint8_t queryDecodeProgress(struct MtcObject* object) {
     if (object->file_length == 0 || object->size == 0) {
         return 0;
     }
-    const uint8_t value = ((double)(object->size * CHUNK_SIZE) / (double) object->file_length) * 100;
+    const uint8_t value = ((double) (object->size * CHUNK_SIZE) / (double) object->file_length) * 100;
     return value;
 }
 
@@ -67,8 +67,8 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         *object->times[0].time_offset = time_offset;
         object->_times_length++;
     } else {
-        if (*object->times[object->_times_length-1].time_offset == time_offset) {
-            object->times[object->_times_length-1].repeated++;
+        if (*object->times[object->_times_length - 1].time_offset == time_offset) {
+            object->times[object->_times_length - 1].repeated++;
         } else {
             object->times[object->_times_length].time_offset = malloc(sizeof(uint16_t));
             *object->times[object->_times_length].time_offset = time_offset;
@@ -84,27 +84,28 @@ static void decode_chunk(const byte* buffer, struct MtcObject* object) {
         if (object->point_map[key].length == object->_alloc_size_points) {
             object->_alloc_size_points *= 2;
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {
-                void* new_ptr =  realloc(object->point_map[j].points, object->_alloc_size_points * sizeof(struct MtcPoint));
+                void* new_ptr =
+                    realloc(object->point_map[j].points, object->_alloc_size_points * sizeof(struct MtcPoint));
                 if (new_ptr == NULL) {
                     perror("Failed to realloc MTC point map!");
                     exit(-1);
                 }
                 object->point_map[j].points = new_ptr;
             }
-
         }
 
         if (object->point_map[key].length == 0) {
-            object->point_map[key].points[0].time_offset = object->times[object->_times_length-1].time_offset;
+            object->point_map[key].points[0].time_offset = object->times[object->_times_length - 1].time_offset;
             object->point_map[key].points[0].value = value;
             object->point_map[key].points[0].repeated = 0;
             object->point_map[key].length++;
         } else {
             const uint64_t length = object->point_map[key].length;
-            if (object->point_map[key].points[length-1].value == value) {
-                object->point_map[key].points[length-1].repeated++;
-            }else {
-                object->point_map[key].points[length].time_offset = object->times[object->_times_length-1].time_offset;
+            if (object->point_map[key].points[length - 1].value == value) {
+                object->point_map[key].points[length - 1].repeated++;
+            } else {
+                object->point_map[key].points[length].time_offset =
+                    object->times[object->_times_length - 1].time_offset;
                 object->point_map[key].points[length].value = value;
                 object->point_map[key].points[length].repeated = 0;
                 object->point_map[key].length++;
@@ -147,7 +148,6 @@ void decode(const char* filename, struct MtcObject* object) {
     decode_header(buffer, object);
 
 
-
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
         if (bytesRead != CHUNK_SIZE) {
             // if we don't read full amount we assume corruption, write being killed part way through
@@ -165,7 +165,8 @@ void decode(const char* filename, struct MtcObject* object) {
     object->times = new_times_ptr;
 
     for (mk_size_t i = 0; i < KEY_SIZE; i++) {
-        void* new_points_ptr =  realloc(object->point_map[i].points, object->point_map[i].length * sizeof(struct MtcPoint));
+        void* new_points_ptr =
+            realloc(object->point_map[i].points, object->point_map[i].length * sizeof(struct MtcPoint));
         if (new_points_ptr == NULL) {
             perror("Failed to realloc point map");
             goto cleanUpFunction;

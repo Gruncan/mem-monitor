@@ -32,9 +32,7 @@ struct MtcObject {
     uint64_t _alloc_size_points;
     uint64_t _alloc_size_times;
     uint64_t file_length;
-
 };
-
 
 
 #ifdef __cplusplus
@@ -49,4 +47,4 @@ uint8_t queryDecodeProgress(struct MtcObject* object);
 }
 #endif
 
-#endif //MTCCDECODER_H
+#endif // MTCCDECODER_H
