@@ -8,8 +8,7 @@
 #include <QThread>
 
 
-
-QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent){
+QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent) {
     setObjectName(name);
 
     mainLayout = new QVBoxLayout(this);
@@ -78,21 +77,21 @@ QMtcLoader::~QMtcLoader() {
 
 
 void QMtcLoader::load() {
-    const QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Memory Time Encoding (*.mtc);;All Files (*)");
+    const QString filePath =
+        QFileDialog::getOpenFileName(this, "Open File", "", "Memory Time Encoding (*.mtc);;All Files (*)");
     if (!filePath.isEmpty()) {
         qDebug() << "Selected file:" << filePath;
-    }else {
+    } else {
         qDebug() << "No file selected";
         return;
     }
     std::string extension = std::filesystem::path(filePath.toStdString()).extension().string();
     if (extension == ".mtc") {
         emit decode(filePath.toStdString());
-    }else {
+    } else {
         label->setText("Not a valid .mtc file");
         label->setStyleSheet("QLabel { color: rgb(255, 0, 0); }");
     }
-
 }
 
 
@@ -103,7 +102,10 @@ void QMtcLoader::updateProgress(const int progress) {
 void QMtcLoader::loaded(const std::string& filePath) {
     monitorThread->exit();
     progressBar->setValue(100);
-    label->setText(QString("%1\nVersion: %2\nLength: %3\n").arg(QString::fromStdString(filePath)).arg(object->version).arg(object->size));
+    label->setText(QString("%1\nVersion: %2\nLength: %3\n")
+                       .arg(QString::fromStdString(filePath))
+                       .arg(object->version)
+                       .arg(object->size));
     label->setStyleSheet("");
     std::map<mk_size_t, bool>* nonDefaultFields = new std::map<mk_size_t, bool>();
 

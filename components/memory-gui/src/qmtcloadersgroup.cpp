@@ -11,8 +11,8 @@
 #include <qlabel.h>
 
 
-QMtcLoadersGroup::QMtcLoadersGroup(QWidget* parent, std::vector<QMtcLoader*> loaders) : QWidget(parent),
-                                                                                    mtcLoaders(loaders){
+QMtcLoadersGroup::QMtcLoadersGroup(QWidget* parent, std::vector<QMtcLoader*> loaders)
+    : QWidget(parent), mtcLoaders(loaders) {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     QFrame* frame = new QFrame(this);
     frame->setFrameShape(QFrame::StyledPanel);
@@ -24,7 +24,6 @@ QMtcLoadersGroup::QMtcLoadersGroup(QWidget* parent, std::vector<QMtcLoader*> loa
     }
 
     setMinimumSize(700, 200);
-
 }
 
 QMtcLoadersGroup::~QMtcLoadersGroup() {
@@ -37,6 +36,3 @@ QMtcLoadersGroup::~QMtcLoadersGroup() {
 QMtcLoader* QMtcLoadersGroup::getLoader(const mk_size_t index) const {
     return mtcLoaders.at(index);
 }
-
-
-

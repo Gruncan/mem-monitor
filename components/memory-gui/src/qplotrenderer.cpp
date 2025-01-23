@@ -9,7 +9,7 @@
 static constexpr size_t BATCH_SIZE = 5000;
 static constexpr size_t TARGET_CHUNK = 1000;
 
-QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0)  {
+QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0) {
     animationTimer = new QTimer(this);
     connect(animationTimer, &QTimer::timeout, this, &QPlotRender::updatePlot);
     timeSpacing = 1000;
@@ -17,12 +17,10 @@ QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0
 }
 
 QPlotRender::~QPlotRender() {
-
 }
 
 void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& times, const uint64_t length,
                                  QCPGraph* graph) {
-
     const uint64_t sampleRate = 50;
 
     values.clear();
@@ -36,7 +34,7 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
             valueMax = point_map->points[i].value;
         }
         for (uint64_t j = 0; j < point_map->points[i].repeated + 1; j++) {
-            if (c  == sampleRate) {
+            if (c == sampleRate) {
                 values.push_back(point_map->points[i].value);
                 c = 0;
                 continue;
@@ -50,7 +48,6 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
     plot->xAxis->setRange(0, times.last() / sampleRate, Qt::AlignLeft);
     plot->yAxis->setRange(0, valueMax * 1.1);
     plot->replot(QCustomPlot::rpQueuedReplot);
-
 }
 
 void QPlotRender::processBatch(MtcPointMap* points, size_t start_index, size_t end_index, uint64_t sample_rate) {
@@ -67,7 +64,8 @@ void QPlotRender::processBatch(MtcPointMap* points, size_t start_index, size_t e
 }
 
 
-void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength, QCPGraph* graph, int timeSpacing) {
+void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength,
+                                          QCPGraph* graph, int timeSpacing) {
     int64_t sampleRate = 50;
     values.clear();
     this->times.clear();
@@ -77,7 +75,7 @@ void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times
     uint64_t timeSum = 0;
     uint64_t c = 0;
     for (uint64_t i = 0; i < timesLength; i++) {
-        for (uint64_t j = 0; j < times[i].repeated+1; j++) {
+        for (uint64_t j = 0; j < times[i].repeated + 1; j++) {
             timeSum += *times[i].time_offset;
             if (c == sampleRate) {
                 this->times.push_back(timeSum);
@@ -148,15 +146,16 @@ void QPlotRender::setTimeSpacing(int spacing) {
 }
 
 void QPlotRender::updatePlot() {
-
     auto [times, data] = animationData->getWindow();
-    if (data->size() == 0) return;
+    if (data->size() == 0)
+        return;
     currentGraph->setData(*times, *data);
     // auto [lower, upper] = animationData->getTimeRange();
     // QCPRange range = QCPRange(lower, upper);
     // qDebug() << range.lower << " " << range.upper;
-    // plot->xAxis->mTicker->generate(range, plot->xAxis->mParentPlot->locale(), plot->xAxis->mNumberFormatChar, plot->xAxis->mNumberPrecision, plot->xAxis->mTickVector, plot->xAxis->mSubTicks ? &plot->xAxis->mSubTickVector : nullptr, plot->xAxis->mTickLabels ? &plot->xAxis->mTickVectorLabels : nullptr);
-    // plot->xAxis->setRange()
+    // plot->xAxis->mTicker->generate(range, plot->xAxis->mParentPlot->locale(), plot->xAxis->mNumberFormatChar,
+    // plot->xAxis->mNumberPrecision, plot->xAxis->mTickVector, plot->xAxis->mSubTicks ? &plot->xAxis->mSubTickVector :
+    // nullptr, plot->xAxis->mTickLabels ? &plot->xAxis->mTickVectorLabels : nullptr); plot->xAxis->setRange()
     plot->replot(QCustomPlot::rpImmediateRefresh);
 }
 

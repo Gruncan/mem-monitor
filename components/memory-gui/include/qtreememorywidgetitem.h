@@ -6,17 +6,14 @@
 #include "mtc-config.h"
 
 class QTreeMemoryWidgetItem : public QTreeWidgetItem {
-public:
+  public:
     explicit QTreeMemoryWidgetItem(mk_size_t key);
 
     mk_size_t get_key() const;
 
-private:
+  private:
     mk_size_t _key;
-
-
-
 };
 
 
-#endif //QTREEMEMORYWIDGETITEM_H
+#endif // QTREEMEMORYWIDGETITEM_H

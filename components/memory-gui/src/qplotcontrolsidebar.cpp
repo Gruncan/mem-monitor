@@ -1,13 +1,13 @@
 
 
 #include "qplotcontrolsidebar.h"
-#include "qtreememorywidgetitem.h"
 #include "mainwindow.h"
+#include "qtreememorywidgetitem.h"
 
 #include <qboxlayout.h>
 
 
-QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent){
+QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent) {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 10);
 
@@ -19,12 +19,11 @@ QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent){
 
     connect(treeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item) {
         if (item->parent()) {
-            emit categoriesChanged(item->parent()->text(0), item->text(0),
-                item->checkState(0) == Qt::Checked);
-
+            emit categoriesChanged(item->parent()->text(0), item->text(0), item->checkState(0) == Qt::Checked);
         }
     });
-    connect(this, &QPlotControlSidebar::initialisePlot, reinterpret_cast<MainWindow*>(parent), &MainWindow::initialisePlot);
+    connect(this, &QPlotControlSidebar::initialisePlot, reinterpret_cast<MainWindow*>(parent),
+            &MainWindow::initialisePlot);
 }
 
 void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& categories) {
@@ -32,9 +31,9 @@ void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& c
     for (auto& category : categories) {
         const auto item = createCategoryItem(category);
         treeWidget->addTopLevelItem(item);
-        if (category.name == "General"){
+        if (category.name == "General") {
             item->setExpanded(true);
-        }else{
+        } else {
             item->setExpanded(false);
         }
         item->setDisabled(true);

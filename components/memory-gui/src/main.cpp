@@ -6,7 +6,6 @@
 #ifndef _WIN32
 #include <execinfo.h>
 
-
 void printBacktrace() {
     const int maxFrames = 100;
     void* buffer[maxFrames];
@@ -30,15 +29,15 @@ void printBacktrace() {
 #endif
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     try {
         QApplication app(argc, argv);
         MainWindow w;
         w.show();
         return app.exec();
-    }catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
-#ifdef UNIX
+#ifdef unix
         printBacktrace();
 #endif
     }

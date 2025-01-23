@@ -8,24 +8,17 @@
 #include <qwidget.h>
 
 class QMtcLoadersGroup : public QWidget {
-
     Q_OBJECT
 
-public:
-
+  public:
     explicit QMtcLoadersGroup(QWidget* parent = nullptr, std::vector<QMtcLoader*> widgets = {});
     ~QMtcLoadersGroup();
 
     QMtcLoader* getLoader(mk_size_t index) const;
 
-private:
+  private:
     std::vector<QMtcLoader*> mtcLoaders;
-
 };
 
 
-
-
-
-
-#endif //QMTCLOADERS_H
+#endif // QMTCLOADERS_H

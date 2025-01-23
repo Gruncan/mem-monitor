@@ -9,19 +9,18 @@
 class DecoderWorker : public QObject {
     Q_OBJECT
 
-public:
+  public:
     DecoderWorker(QObject* parent, MtcObject* object);
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void workerDecode(const std::string& filename);
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void workerDecodeFinished(const std::string& filePath);
 
-private:
+  private:
     MtcObject* _object;
-
 };
 
 
-#endif //DECODER_WORKER_H
+#endif // DECODER_WORKER_H
