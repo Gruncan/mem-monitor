@@ -171,7 +171,7 @@ ushort timeval_diff_ms(const struct timeval* start_time, const struct timeval* e
 }
 
 
-void write_data_content(void* buffer, const uint offset, unsigned char key, ushort value) {
+void write_data_content(void* buffer, const uint offset, mk_size_t key, ushort value) {
     value &= MASK_16;
     key &= (char) MASK_8;
 

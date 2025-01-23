@@ -76,8 +76,9 @@
 
 #define CPP_17 201703L
 
+#define FILE_PATH "memory_tracker1.tmtc"
+#define FILE_INDEX 14
 
-#define FILE_NAME "/tmp/memory_tracker.tmtc"
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
 #define DEBUG_PREFIX "[MEMORY_TRACKER] DEBUG: "
 
@@ -187,6 +188,13 @@ static int log_fd = -1;
 #endif
 
 void __attribute__((constructor)) lib_init() {
+    char FILE_NAME[] = FILE_PATH;
+    int i = 1;
+    while (access(FILE_NAME, F_OK) == 0) {
+        FILE_NAME[FILE_INDEX] = (char) (i + '0');
+        i++;
+    }
+
     log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (log_fd < 0) {
         fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);

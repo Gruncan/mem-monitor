@@ -1,0 +1,17 @@
+
+
+set(MTC_SOURCES
+    src/mtccdecoder.c
+    src/tmtcdecoder.c
+)
+
+set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE C)
+
+message(WARNING "Decoder has debug symbols")
+set(CMAKE_BUILD_TYPE Debug)
+
+include_directories(include/)
+
+add_library(mtc_decoder STATIC ${MTC_SOURCES})
+
+add_subdirectory(tests)

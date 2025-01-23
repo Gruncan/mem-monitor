@@ -2,6 +2,7 @@
 #define MEM_WRITER_H
 
 
+#include "mem-monitor-config.h"
 #include "mem-reader.h"
 #include "mem-threading.h"
 #include "process-reader.h"
@@ -45,6 +46,6 @@ void* write_mtc_header(struct timeval* tv);
 
 uint write_struct_data(void* buffer, void* struct_ptr, uint struct_length, uint mem_offset, uint key_offset);
 
-void write_data_content(void* buffer, uint offset, unsigned char key, ushort value);
+void write_data_content(void* buffer, uint offset, mk_size_t key, ushort value);
 
 #endif // MEM_WRITER_H

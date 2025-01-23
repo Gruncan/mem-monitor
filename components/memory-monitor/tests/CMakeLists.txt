@@ -1,5 +1,6 @@
 
 include_directories(${COMMON_DIR})
+include_directories(../include)
 
 add_executable(mem_monitor_test test.c
         ../src/mem-info.c
@@ -8,5 +9,6 @@ add_executable(mem_monitor_test test.c
         ../src/mem-reader.c
         ../src/process-reader.c
 )
+
 target_compile_definitions(mem_monitor_test PRIVATE MEM_TEST)
 target_link_libraries(mem_monitor_test PRIVATE pthread)
