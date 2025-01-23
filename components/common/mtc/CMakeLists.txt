@@ -12,9 +12,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(include/)
 
-if (UNIX)
-    add_library(mtc_decoder STATIC ${MTC_SOURCES})
-else (WIN32)
-    add_library(mtc_decoder STATIC ${MTC_SOURCES})
-endif ()
+add_library(mtc_decoder STATIC ${MTC_SOURCES})
+
 add_subdirectory(tests)
