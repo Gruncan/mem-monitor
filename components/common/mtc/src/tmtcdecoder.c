@@ -56,7 +56,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object){
 
     struct TMtcPoint* point = &object->points[object->size];
     point->key = buffer[8];
-    uint8_t length = buffer[9];
+    const uint8_t length = buffer[9];
     point->length = length;
     point->values = malloc(length);
     if (point->values == NULL) {
