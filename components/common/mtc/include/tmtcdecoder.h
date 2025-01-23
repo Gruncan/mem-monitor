@@ -61,4 +61,4 @@ void decode_tmtc(const char* filepath, struct TMtcObject* object);
 }
 #endif
 
-#endif //MEMORY_MONITOR_TMTCDECODER_H
+#endif // MEMORY_MONITOR_TMTCDECODER_H
