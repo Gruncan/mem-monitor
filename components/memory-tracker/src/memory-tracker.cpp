@@ -166,7 +166,7 @@ static int log_fd = -1;
     unsigned char length = (unsigned char) sizeof(args) / sizeof(u_int64_t);                                           \
     unsigned char array[10 + (sizeof(u_int64_t) * length)];                                                            \
     WRITE_TIME_DIFFERENCE(array)                                                                                       \
-    array[8] = key;                                                                                                      \
+    array[8] = key;                                                                                                    \
     array[9] = length;                                                                                                 \
     for (unsigned char i = 0; i < length; i++) {                                                                       \
         for (int j = 0; j < 8; j++) {                                                                                  \
@@ -190,7 +190,7 @@ static int log_fd = -1;
 void __attribute__((constructor)) lib_init() {
     char FILE_NAME[] = FILE_PATH;
     int i = 1;
-    while(access(FILE_NAME, F_OK) == 0){
+    while (access(FILE_NAME, F_OK) == 0) {
         FILE_NAME[FILE_INDEX] = (char) (i + '0');
         i++;
     }
