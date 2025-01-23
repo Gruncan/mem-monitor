@@ -17,4 +17,4 @@ struct PlotCategory {
     std::vector<PlotData> data;
 };
 
-#endif //PLOTDATA_H
+#endif // PLOTDATA_H

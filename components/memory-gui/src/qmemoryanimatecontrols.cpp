@@ -7,10 +7,7 @@
 #include <qstyle.h>
 
 
-QMemoryAnimateControls::QMemoryAnimateControls(QWidget* parent) :
-                    QWidget(parent),
-                    isPlaying(false)
-{
+QMemoryAnimateControls::QMemoryAnimateControls(QWidget* parent) : QWidget(parent), isPlaying(false) {
     playPauseButton = new QPushButton(this);
     rewindButton = new QPushButton(this);
     forwardButton = new QPushButton(this);
@@ -62,20 +59,20 @@ QMemoryAnimateControls::~QMemoryAnimateControls() {
 }
 
 
-void QMemoryAnimateControls::onPlayPauseClicked(){
+void QMemoryAnimateControls::onPlayPauseClicked() {
     isPlaying = !isPlaying;
     playPauseButton->setIcon(isPlaying ? pauseIcon : playIcon);
-    if(isPlaying) {
+    if (isPlaying) {
         emit playClicked();
-    }else {
+    } else {
         emit pauseClicked();
     }
 }
 
-void QMemoryAnimateControls::onRewindClicked(){
+void QMemoryAnimateControls::onRewindClicked() {
     emit rewindClicked();
 }
-void QMemoryAnimateControls::onForwardClicked(){
+void QMemoryAnimateControls::onForwardClicked() {
     emit forwardClicked();
 }
 

@@ -5,26 +5,23 @@
 #include <qobject.h>
 
 
-class DecodeMonitor : public QObject{
+class DecodeMonitor : public QObject {
     Q_OBJECT
 
-public:
+  public:
     DecodeMonitor(QObject* parent, MtcObject* object);
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void monitorProgress();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void progressQueried(int progress);
 
-private:
+  private:
     static uint progressCount;
 
     MtcObject* _object;
-
 };
 
 
-
-
-#endif //DECODE_MONITOR_H
+#endif // DECODE_MONITOR_H

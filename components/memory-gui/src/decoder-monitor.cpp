@@ -1,16 +1,12 @@
 
 
 
-
-
 #include "decoder-monitor.h"
 
 #include <QThread>
 #include <iostream>
 
-DecodeMonitor::DecodeMonitor(QObject* parent, MtcObject* object): QObject(parent), _object(object)
-{
-
+DecodeMonitor::DecodeMonitor(QObject* parent, MtcObject* object) : QObject(parent), _object(object) {
 }
 
 void DecodeMonitor::monitorProgress() {
@@ -19,6 +15,5 @@ void DecodeMonitor::monitorProgress() {
         progress = queryDecodeProgress(_object);
         emit progressQueried(progress);
         QThread::msleep(100);
-    }while (progress < 98);
-
+    } while (progress < 98);
 }

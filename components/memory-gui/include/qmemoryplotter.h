@@ -12,9 +12,9 @@
 class QMemoryPlotter : public QWidget {
     Q_OBJECT
 
-public:
-
-    explicit QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader, QMemoryAnimateControls* animateControls);
+  public:
+    explicit QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
+                            QMemoryAnimateControls* animateControls);
 
     void addPlot(mk_size_t key);
 
@@ -28,7 +28,7 @@ public:
 
     void setIsLoaded(bool isLoaded);
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
     void plotToggleChange(const QString& category, const QString& plotString, bool enabled);
 
@@ -44,16 +44,16 @@ public Q_SLOTS:
 
     void exportPlot();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void queueRendering(MtcPointMap* points, const QVector<double>& times, uint64_t length, QCPGraph* graph);
 
-    void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength, QCPGraph* graph, int timeSpacing);
+    void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength,
+                                 QCPGraph* graph, int timeSpacing);
 
     void startAnimation();
     void stopAnimation();
 
-private:
-
+  private:
     QCustomPlot* _plot;
 
     std::map<mk_size_t, QCPGraph*> plotsEnabled;
@@ -80,8 +80,7 @@ private:
 
     int timeSpacing;
     bool hasPlayed;
-
 };
 
 
-#endif //QMEMORYPLOTTER_H
+#endif // QMEMORYPLOTTER_H

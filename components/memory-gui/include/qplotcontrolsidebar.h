@@ -12,24 +12,23 @@
 class QPlotControlSidebar : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit QPlotControlSidebar(QWidget* parent);
 
     void setCategories(const std::vector<mtc::MtcCategories>& categories);
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void enableNonDefaultFields(const std::map<mk_size_t, bool>* activeFields);
 
-Q_SIGNALS:
-     void categoriesChanged(const QString& category, const QString& plot, bool enabled);
-     void initialisePlot();
+  Q_SIGNALS:
+    void categoriesChanged(const QString& category, const QString& plot, bool enabled);
+    void initialisePlot();
 
-private:
+  private:
     QTreeWidget* treeWidget;
 
     QTreeWidgetItem* createCategoryItem(const mtc::MtcCategories& categories);
-
 };
 
 
-#endif //QPLOTCONTROLSIDEBAR_H
+#endif // QPLOTCONTROLSIDEBAR_H

@@ -5,13 +5,9 @@
 #include "ui/ui_mainwindow.h"
 
 
-MainWindow::MainWindow(QWidget* parent) :
-                        QMainWindow(parent),
-                        ui(new Ui::MainWindow),
-                        decoderThread(new QThread),
-                        monitorThread(new QThread)
-{
-    ui->setupUi(this);  // Move this first
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), decoderThread(new QThread), monitorThread(new QThread) {
+    ui->setupUi(this); // Move this first
     ui->plot->setDisabled(true);
 
     sidebar = new QPlotControlSidebar(this);
@@ -29,7 +25,7 @@ MainWindow::MainWindow(QWidget* parent) :
     animateControls = new QMemoryAnimateControls(this);
     animateControls->setGeometry(QRect(400, 520, 130, 120));
 
-    //TODO update this index
+    // TODO update this index
     plotter = new QMemoryPlotter(this, ui->plot, loadersGroup->getLoader(0), animateControls);
 
     // connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
@@ -52,7 +48,3 @@ MainWindow::~MainWindow() {
     // delete monitorThread;
     // delete decoderMonitor;
 }
-
-
-
-

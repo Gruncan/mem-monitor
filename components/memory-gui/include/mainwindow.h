@@ -3,33 +3,35 @@
 
 #include "decoder-monitor.h"
 #include "decoder-worker.h"
-#include "qmtcloadersgroup.h"
-#include "qmemoryplotter.h"
-#include "qplotcontrolsidebar.h"
 #include "qmemoryanimatecontrols.h"
+#include "qmemoryplotter.h"
+#include "qmtcloadersgroup.h"
+#include "qplotcontrolsidebar.h"
 
 #include <QMainWindow>
 #include <QThread>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
-    MainWindow(QWidget *parent = nullptr);
+  public:
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
     void initialisePlot();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void startDecoding();
 
-private:
+  private:
     Ui::MainWindow* ui;
     QThread* decoderThread;
     QThread* monitorThread;
@@ -42,7 +44,6 @@ private:
     QMemoryPlotter* plotter;
 
     QMemoryAnimateControls* animateControls;
-
 };
 
-#endif //MAINWINDOW_H
+#endif // MAINWINDOW_H

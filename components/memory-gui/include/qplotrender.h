@@ -9,7 +9,7 @@
 class QPlotRender : public QObject {
     Q_OBJECT
 
-public:
+  public:
     explicit QPlotRender(QCustomPlot* plot);
 
     ~QPlotRender();
@@ -21,10 +21,11 @@ public:
     void setTimeSpacing(int spacing);
 
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void queueRendering(MtcPointMap* point_map, const QVector<double>& times, uint64_t length, QCPGraph* graph);
 
-    void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength, QCPGraph* graph, int timeSpacing);
+    void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength,
+                                 QCPGraph* graph, int timeSpacing);
 
     void updatePlot();
 
@@ -33,13 +34,12 @@ public Q_SLOTS:
     void stopAnimation();
 
 
-private:
-
+  private:
     void processBatch(MtcPointMap* points, size_t start_index, size_t end_index, uint64_t sample_rate);
 
     static uint64_t getSampleRate(size_t length);
 
-private:
+  private:
     QCustomPlot* plot;
 
     QVector<double> times;
@@ -58,6 +58,4 @@ private:
 };
 
 
-
-
-#endif //QPLOTRENDER_H
+#endif // QPLOTRENDER_H

@@ -11,21 +11,21 @@
 class QMemoryAnimateControls : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit QMemoryAnimateControls(QWidget* parent = nullptr);
     ~QMemoryAnimateControls();
 
     QPushButton* exportButton;
 
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
     void onPlayPauseClicked();
     void onRewindClicked();
     void onForwardClicked();
     void onTimeSpacingUpdate();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void playClicked();
     void pauseClicked();
     void rewindClicked();
@@ -33,7 +33,7 @@ Q_SIGNALS:
     void timeSpacingChange(int timeSpacing);
 
 
-private:
+  private:
     QPushButton* playPauseButton;
     QPushButton* rewindButton;
     QPushButton* forwardButton;
@@ -48,11 +48,7 @@ private:
     QHBoxLayout* buttonLayout;
 
     QSpinBox* spinBox;
-
-
-
 };
 
 
-
-#endif //QMEMORYANIMATECONTROLS_H
+#endif // QMEMORYANIMATECONTROLS_H

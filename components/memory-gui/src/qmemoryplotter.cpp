@@ -14,13 +14,9 @@
 static constexpr int QUALITY = 1000;
 
 QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
-                                        QMemoryAnimateControls* animateControls) :
-                                QWidget(parent), _plot(plot), _loader(loader), gen(1),
-                                animateControls(animateControls),
-                                isAnimationRunning(false),
-                                isLoaded(false)
-{
-
+                               QMemoryAnimateControls* animateControls)
+    : QWidget(parent), _plot(plot), _loader(loader), gen(1), animateControls(animateControls),
+      isAnimationRunning(false), isLoaded(false) {
     _plotRender = new QPlotRender(_plot);
 
     _plot->setOpenGl(true);
@@ -66,14 +62,10 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     setupSpinBox(yMaxInput);
     setupSpinBox(yMinInput);
 
-    connect(xMinInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &QMemoryPlotter::updateXRange);
-    connect(xMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &QMemoryPlotter::updateXRange);
-    connect(yMinInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &QMemoryPlotter::updateYRange);
-    connect(yMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &QMemoryPlotter::updateYRange);
+    connect(xMinInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QMemoryPlotter::updateXRange);
+    connect(xMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QMemoryPlotter::updateXRange);
+    connect(yMinInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QMemoryPlotter::updateYRange);
+    connect(yMaxInput, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QMemoryPlotter::updateYRange);
 
 
     connect(animateControls, &QMemoryAnimateControls::playClicked, this, &QMemoryPlotter::playClicked);
@@ -85,7 +77,6 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     hasPlayed = false;
     timeSpacing = 1000;
     updateInputsFromPlot();
-
 }
 
 void QMemoryPlotter::addPlot(mk_size_t key) {
@@ -136,7 +127,6 @@ void QMemoryPlotter::removePlot(mk_size_t key) {
     }
     // Maybe we should tell reender about this
     _plot->replot();
-
 }
 
 
@@ -151,7 +141,7 @@ void QMemoryPlotter::plotToggleChange(const QString& category, const QString& pl
 
     if (enabled) {
         addPlot(key);
-    }else {
+    } else {
         removePlot(key);
     }
 }
@@ -208,8 +198,9 @@ void QMemoryPlotter::updateYRange() {
     }
 }
 
-void QMemoryPlotter::playClicked(){
-    if (!isLoaded || isAnimationRunning || plotsEnabled.empty()) return;
+void QMemoryPlotter::playClicked() {
+    if (!isLoaded || isAnimationRunning || plotsEnabled.empty())
+        return;
 
     if (_plot->graphCount() != 1) {
         return;
@@ -220,27 +211,26 @@ void QMemoryPlotter::playClicked(){
     const MtcObject* object = _loader->getMtcObject();
     if (!hasPlayed) {
         hasPlayed = true;
-        emit queueAnimationRendering(&object->point_map[key], object->times, object->size,
-                object->_times_length, plotsEnabled[key], this->timeSpacing);
-    }else {
+        emit queueAnimationRendering(&object->point_map[key], object->times, object->size, object->_times_length,
+                                     plotsEnabled[key], this->timeSpacing);
+    } else {
         emit startAnimation();
     }
-
 }
 
-void QMemoryPlotter::pauseClicked(){
+void QMemoryPlotter::pauseClicked() {
     emit stopAnimation();
 }
 
-void QMemoryPlotter::rewindClicked(){
+void QMemoryPlotter::rewindClicked() {
     _plotRender->rewind();
 }
 
-void QMemoryPlotter::forwardClicked(){
+void QMemoryPlotter::forwardClicked() {
     _plotRender->forward();
 }
 
-void QMemoryPlotter::onTimeSpacingUpdate(int timeSpacing){
+void QMemoryPlotter::onTimeSpacingUpdate(int timeSpacing) {
     this->timeSpacing = timeSpacing;
     _plotRender->setTimeSpacing(timeSpacing);
     hasPlayed = false;
