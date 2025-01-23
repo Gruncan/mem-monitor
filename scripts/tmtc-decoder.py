@@ -1,4 +1,4 @@
-
+import time
 from datetime import datetime, timedelta
 from pprint import pprint
 
@@ -16,10 +16,10 @@ class AllocationPoint:
         self.timestamp = timestamp
 
     def __repr__(self):
-        return f"{self.__class__.__name__}: {getattr(self, "ptr")}"
+        return f"{self.__class__.__name__}: {getattr(self, 'ptr')}"
 
     def _format_timestamp(self):
-        return f"[{self.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")}] "
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')}] "
 
 class Malloc(AllocationPoint):
     def __init__(self, timestamp, ptr, size):
@@ -236,12 +236,12 @@ class TMtcDecoder:
                     value |= self.content[index + i + j] << (8 * (7 - j))
                 values.append(value)
             index += length * 8
-
             inst = cls(time, *values)
             yield inst
 
     def decode(self):
         allocations = self.parse()
+        return allocations
         addresses = {}
         while (curr := next(allocations, None)) is not None:
             if curr.ptr not in addresses:
@@ -249,8 +249,15 @@ class TMtcDecoder:
             else:
                 addresses[curr.ptr].append(curr)
 
-        pprint(addresses)
 
-decoder = TMtcDecoder("memory_tracker.tmtc")
-decoder.decode()
+start_time = time.time()
+
+decoder = TMtcDecoder("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc")
+print(sum(1 for _ in decoder.decode()))
+
+end_time = time.time()
+
+elapsed_time = end_time - start_time
+
+print(f"Elapsed time: {elapsed_time} seconds")
 
