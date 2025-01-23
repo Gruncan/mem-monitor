@@ -1,11 +1,14 @@
 
-#include <stdio.h>
-#include <malloc.h>
-#include <stdlib.h>
 #include "tmtcdecoder.h"
+#include <malloc.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <string.h>
+#include <unistd.h>
 
 #define MASK_32 0xFFFFFFFF
-#define LOG_SIZE 13
+#define LOG_SIZE 34
 #define CHUNK_SIZE 1
 #define INIT_SIZE 5120
 
@@ -30,13 +33,23 @@ inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
 }
 
 static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object){
-    uint64_t micro_seconds = (ARRAY_COMBINE4(buffer, 0) * 1000000) + ARRAY_COMBINE4(buffer, 4);
+    // uint64_t micro_seconds = (ARRAY_COMBINE4(buffer, 0) * 1000000) + ARRAY_COMBINE4(buffer, 4);
+    uint64_t seconds = ((buffer[0] << 24)
+                    | (buffer[1] << 16)
+                    | (buffer[2] << 8)
+                    | (buffer[3]));
+    uint64_t micro_seconds = ((buffer[4] << 24)
+                    | (buffer[5] << 16)
+                    | (buffer[6] << 8)
+                    | buffer[7]);
+    micro_seconds += seconds * 1000000;
+    // printf("micro_seconds: %lu\n", micro_seconds);
     if (object->size == object->_allocation_size){
         object->_allocation_size *= 2;
         void* new_ptr = realloc(object->points, object->_allocation_size * sizeof(struct TMtcPoint));
         if (new_ptr == NULL){
             perror("Failed to realloc points TMTC!");
-            exit(-1);
+            _exit(-1);
         }
         object->points = new_ptr;
     }
@@ -45,7 +58,13 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object){
     point->key = buffer[8];
     uint8_t length = buffer[9];
     point->length = length;
-    point->values = calloc(0, length);
+    point->values = malloc(length);
+    if (point->values == NULL) {
+        perror("Failed to malloc points TMTC!");
+        _exit(-1);
+    }
+    memset(object->points, 0, length);
+
     uint64_t* values = point->values;
     for (int i = 0; i < length; i++) {
         for (int j = 0; j < 8; ++j) {
@@ -63,7 +82,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object){
 
     object->size++;
 
-    return 0;
+    return (MAX_LOG_VARS - length) * 8;
 }
 
 static void decode_tvalues(const byte* buffer, struct TMtcPoint* point){
@@ -95,13 +114,13 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     size_t bytesRead = 0;
     // Do macro multiplication happen at compile time?
     while((bytesRead = fread(buffer, 1, LOG_SIZE * CHUNK_SIZE, fp)) > 0){
-        if (bytesRead != LOG_SIZE * CHUNK_SIZE){
-            // we can maybe optimise this and not loose as much data, corruption maybe isn't even possible for a single write
-            // however CHUNK_SIZE multiplication will lose data
+        if (bytesRead < 26) {
+            // we can maybe optimise this and not loose as much data, corruption maybe isn't even possible for a single
+            // write however CHUNK_SIZE multiplication will lose data
             break;
         }
 
-        uint8_t overshot_offset = decode_tchunk(buffer, object);
+        const uint8_t overshot_offset = decode_tchunk(buffer, object);
         // move fp back by ^ since we don't know size, gets weird with chunk sizing
         if(fseek(fp, -overshot_offset, SEEK_CUR) != 0){
             perror("Failed to shift overshot offset");
