@@ -27,7 +27,7 @@ jobs:
           make
 
       - name: Upload mem_monitor artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mem_monitor
           path: components/memory-monitor/mem_monitor
@@ -50,7 +50,7 @@ jobs:
           make test
 
       - name: Upload mem_monitor_test and coverage files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mem_monitor_test
           path: |
@@ -78,7 +78,7 @@ jobs:
           make
 
       - name: Upload lib_mem_tracker artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lib_mem_tracker
           path: components/memory-tracker/lib_mem_tracker.so
@@ -101,7 +101,7 @@ jobs:
           make test
 
       - name: Upload mem_tracker_test artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mem_tracker_test
           path: components/memory-tracker/mem_tracker_test
@@ -134,7 +134,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download mem_monitor_test artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mem_monitor_test
 
@@ -159,7 +159,7 @@ jobs:
           lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: coverage.info
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -169,7 +169,7 @@ jobs:
           genhtml coverage.info --output-directory coverage-report
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage-report
@@ -185,12 +185,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download lib_mem_tracker artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: lib_mem_tracker
 
       - name: Download mem_tracker_test artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mem_tracker_test
 
@@ -208,7 +208,7 @@ jobs:
           LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test
 
       - name: Upload test output file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: c-test-output-file
           path: memory_tracker.tmtc
@@ -222,7 +222,7 @@ jobs:
 #        uses: actions/checkout@v2
 #
 #      - name: Download c-test-output-file artifact
-#        uses: actions/download-artifact@v3
+#        uses: actions/download-artifact@v4
 #        with:
 #          name: c-test-output-file
 #
