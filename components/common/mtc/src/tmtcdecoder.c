@@ -43,7 +43,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object){
                     | (buffer[6] << 8)
                     | buffer[7]);
     micro_seconds += seconds * 1000000;
-    // printf("micro_seconds: %lu\n", micro_seconds);
+
     if (object->size == object->_allocation_size){
         object->_allocation_size *= 2;
         void* new_ptr = realloc(object->points, object->_allocation_size * sizeof(struct TMtcPoint));
