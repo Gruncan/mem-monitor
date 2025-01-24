@@ -9,6 +9,10 @@
 #define HEADER_SIZE 5
 #define INIT_SIZE 5120
 
+#define MASK_5 0x001F
+#define MASK_6 0x003F
+#define MASK_4 0x000F
+
 const static uint16_t CHUNK_SIZE = 679;
 
 typedef unsigned char byte;
@@ -30,13 +34,33 @@ inline void initaliseMtcObject(struct MtcObject* object) {
     object->version = 0;
     object->file_length = 0;
     object->size = 0;
+    object->datetime = malloc(sizeof(struct MtcDatetime));
+    object->datetime->year = 0;
+    object->datetime->month = 0;
+    object->datetime->day = 0;
+    object->datetime->hours = 0;
+    object->datetime->minutes = 0;
+    object->datetime->seconds = 0;
 }
 
 // TODO implement a destroy function
 
 inline static void decode_header(const byte* buffer, struct MtcObject* object) {
     object->version = buffer[0];
-    // todo add time decoding here
+
+    uint8_t year = buffer[1] >> 2;
+    uint8_t month = ((buffer[1] << 2) | (buffer[2] >> 6)) & MASK_4;
+    uint8_t day = (buffer[2] >> 1) & MASK_5;
+    uint8_t hours = ((buffer[2] << 4) | (buffer[3] >> 4)) & MASK_5;
+    uint8_t minutes = ((buffer[3] << 2) | (buffer[4] >> 6)) & MASK_6;
+    uint8_t seconds = buffer[4] & MASK_6;
+
+    object->datetime->year = year + 2000;
+    object->datetime->month = month + 1;
+    object->datetime->day = day;
+    object->datetime->hours = hours;
+    object->datetime->minutes = minutes;
+    object->datetime->seconds = seconds;
 }
 
 inline uint8_t queryDecodeProgress(struct MtcObject* object) {

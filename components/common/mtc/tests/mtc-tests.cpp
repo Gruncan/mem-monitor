@@ -29,10 +29,14 @@ void printMemoryUsage() {
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
-    TMtcObject object;
-    initaliseTMtcObject(&object);
+//    TMtcObject object;
+//    initaliseTMtcObject(&object);
 
-    decode_tmtc("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc", &object);
+//    decode_tmtc("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc", &object);
+    MtcObject object;
+    initaliseMtcObject(&object);
+    decode(R"(C:\Development\University\Thesis\uwb_test3.mtc)", &object);
+
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);

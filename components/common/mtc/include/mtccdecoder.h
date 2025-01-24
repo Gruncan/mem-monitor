@@ -13,6 +13,15 @@ struct MtcPoint {
     uint64_t repeated;
 };
 
+struct MtcDatetime {
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hours;
+    uint8_t minutes;
+    uint8_t seconds;
+};
+
 struct MtcPointMap {
     struct MtcPoint* points;
     uint64_t length;
@@ -26,6 +35,7 @@ struct MtcTime {
 struct MtcObject {
     struct MtcPointMap* point_map;
     struct MtcTime* times;
+    struct MtcDatetime* datetime;
     uint64_t size;
     uint8_t version;
     uint64_t _times_length;
