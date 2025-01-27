@@ -35,8 +35,8 @@
 struct TMtcPoint {
     uint8_t key;
     uint8_t length;
-    uint64_t* values;
     uint32_t time_offset;
+    uint64_t* values;
 };
 
 
