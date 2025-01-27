@@ -13,6 +13,8 @@
 #define INIT_SIZE 5120
 
 #define MAX_LOG_VARS 3
+#define _FILE_OFFSET_BITS 64
+
 
 typedef unsigned char byte;
 
@@ -116,7 +118,7 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 
         const uint8_t overshot_offset = decode_tchunk(buffer, object);
         // move fp back by ^ since we don't know size, gets weird with chunk sizing
-        if (fseek(fp, -overshot_offset, SEEK_CUR) != 0) {
+        if (fseeko(fp, -((off_t)overshot_offset), SEEK_CUR) != 0) {
             perror("Failed to shift overshot offset");
             goto cleanUpFunction;
         }
