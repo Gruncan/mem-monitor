@@ -8,6 +8,8 @@
 #include <unistd.h>
 
 #define MASK_32 0xFFFFFFFF
+#define MASK_8 0xFF
+
 #define LOG_SIZE 34
 #define CHUNK_SIZE 100
 #define INIT_SIZE 5120
@@ -24,21 +26,31 @@ static uint64_t prev_micro_seconds = 0;
     (((array)[index] << 24) | ((array)[(index) + 1] << 16) | ((array)[(index) + 2] << 8) | ((array)[(index) + 3]))
 
 
-inline void initaliseTMtcObject(struct TMtcObject* object) {
+inline void createTMtcObject(struct TMtcObject* object) {
     object->_allocation_size = INIT_SIZE;
     object->points = malloc(sizeof(struct TMtcPoint) * object->_allocation_size);
     object->size = 0;
     object->_file_length = 0;
 }
 
+inline void destroyTMtcObject(struct TMtcObject* object){
+    if (object == NULL){
+        return;
+    }
+    free(object->points);
+}
+
+
 inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
-    return 0;
+    if (object == NULL || object->_file_length == 0 || object->size == 0) {
+        return 0;
+    }
+    return (uint8_t) (((double) (object->size * LOG_SIZE) / (double) object->_file_length) * 100) & MASK_8;
 }
 
 static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
-    // uint64_t micro_seconds = (ARRAY_COMBINE4(buffer, 0) * 1000000) + ARRAY_COMBINE4(buffer, 4);
-    uint64_t seconds = ((buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | (buffer[3]));
-    uint64_t micro_seconds = ((buffer[4] << 24) | (buffer[5] << 16) | (buffer[6] << 8) | buffer[7]);
+    uint64_t seconds = ARRAY_COMBINE4(buffer, 0);
+    uint64_t micro_seconds = ARRAY_COMBINE4(buffer, 4);
     micro_seconds += seconds * 1000000;
 
     if (object->size == object->_allocation_size) {
