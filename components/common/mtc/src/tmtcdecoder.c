@@ -55,20 +55,14 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     point->key = buffer[8];
     const uint8_t length = buffer[9];
     point->length = length;
-    printf("Length: %u\n", length);
-    point->values = malloc(length);
+    point->values = malloc(length * sizeof(uint64_t));
     if (point->values == NULL) {
         perror("Failed to malloc points TMTC!");
         _exit(-1);
     }
-    memset(object->points, 0, length);
 
-    uint64_t* values = point->values;
-    for (int i = 0; i < length; i++) {
-        for (int j = 0; j < 8; ++j) {
-            values[i] |= buffer[(i * 8) + 10 + j] << (8 * (7 - j));
-        }
-    }
+    uint64_t* values = (uint64_t*) (buffer + 10);
+    memcpy(point->values, values, length * sizeof(uint64_t));
 
     if (object->size == 0) {
         point->time_offset = prev_micro_seconds;
@@ -79,11 +73,9 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     prev_micro_seconds = micro_seconds;
 
     object->size++;
-    return (MAX_LOG_VARS - length) * 8;
+    return (MAX_LOG_VARS - length) * sizeof(uint64_t);
 }
 
-static void decode_tvalues(const byte* buffer, struct TMtcPoint* point) {
-}
 
 void decode_tmtc(const char* filename, struct TMtcObject* object) {
     FILE* fp = fopen(filename, "rb");
@@ -92,7 +84,9 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
         return;
     }
 
-    byte* buffer = malloc(LOG_SIZE * CHUNK_SIZE);
+    static const uint16_t CHUNKING_SIZE = LOG_SIZE * CHUNK_SIZE;
+
+    byte* buffer = malloc(CHUNKING_SIZE);
     if (buffer == NULL) {
         perror("Failed to allocate buffer!");
         fclose(fp);
@@ -110,10 +104,7 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     printf("File length: %lu\n", object->_file_length);
 
     size_t bytesRead = 0;
-    static const uint16_t CHUNKING_SIZE = LOG_SIZE * CHUNK_SIZE;
-    printf("CHunk size: %hu\n", CHUNKING_SIZE);
 
-    int readcount = 1;
     // Do macro multiplication happen at compile time?
     while ((bytesRead = fread(buffer, 1, CHUNKING_SIZE, fp)) > 0) {
         if (bytesRead < 26) {
@@ -122,22 +113,16 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
             break;
         }
 
-        printf("Read: %u\n", readcount++);
-
         uint16_t offset = 0;
 
-        for (uint16_t i = 0; i < CHUNK_SIZE; i++) {
+        while(bytesRead > offset + LOG_SIZE){
             const uint8_t overshot = decode_tchunk(buffer + offset, object);
-            printf("Overshot %hu | index: %lu\n", overshot, object->size);
             offset += LOG_SIZE - overshot;
-            if (CHUNKING_SIZE < offset + LOG_SIZE) {
-                printf("Offset: %d\n", offset);
-                if (fseeko(fp, -((off_t)CHUNKING_SIZE - offset), SEEK_CUR) != 0) {
-                    perror("Failed to shift overshot offset");
-                    goto cleanUpFunction;
-                }
-                break;
-            }
+        }
+
+        if (fseeko(fp, -((off_t)CHUNKING_SIZE - offset), SEEK_CUR) != 0) {
+            perror("Failed to shift overshot offset");
+            goto cleanUpFunction;
         }
     }
 
