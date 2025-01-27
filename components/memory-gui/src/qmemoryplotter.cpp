@@ -91,21 +91,40 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     const MtcObject* object = _loader->getMtcObject();
     uint64_t sampleRate = 50;
 
-    QVector<double> times;
-    uint64_t timeSum = 0;
-    times.reserve(object->size / sampleRate);
+    struct MtcDatetime dt = *object->datetime;
+    QDate date(dt.year, dt.month, dt.day);
+    if (!date.isValid()){
+        qDebug() << "Date invalid!";
+    }
+    QTime time(dt.hours, dt.minutes, dt.seconds);
+    if(!time.isValid()){
+        qDebug() << "Time invalid!";
+    }
+
+    QDateTime currentDateTime = QDateTime(date, time);
+    if(!currentDateTime.isValid()){
+        qDebug() << "Datetime is invalid";
+    }
+
+
+    std::vector<double>* times = new std::vector<double>();
+    times->reserve(object->size / sampleRate);
     uint64_t c = 0;
     for (uint64_t i = 0; i < object->_times_length; i++) {
         for (uint64_t j = 0; j < object->times[i].repeated; j++) {
-            timeSum += *object->times[i].time_offset;
+            currentDateTime = currentDateTime.addMSecs(*object->times[i].time_offset);
             if (c == sampleRate) {
-                times.push_back(timeSum);
+                times->push_back(currentDateTime.toMSecsSinceEpoch() / 1000.0);
                 c = 0;
                 continue;
             }
             c++;
         }
     }
+//    QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+//    dateTicker->setDateTimeFormat("yyyy-MM-dd\nhh:mm:ss");
+//    _plot->xAxis->setTicker(dateTicker);
+
     // _plot->xAxis->setRange(0, times.last());
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
@@ -211,7 +230,8 @@ void QMemoryPlotter::playClicked() {
     const MtcObject* object = _loader->getMtcObject();
     if (!hasPlayed) {
         hasPlayed = true;
-        emit queueAnimationRendering(&object->point_map[key], object->times, object->size, object->_times_length,
+//        struct MtcDatetime*
+        emit queueAnimationRendering(&object->point_map[key], object->times, object->datetime, object->size, object->_times_length,
                                      plotsEnabled[key], this->timeSpacing);
     } else {
         emit startAnimation();

@@ -22,9 +22,9 @@ class QPlotRender : public QObject {
 
 
   public Q_SLOTS:
-    void queueRendering(MtcPointMap* point_map, const QVector<double>& times, uint64_t length, QCPGraph* graph);
+    void queueRendering(MtcPointMap* point_map, std::vector<double>* times, uint64_t length, QCPGraph* graph);
 
-    void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength,
+    void queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, struct MtcDatetime* datetime, uint64_t length, uint64_t timesLength,
                                  QCPGraph* graph, int timeSpacing);
 
     void updatePlot();

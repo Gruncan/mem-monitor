@@ -19,7 +19,7 @@ QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0
 QPlotRender::~QPlotRender() {
 }
 
-void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& times, const uint64_t length,
+void QPlotRender::queueRendering(MtcPointMap* point_map, std::vector<double>* timesVec, const uint64_t length,
                                  QCPGraph* graph) {
     const uint64_t sampleRate = 50;
 
@@ -42,10 +42,19 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
             c++;
         }
     }
+    if (timesVec->size() != values.size()){
+        if (timesVec->size() < values.size()){
+            values.resize(timesVec->size());
+        }else{
+            timesVec->resize(values.size());
+        }
+    }
+
+    QVector<double> qTimes = QVector<double>(timesVec->begin(), timesVec->end());
 
 
-    graph->setData(times, values);
-    plot->xAxis->setRange(0, times.last() / sampleRate, Qt::AlignLeft);
+    graph->setData(qTimes, values);
+    plot->xAxis->setRange(0, qTimes.last() / sampleRate, Qt::AlignLeft);
     plot->yAxis->setRange(0, valueMax * 1.1);
     plot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -64,27 +73,47 @@ void QPlotRender::processBatch(MtcPointMap* points, size_t start_index, size_t e
 }
 
 
-void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, uint64_t length, uint64_t timesLength,
+void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times, struct MtcDatetime* datetime, uint64_t length, uint64_t timesLength,
                                           QCPGraph* graph, int timeSpacing) {
     int64_t sampleRate = 50;
     values.clear();
     this->times.clear();
 
     values.reserve(length / sampleRate);
+
     this->times.reserve(length / sampleRate);
-    uint64_t timeSum = 0;
+
+    QDate date(datetime->year, datetime->month, datetime->day);
+    if (!date.isValid()){
+        qDebug() << "Date invalid!";
+    }
+    QTime time(datetime->hours, datetime->minutes, datetime->seconds);
+    if(!time.isValid()){
+        qDebug() << "Time invalid!";
+    }
+
+    QDateTime currentDateTime = QDateTime(date, time);
+    if(!currentDateTime.isValid()){
+        qDebug() << "Datetime is invalid";
+    }
+
+
+    this->times.reserve(timesLength / sampleRate);
     uint64_t c = 0;
     for (uint64_t i = 0; i < timesLength; i++) {
         for (uint64_t j = 0; j < times[i].repeated + 1; j++) {
             timeSum += *times[i].time_offset;
             if (c == sampleRate) {
-                this->times.push_back(timeSum);
+                this->times.push_back(currentDateTime.toMSecsSinceEpoch() / 1000.0);
                 c = 0;
                 continue;
             }
             c++;
         }
     }
+    QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+    dateTicker->setDateTimeFormat("yyyy-MM-dd\nhh:mm:ss");
+    plot->xAxis->setTicker(dateTicker);
 
     // Process values
     c = 0;
