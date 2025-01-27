@@ -9,7 +9,7 @@
 
 #define MASK_32 0xFFFFFFFF
 #define LOG_SIZE 34
-#define CHUNK_SIZE 1
+#define CHUNK_SIZE 100
 #define INIT_SIZE 5120
 
 #define MAX_LOG_VARS 3
@@ -55,6 +55,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     point->key = buffer[8];
     const uint8_t length = buffer[9];
     point->length = length;
+    printf("Length: %u\n", length);
     point->values = malloc(length);
     if (point->values == NULL) {
         perror("Failed to malloc points TMTC!");
@@ -78,7 +79,6 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     prev_micro_seconds = micro_seconds;
 
     object->size++;
-
     return (MAX_LOG_VARS - length) * 8;
 }
 
@@ -107,20 +107,37 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 #endif
     fseek(fp, 0, SEEK_SET);
 
+    printf("File length: %lu\n", object->_file_length);
+
     size_t bytesRead = 0;
+    static const uint16_t CHUNKING_SIZE = LOG_SIZE * CHUNK_SIZE;
+    printf("CHunk size: %hu\n", CHUNKING_SIZE);
+
+    int readcount = 1;
     // Do macro multiplication happen at compile time?
-    while ((bytesRead = fread(buffer, 1, LOG_SIZE * CHUNK_SIZE, fp)) > 0) {
+    while ((bytesRead = fread(buffer, 1, CHUNKING_SIZE, fp)) > 0) {
         if (bytesRead < 26) {
             // we can maybe optimise this and not loose as much data, corruption maybe isn't even possible for a single
             // write however CHUNK_SIZE multiplication will lose data
             break;
         }
 
-        const uint8_t overshot_offset = decode_tchunk(buffer, object);
-        // move fp back by ^ since we don't know size, gets weird with chunk sizing
-        if (fseeko(fp, -((off_t)overshot_offset), SEEK_CUR) != 0) {
-            perror("Failed to shift overshot offset");
-            goto cleanUpFunction;
+        printf("Read: %u\n", readcount++);
+
+        uint16_t offset = 0;
+
+        for (uint16_t i = 0; i < CHUNK_SIZE; i++) {
+            const uint8_t overshot = decode_tchunk(buffer + offset, object);
+            printf("Overshot %hu | index: %lu\n", overshot, object->size);
+            offset += LOG_SIZE - overshot;
+            if (CHUNKING_SIZE < offset + LOG_SIZE) {
+                printf("Offset: %d\n", offset);
+                if (fseeko(fp, -((off_t)CHUNKING_SIZE - offset), SEEK_CUR) != 0) {
+                    perror("Failed to shift overshot offset");
+                    goto cleanUpFunction;
+                }
+                break;
+            }
         }
     }
 
