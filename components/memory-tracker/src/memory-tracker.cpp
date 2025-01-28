@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "mem-monitor-config.h"
 
 
 #define SYMBOL_NEW "_Znwm"
@@ -163,24 +164,23 @@ static int log_fd = -1;
     WRITE_TIME(array, current_time)
 
 #define LOG_MEMORY(key, args)                                                                                          \
-    unsigned char length = (unsigned char) sizeof(args) / sizeof(u_int64_t);                                           \
-    unsigned char array[10 + (sizeof(u_int64_t) * length)];                                                            \
+    unsigned char length = (unsigned char) sizeof(args) / sizeof(uint64_t);                                           \
+    unsigned char array[10 + (sizeof(uint64_t) * length)];                                                            \
     WRITE_TIME_DIFFERENCE(array)                                                                                       \
     array[8] = key;                                                                                                    \
     array[9] = length;                                                                                                 \
     for (unsigned char i = 0; i < length; i++) {                                                                       \
         for (int j = 0; j < 8; j++) {                                                                                  \
-            u_int64_t value = (args)[i];                                                                               \
+            uint64_t value = (args)[i];                                                                               \
             array[(i * 8) + 10 + j] = (value >> (8 * (7 - j))) & 0xFF;                                                 \
         }                                                                                                              \
     }                                                                                                                  \
-    size_t written = write(log_fd, array, 10 + (sizeof(u_int64_t) * length));                                          \
+    size_t written = write(log_fd, array, 10 + (sizeof(uint64_t) * length));                                          \
     if (written < 1) {                                                                                                 \
         fprintf(stderr, ERROR_PREFIX "Error writing to log file\n");                                                   \
     }
 
-#define MEM_TEST
-#ifndef MEM_TEST
+#ifdef MEM_TEST
 // stderr is loaded before everything
 #define DEBUG(str, ...) fprintf(stderr, str, ##__VA_ARGS__);
 #else
@@ -234,8 +234,8 @@ extern "C" {
 void* malloc(size_t size) {
     LOAD_SYMBOL(malloc, void* (*) (size_t))
     void* ptr = real_malloc(size);
-    DEBUG("malloc(%zd) = %p\n", size, ptr);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(MALLOC_FORMAT_STR, size, ptr);
+    uint64_t args[2] = {size, (uint64_t) ptr};
     LOG_MEMORY(MALLOC, args);
     return ptr;
 }
@@ -243,8 +243,8 @@ void* malloc(size_t size) {
 void* calloc(size_t nmemb, size_t size) {
     LOAD_SYMBOL(calloc, void* (*) (size_t, size_t))
     void* ptr = real_calloc(nmemb, size);
-    DEBUG("calloc(%zd, %zd) = %p\n", nmemb, size, ptr);
-    u_int64_t args[3] = {nmemb, size, (uint64_t) ptr};
+    DEBUG(CALLOC_FORMAT_STR, nmemb, size, ptr);
+    uint64_t args[3] = {nmemb, size, (uint64_t) ptr};
     LOG_MEMORY(CALLOC, args);
     return ptr;
 }
@@ -252,8 +252,8 @@ void* calloc(size_t nmemb, size_t size) {
 void* reallocarray(void* ptr, size_t nmemb, size_t size) {
     LOAD_SYMBOL(reallocarray, void* (*) (void*, size_t, size_t))
     void* new_ptr = real_reallocarray(ptr, nmemb, size);
-    DEBUG("reallocarray(%p, %zd, %zd) = %pan", ptr, nmemb, size, new_ptr);
-    u_int64_t args[3] = {(u_int64_t) ptr, nmemb, size};
+    DEBUG(REALLOC_ARRAY_FORMAT_STR, ptr, nmemb, size, new_ptr);
+    uint64_t args[3] = {(uint64_t) ptr, nmemb, size};
     LOG_MEMORY(REALLOC_ARRAY, args);
     return new_ptr;
 }
@@ -261,17 +261,17 @@ void* reallocarray(void* ptr, size_t nmemb, size_t size) {
 void* realloc(void* ptr, size_t size) {
     LOAD_SYMBOL(realloc, void* (*) (void*, size_t))
     void* new_ptr = real_realloc(ptr, size);
-    DEBUG("realloc(%p, %zd) = %p\n", ptr, size, new_ptr);
-    u_int64_t args[3] = {(u_int64_t) ptr, size, (u_int64_t) new_ptr};
+    DEBUG(REALLOC_FORMAT_STR, ptr, size, new_ptr);
+    uint64_t args[3] = {(uint64_t) ptr, size, (uint64_t) new_ptr};
     LOG_MEMORY(REALLOC, args);
     return new_ptr;
 }
 
 void free(void* ptr) {
     LOAD_SYMBOL(free, void (*)(void*))
-    DEBUG("free(%p)\n", ptr);
+    DEBUG(FREE_FORMAT_STR, ptr);
     real_free(ptr);
-    u_int64_t args[1] = {(u_int64_t) ptr};
+    uint64_t args[1] = {(uint64_t) ptr};
     LOG_MEMORY(FREE, args);
 }
 
@@ -280,75 +280,75 @@ void free(void* ptr) {
 
 void* operator new(std::size_t size) {
     void* ptr = real_new(size);
-    DEBUG("new(%zd) = %p\n", size, ptr);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(NEW_FORMAT_STR, size, ptr);
+    uint64_t args[2] = {size, (uint64_t) ptr};
     LOG_MEMORY(NEW, args);
     return ptr;
 }
 
 void* operator new(std::size_t size, const std::nothrow_t& nothrow) {
     void* ptr = real_new_nothrow(size, nothrow);
-    DEBUG("new_nothrow(%zd) = %p\n", size, ptr);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(NEW_NOTHROW_FORMAT_STR, size, ptr);
+    uint64_t args[2] = {size, (uint64_t) ptr};
     LOG_MEMORY(NEW_NOTHROW, args);
     return ptr;
 }
 
 void* operator new[](size_t size) {
     void* ptr = real_new_array(size);
-    DEBUG("new[](%zd) = %p\n", size, ptr);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(NEW_ARRAY_FORMAT_STR, size, ptr);
+    uint64_t args[2] = {size, (uint64_t) ptr};
     LOG_MEMORY(NEW_ARRAY, args);
     return ptr;
 }
 
 void* operator new[](size_t size, const std::nothrow_t& nothrow) noexcept {
     void* ptr = real_new_array_nothrow(size, nothrow);
-    DEBUG("new_nothrow[](%zd) = %p\n", size, ptr);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(NEW_ARRAY_NOTHROW_FORMAT_STR, size, ptr);
+    uint64_t args[2] = {size, (uint64_t) ptr};
     LOG_MEMORY(NEW_ARRAY_NOTHROW, args);
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept {
     real_delete(ptr);
-    DEBUG("delete(%p)\n", ptr);
-    u_int64_t args[1] = {(uint64_t) ptr};
+    DEBUG(DELETE_FORMAT_STR, ptr);
+    uint64_t args[1] = {(uint64_t) ptr};
     LOG_MEMORY(DELETE, args);
 }
 
 void operator delete(void* ptr, std::size_t size) {
     real_delete_sized(ptr, size);
-    DEBUG("delete_sized(%p, %lu)\n", ptr, size);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(DELETE_SIZED_FORMAT_STR, ptr, size);
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(DELETE_SIZED, args);
 }
 
 void operator delete(void* ptr, const std::nothrow_t& nothrow) noexcept {
     real_delete_nothrow(ptr, nothrow);
-    DEBUG("delete_nothrow(%p)\n", ptr)
-    u_int64_t args[1] = {(uint64_t) ptr};
+    DEBUG(DELETE_NOTHROW_FORMAT_STR, ptr)
+    uint64_t args[1] = {(uint64_t) ptr};
     LOG_MEMORY(DELETE_NOTHROW, args);
 }
 
 void operator delete[](void* ptr) {
     real_delete_array(ptr);
-    DEBUG("delete[](%p)\n", ptr)
-    u_int64_t args[1] = {(uint64_t) ptr};
+    DEBUG(DELETE_ARRAY_FORMAT_STR, ptr)
+    uint64_t args[1] = {(uint64_t) ptr};
     LOG_MEMORY(DELETE_ARRAY, args);
 }
 
 void operator delete[](void* ptr, std::size_t size) {
     real_delete_array_sized(ptr, size);
-    DEBUG("delete[](%p, %zd)\n", ptr, size);
-    u_int64_t args[2] = {(uint64_t) ptr, size};
+    DEBUG(DELETE_ARRAY_SIZED_FORMAT_STR, ptr, size);
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(DELETE_ARRAY_SIZED, args);
 }
 
 void operator delete[](void* ptr, const std::nothrow_t& nothrow) noexcept {
     real_delete_array_nothrow(ptr, nothrow);
-    DEBUG("delete[](%p)\n", ptr);
-    u_int64_t args[1] = {(uint64_t) ptr};
+    DEBUG(DELETE_ARRAY_NOTHROW_FORMAT_STR, ptr);
+    uint64_t args[1] = {(uint64_t) ptr};
     LOG_MEMORY(DELETE_ARRAY_NOTHROW, args);
 }
 
@@ -356,31 +356,31 @@ void operator delete[](void* ptr, const std::nothrow_t& nothrow) noexcept {
 
 void* operator new(std::size_t size, std::align_val_t align) {
     void* ptr = real_new_align(size, align);
-    DEBUG("new_align(%zd, %zd) = %p\n", size, CONVERT_ALIGN(align), ptr);
-    u_int64_t args[3] = {(uint64_t) ptr, size, CONVERT_ALIGN(align)};
+    DEBUG(NEW_ALIGN_FORMAT_STR, size, CONVERT_ALIGN(align), ptr);
+    uint64_t args[3] = {size, CONVERT_ALIGN(align), (uint64_t) ptr,};
     LOG_MEMORY(NEW_ALIGN, args);
     return ptr;
 }
 
 void* operator new[](std::size_t size, std::align_val_t align) {
     void* ptr = real_new_array_align(size, align);
-    DEBUG("new[]_align(%zd, %zd) = %p\n", size, CONVERT_ALIGN(align), ptr);
-    u_int64_t args[3] = {(uint64_t) ptr, size, CONVERT_ALIGN(align)};
+    DEBUG(NEW_ARRAY_ALIGN_FORMAT_STR, size, CONVERT_ALIGN(align), ptr);
+    uint64_t args[3] = {size, CONVERT_ALIGN(align), (uint64_t) ptr};
     LOG_MEMORY(NEW_ARRAY_ALIGN, args);
     return ptr;
 }
 
 void operator delete(void* ptr, std::align_val_t align) {
     real_delete_align(ptr, align);
-    DEBUG("delete_align(%p, %zd)\n", ptr, CONVERT_ALIGN(align));
-    u_int64_t args[2] = {(uint64_t) ptr, CONVERT_ALIGN(align)};
+    DEBUG(DELETE_ALIGN_FORMAT_STR, ptr, CONVERT_ALIGN(align));
+    uint64_t args[2] = {(uint64_t) ptr, CONVERT_ALIGN(align)};
     LOG_MEMORY(DELETE_ALIGN, args);
 }
 
 void operator delete[](void* ptr, std::align_val_t align) {
     real_delete_array_align(ptr, align);
-    DEBUG("delete_align[](%p, %zd)\n", ptr, CONVERT_ALIGN(align));
-    u_int64_t args[2] = {(uint64_t) ptr, CONVERT_ALIGN(align)};
+    DEBUG(DELETE_ARRAY_ALIGN_FORMAT_STR, ptr, CONVERT_ALIGN(align));
+    uint64_t args[2] = {(uint64_t) ptr, CONVERT_ALIGN(align)};
     LOG_MEMORY(DELETE_ARRAY, args);
 }
 

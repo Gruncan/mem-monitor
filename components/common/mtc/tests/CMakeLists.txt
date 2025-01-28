@@ -1,5 +1,5 @@
 
-include_directories(../include)
+include_directories(../include ${COMMON_DIR})
 
 set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE CXX)
 
