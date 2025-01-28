@@ -1,0 +1,49 @@
+
+#ifndef MEM_MONITOR_CONFIG_H
+#define MEM_MONITOR_CONFIG_H
+#include <stdint.h>
+
+
+
+#define MALLOC 0x0
+#define CALLOC 0x1
+#define REALLOC 0x2
+#define REALLOC_ARRAY 0x3
+#define FREE 0x4
+#define NEW 0x5
+#define NEW_NOTHROW 0x6
+#define NEW_ARRAY 0x7
+#define NEW_ARRAY_NOTHROW 0x8
+#define DELETE 0x9
+#define DELETE_SIZED 0xa
+#define DELETE_NOTHROW 0xb
+#define DELETE_ARRAY 0xc
+#define DELETE_ARRAY_SIZED 0xd
+#define DELETE_ARRAY_NOTHROW 0xe
+#define NEW_ALIGN 0xf
+#define NEW_ARRAY_ALIGN 0x10
+#define DELETE_ALIGN 0x11
+#define DELETE_ARRAY_ALIGN 0x12
+
+#define MALLOC_FORMAT_STR "malloc(%zd) = %p\n"
+#define CALLOC_FORMAT_STR "calloc(%zd, %zd) = %p\n"
+#define REALLOC_FORMAT_STR
+#define REALLOC_ARRAY_FORMAT_STR
+#define FREE_FORMAT_STR
+#define NEW_FORMAT_STR
+#define NEW_NOTHROW_FORMAT_STR
+#define NEW_ARRAY_FORMAT_STR
+#define NEW_ARRAY_NOTHROW_FORMAT_STR
+#define DELETE_FORMAT_STR
+#define DELETE_SIZED_FORMAT_STR
+#define DELETE_NOTHROW_FORMAT_STR
+#define DELETE_ARRAY_FORMAT_STR
+#define DELETE_ARRAY_SIZED_FORMAT_STR
+#define DELETE_ARRAY_NOTHROW_FORMAT_STR
+#define NEW_ALIGN_FORMAT_STR
+
+
+// Memory key size
+typedef uint8_t mk_size_t;
+
+#endif // MEM_MONITOR_CONFIG_H

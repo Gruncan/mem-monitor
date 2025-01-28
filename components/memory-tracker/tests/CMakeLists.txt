@@ -1,4 +1,4 @@
-include_directories(${COMMON_DIR})
+include_directories(${COMMON_DIR}/testing/)
 
 add_executable(mem_tracker_test tracker-test.cpp)
 

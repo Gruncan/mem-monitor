@@ -44,11 +44,12 @@ SET(PROJECT_SOURCES
         include/qplotrender.h
         include/qtreememorywidgetitem.h
         include/qmemoryanimatecontrols.h
-        ../common/mem-monitor-config.h
         include/animation-data-container.h
 )
 include_directories(include/
-                    ../common/mtc/include)
+                    ${COMMON_DIR}/config/
+                    ${COMMON_DIR}/mtc/include/)
+
 
 qt_add_executable(MemoryGUI MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
