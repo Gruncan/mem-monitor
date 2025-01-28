@@ -179,8 +179,7 @@ static int log_fd = -1;
         fprintf(stderr, ERROR_PREFIX "Error writing to log file\n");                                                   \
     }
 
-#define MEM_TEST
-#ifndef MEM_TEST
+#ifdef MEM_TEST
 // stderr is loaded before everything
 #define DEBUG(str, ...) fprintf(stderr, str, ##__VA_ARGS__);
 #else
