@@ -30,7 +30,7 @@ void printMemoryUsage() {
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
     TMtcObject object;
-    initaliseTMtcObject(&object);
+    createTMtcObject(&object);
 
     decode_tmtc("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc", &object);
 
