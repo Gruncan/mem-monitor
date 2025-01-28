@@ -114,8 +114,6 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 #endif
     fseek(fp, 0, SEEK_SET);
 
-    printf("File length: %lu\n", object->_file_length);
-
     size_t bytesRead = 0;
 
     // Do macro multiplication happen at compile time?
