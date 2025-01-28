@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -std=c11 -I./include -I../common -pthread -O3 -march=native -funroll-loops -flto -ffast-math
+CFLAGS = -std=c11 -I./include -I../common/config -pthread -O3 -march=native -funroll-loops -flto -ffast-math
 
 TARGET = mem_monitor
 TEST_TARGET = mem_monitor_test
@@ -18,7 +18,7 @@ $(TARGET): $(OBJS)
 
 
 test: $(TEST_TARGET)
-test: CFLAGS += -I../common -g -fprofile-arcs -ftest-coverage -DMEM_TEST
+test: CFLAGS += -I../common/testing -g -fprofile-arcs -ftest-coverage -DMEM_TEST
 
 
 $(TEST_TARGET): $(TEST_OBJS)

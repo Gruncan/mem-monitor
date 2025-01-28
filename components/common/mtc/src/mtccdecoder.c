@@ -1,7 +1,7 @@
 
 #include "mtccdecoder.h"
 
-#include "../../mem-monitor-config.h"
+#include "mem-monitor-config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,7 +130,7 @@ void decode(const char* filename, struct MtcObject* object) {
     }
 
     fseek(fp, 0, SEEK_END);
-#ifdef unix
+#ifdef __unix__
     object->file_length = ftell(fp);
 #else
     object->file_length = _ftelli64(fp);
