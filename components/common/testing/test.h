@@ -64,38 +64,38 @@
 
 #define ASSERT_EQUAL_P(value, expected)                                                                                \
     if (value != expected) {                                                                                           \
-        TEST_PRINT_ERR(stderr, RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected);                               \
-        TEST_PRINT_ERR(stderr, RED_TEXT "         : %p != %p\n" RESET_TEXT, value, expected);                                 \
+        TEST_PRINT_ERR(RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected);                               \
+        TEST_PRINT_ERR(RED_TEXT "         : %p != %p\n" RESET_TEXT, value, expected);                                 \
         return FAIL;                                                                                                   \
     }
 
 
 #define ASSERT_EQUAL(value, expected)                                                                                  \
     if (value != expected) {                                                                                           \
-        TEST_PRINT_ERR(stderr, RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected);                               \
-        TEST_PRINT_ERR(stderr, RED_TEXT "         : %d != %d\n" RESET_TEXT, value, expected);                                 \
+        TEST_PRINT_ERR(RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected);                               \
+        TEST_PRINT_ERR(RED_TEXT "         : %d != %d\n" RESET_TEXT, value, expected);                                 \
         return FAIL;                                                                                                   \
     }
 
 #define ASSERT_STR_EQUAL(value, expected)                                                                              \
     if (strcmp(value, expected) != 0) {                                                                                \
-        TEST_PRINT_ERR(stderr, RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected);                               \
-        TEST_PRINT_ERR(stderr, RED_TEXT "         : %s != %s\n" RESET_TEXT, value, expected);                                 \
+        TEST_PRINT_ERR(RED_TEXT "Failed on: %s != %s\n" RESET_TEXT, #value, #expected);                               \
+        TEST_PRINT_ERR(RED_TEXT "         : %s != %s\n" RESET_TEXT, value, expected);                                 \
         return FAIL;                                                                                                   \
     }
 
 
 #define ASSERT_NOT_EQUAL_P(value, expected)                                                                            \
     if (value == expected) {                                                                                           \
-        TEST_PRINT_ERR(stderr, RED_TEXT "Failed on: %s == %s\n" RESET_TEXT, #value, #expected);                               \
-        TEST_PRINT_ERR(stderr, RED_TEXT "         : %p == %p\n" RESET_TEXT, value, expected);                                 \
+        TEST_PRINT_ERR(RED_TEXT "Failed on: %s == %s\n" RESET_TEXT, #value, #expected);                               \
+        TEST_PRINT_ERR(RED_TEXT "         : %p == %p\n" RESET_TEXT, value, expected);                                 \
         return FAIL;                                                                                                   \
     }
 
 #define ASSERT_NOT_EQUAL(value, expected)                                                                              \
     if (value == expected) {                                                                                           \
-        TEST_PRINT_ERR(stderr, RED_TEXT "Failed on: %s == %s\n" RESET_TEXT, #value, #expected);                               \
-        TEST_PRINT_ERR(stderr, RED_TEXT "         : %d == %d\n" RESET_TEXT, value, expected);                                 \
+        TEST_PRINT_ERR(RED_TEXT "Failed on: %s == %s\n" RESET_TEXT, #value, #expected);                               \
+        TEST_PRINT_ERR(RED_TEXT "         : %d == %d\n" RESET_TEXT, value, expected);                                 \
         return FAIL;                                                                                                   \
     }
 
