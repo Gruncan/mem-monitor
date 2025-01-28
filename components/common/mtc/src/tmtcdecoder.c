@@ -12,6 +12,7 @@
 #define MASK_8 0xFF
 
 #define LOG_SIZE 34
+#define MIN_LOG_SIZE 18
 #define CHUNK_SIZE 10
 #define INIT_SIZE 5120
 
@@ -123,9 +124,8 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 
     size_t bytesRead = 0;
 
-    // Do macro multiplication happen at compile time?
     while ((bytesRead = fread(buffer, 1, CHUNKING_SIZE, fp)) > 0) {
-        if (bytesRead < 26) {
+        if (bytesRead < MIN_LOG_SIZE) {
             // we can maybe optimise this and not loose as much data, corruption maybe isn't even possible for a single
             // write however CHUNK_SIZE multiplication will lose data
             break;
@@ -133,12 +133,12 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 
         uint16_t offset = 0;
 
-        while(bytesRead > offset + LOG_SIZE){
+        while(bytesRead >= offset + MIN_LOG_SIZE){
             const uint8_t overshot = decode_tchunk(buffer + offset, object);
             offset += LOG_SIZE - overshot;
         }
 
-        if (fseeko(fp, -((off_t)CHUNKING_SIZE - offset), SEEK_CUR) != 0) {
+        if (fseeko(fp, -((off_t)bytesRead - offset), SEEK_CUR) != 0) {
             perror("Failed to shift overshot offset");
             goto cleanUpFunction;
         }
