@@ -312,6 +312,6 @@ jobs:
       - name: Run PyTests
         run: |
           cd scripts/decode-test/
-          pytest test-output.py
+          pytest decode-test.py
             
 
