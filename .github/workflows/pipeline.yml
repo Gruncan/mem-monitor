@@ -282,12 +282,15 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential
 
-      - name: Download dependant artifacts
+      - name: Download mtc_tests artifact
         uses: actions/download-artifact@v4
         with:
-          name: |
-            mtc_tests
-            c-test-output-file
+          name: mtc_tests
+
+      - name: Download output files artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: c-test-output-file
 
       - name: Move artifacts
         run: |
