@@ -267,7 +267,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mtc_tests
-          path: components/common/mtc_tests
+          path: components/common/mtc/mtc_tests
 
   test-mtc-decoder-output:
     runs-on: ubuntu-latest
