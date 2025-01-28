@@ -3,7 +3,7 @@
 
 
 #ifdef __cplusplus
-#include "../../mem-monitor-config.h"
+#include "../../config/mem-monitor-config.h"
 #include <cstdint>
 #include <map>
 #include <string>

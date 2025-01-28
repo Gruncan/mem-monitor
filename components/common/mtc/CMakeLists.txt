@@ -10,7 +10,7 @@ set_source_files_properties(${MTC_SOURCES} PROPERTIES LANGUAGE C)
 message(WARNING "Decoder has debug symbols")
 set(CMAKE_BUILD_TYPE Debug)
 
-include_directories(include/)
+include_directories(include/ ${COMMON_DIR}/config/)
 
 add_library(mtc_decoder STATIC ${MTC_SOURCES})
 

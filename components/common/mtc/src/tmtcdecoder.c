@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include <string.h>
 #include <unistd.h>
@@ -106,7 +107,7 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     }
 
     fseek(fp, 0, SEEK_END);
-#ifdef unix
+#ifdef __unix__
     object->_file_length = ftell(fp);
 #else
     object->_file_length = _ftelli64(fp);
