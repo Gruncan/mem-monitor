@@ -164,18 +164,18 @@ static int log_fd = -1;
     WRITE_TIME(array, current_time)
 
 #define LOG_MEMORY(key, args)                                                                                          \
-    unsigned char length = (unsigned char) sizeof(args) / sizeof(u_int64_t);                                           \
-    unsigned char array[10 + (sizeof(u_int64_t) * length)];                                                            \
+    unsigned char length = (unsigned char) sizeof(args) / sizeof(uint64_t);                                           \
+    unsigned char array[10 + (sizeof(uint64_t) * length)];                                                            \
     WRITE_TIME_DIFFERENCE(array)                                                                                       \
     array[8] = key;                                                                                                    \
     array[9] = length;                                                                                                 \
     for (unsigned char i = 0; i < length; i++) {                                                                       \
         for (int j = 0; j < 8; j++) {                                                                                  \
-            u_int64_t value = (args)[i];                                                                               \
+            uint64_t value = (args)[i];                                                                               \
             array[(i * 8) + 10 + j] = (value >> (8 * (7 - j))) & 0xFF;                                                 \
         }                                                                                                              \
     }                                                                                                                  \
-    size_t written = write(log_fd, array, 10 + (sizeof(u_int64_t) * length));                                          \
+    size_t written = write(log_fd, array, 10 + (sizeof(uint64_t) * length));                                          \
     if (written < 1) {                                                                                                 \
         fprintf(stderr, ERROR_PREFIX "Error writing to log file\n");                                                   \
     }

@@ -27,8 +27,8 @@
 
 #define MALLOC_FORMAT_STR "malloc(%zd) = %p\n"
 #define CALLOC_FORMAT_STR "calloc(%zd, %zd) = %p\n"
-#define REALLOC_FORMAT_STR "reallocarray(%p, %zd, %zd) = %pan\n"
-#define REALLOC_ARRAY_FORMAT_STR "realloc(%p, %zd) = %p\n"
+#define REALLOC_FORMAT_STR "realloc(%p, %zd) = %p\n"
+#define REALLOC_ARRAY_FORMAT_STR "reallocarray(%p, %zd, %zd) = %pan\n"
 #define FREE_FORMAT_STR "free(%p)\n"
 #define NEW_FORMAT_STR "new(%zd) = %p\n"
 #define NEW_NOTHROW_FORMAT_STR "new_nothrow(%zd) = %p\n"

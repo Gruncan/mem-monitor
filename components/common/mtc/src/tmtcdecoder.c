@@ -12,7 +12,7 @@
 #define MASK_8 0xFF
 
 #define LOG_SIZE 34
-#define CHUNK_SIZE 100
+#define CHUNK_SIZE 10
 #define INIT_SIZE 5120
 
 #define MAX_LOG_VARS 3
@@ -74,8 +74,14 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
         _exit(-1);
     }
 
-    uint64_t* values = (uint64_t*) (buffer + 10);
-    memcpy(point->values, values, length * sizeof(uint64_t));
+    memset(point->values, 0, length * sizeof(uint64_t));
+
+    uint64_t* values = point->values;
+    for (int i = 0; i < length; i++) {
+        for (int j = 0; j < 8; ++j) {
+            values[i] |= (uint64_t) buffer[(i * 8) + 10 + j] << (8 * (7 - j));
+        }
+    }
 
     if (object->size == 0) {
         point->time_offset = prev_micro_seconds;
@@ -97,6 +103,7 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
         return;
     }
 
+    // TODO make this dynamic based on file length
     static const uint16_t CHUNKING_SIZE = LOG_SIZE * CHUNK_SIZE;
 
     byte* buffer = malloc(CHUNKING_SIZE);
