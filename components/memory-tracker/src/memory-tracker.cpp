@@ -252,7 +252,7 @@ void* calloc(size_t nmemb, size_t size) {
 void* reallocarray(void* ptr, size_t nmemb, size_t size) {
     LOAD_SYMBOL(reallocarray, void* (*) (void*, size_t, size_t))
     void* new_ptr = real_reallocarray(ptr, nmemb, size);
-    DEBUG(REALLOC_FORMAT_STR, ptr, nmemb, size, new_ptr);
+    DEBUG(REALLOC_ARRAY_FORMAT_STR, ptr, nmemb, size, new_ptr);
     uint64_t args[3] = {(uint64_t) ptr, nmemb, size};
     LOG_MEMORY(REALLOC_ARRAY, args);
     return new_ptr;
