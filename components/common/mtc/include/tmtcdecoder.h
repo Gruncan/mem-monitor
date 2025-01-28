@@ -35,8 +35,8 @@
 struct TMtcPoint {
     uint8_t key;
     uint8_t length;
-    uint64_t* values;
     uint32_t time_offset;
+    uint64_t* values;
 };
 
 
@@ -51,7 +51,9 @@ struct TMtcObject {
 extern "C" {
 #endif
 
-void initaliseTMtcObject(struct TMtcObject* object);
+void createTMtcObject(struct TMtcObject* object);
+
+void destroyTMtcObject(struct TMtcObject* object);
 
 uint8_t queryTDecodeProgress(struct TMtcObject* object);
 
