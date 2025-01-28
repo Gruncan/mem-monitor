@@ -15,6 +15,12 @@ all: $(LIB_NAME)
 test: $(LIB_TEST)
 test: CFLAGS += -I../common
 
+libtest: $(LIB_NAME)
+libtest: CFLAGS += -DMEM_TEST
+
+testnoprint: $(LIB_TEST)
+testnoprint: CFLAGS += -DTEST_NO_PRINT -I../common
+
 
 $(LIB_NAME): $(OBJS)
 	$(CC) -shared -o $@ $^
