@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++17 -fPIC -O3
+CFLAGS = -std=c++17 -fPIC -O3 -I../common
 
 LIB_NAME = lib_mem_tracker.so
 LIB_TEST = mem_tracker_test
@@ -15,8 +15,8 @@ all: $(LIB_NAME)
 test: $(LIB_TEST)
 test: CFLAGS += -I../common
 
-libtest: $(LIB_NAME)
-libtest: CFLAGS += -DMEM_TEST
+libdebugprint: $(LIB_NAME)
+libdebugprint: CFLAGS += -DMEM_TEST
 
 testnoprint: $(LIB_TEST)
 testnoprint: CFLAGS += -DTEST_NO_PRINT -I../common
