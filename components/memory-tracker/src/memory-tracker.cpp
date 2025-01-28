@@ -261,7 +261,7 @@ void* reallocarray(void* ptr, size_t nmemb, size_t size) {
 void* realloc(void* ptr, size_t size) {
     LOAD_SYMBOL(realloc, void* (*) (void*, size_t))
     void* new_ptr = real_realloc(ptr, size);
-    DEBUG(REALLOC_ARRAY_FORMAT_STR, ptr, size, new_ptr);
+    DEBUG(REALLOC_FORMAT_STR, ptr, size, new_ptr);
     uint64_t args[3] = {(uint64_t) ptr, size, (uint64_t) new_ptr};
     LOG_MEMORY(REALLOC, args);
     return new_ptr;
