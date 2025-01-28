@@ -2,7 +2,7 @@
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(${COMMON_DIR})
+include_directories(${COMMON_DIR}/config/)
 
 
 add_library(libmemtracker SHARED src/memory-tracker.cpp)
