@@ -75,7 +75,7 @@ jobs:
       - name: Build Main Target
         run: |
           cd components/memory-tracker/
-          make
+          make libdebugprint
 
       - name: Upload lib_mem_tracker artifact
         uses: actions/upload-artifact@v4
@@ -98,7 +98,7 @@ jobs:
       - name: Build Main Target
         run: |
           cd components/memory-tracker/
-          make test
+          make testnoprint
 
       - name: Upload mem_tracker_test artifact
         uses: actions/upload-artifact@v4
@@ -205,14 +205,37 @@ jobs:
 
       - name: Run C Tests
         run: |
-          LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test
+          # Redirect stderr from LD_PRELOAD debug print to stdout to out.txt
+          LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test > out.txt 2>&1
 
       - name: Upload test output file
         uses: actions/upload-artifact@v4
         with:
-          name: c-test-output-file
-          path: memory_tracker.tmtc
+          path: |
+            memory_tracker1.tmtc
+            out.txt
 
+  build-mtc-decoder-lib:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Build Main Target
+        run: |
+          cd components/common/mttttc/
+          make
+
+      - name: Upload mem_monitor artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mem_monitor
+          path: components/memory-monitor/mem_monitor
 #  run-mem-python-tracker-tests:
 #    runs-on: ubuntu-latest
 #    needs: [ run-mem-c-tracker-tests ]

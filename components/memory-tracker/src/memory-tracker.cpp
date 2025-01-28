@@ -233,7 +233,7 @@ extern "C" {
 void* malloc(size_t size) {
     LOAD_SYMBOL(malloc, void* (*) (size_t))
     void* ptr = real_malloc(size);
-    DEBUG("malloc(%zd) = %p\n", size, ptr);
+    DEBUG(MALLOC_FORMAT_STR, size, ptr);
     u_int64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(MALLOC, args);
     return ptr;
