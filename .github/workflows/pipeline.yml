@@ -75,7 +75,7 @@ jobs:
       - name: Build Main Target
         run: |
           cd components/memory-tracker/
-          make
+          make libdebugprint
 
       - name: Upload lib_mem_tracker artifact
         uses: actions/upload-artifact@v4
@@ -98,7 +98,7 @@ jobs:
       - name: Build Main Target
         run: |
           cd components/memory-tracker/
-          make test
+          make testnoprint
 
       - name: Upload mem_tracker_test artifact
         uses: actions/upload-artifact@v4
@@ -205,37 +205,110 @@ jobs:
 
       - name: Run C Tests
         run: |
-          LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test
+          # Redirect stderr from LD_PRELOAD debug print to stdout to out.txt
+          LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test > out.txt 2>&1
 
       - name: Upload test output file
         uses: actions/upload-artifact@v4
         with:
           name: c-test-output-file
-          path: memory_tracker.tmtc
+          path: | 
+            memory_tracker1.tmtc
+            out.txt
 
-#  run-mem-python-tracker-tests:
-#    runs-on: ubuntu-latest
-#    needs: [ run-mem-c-tracker-tests ]
-#
-#    steps:
-#      - name: Checkout Repository
-#        uses: actions/checkout@v2
-#
-#      - name: Download c-test-output-file artifact
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: c-test-output-file
-#
-#      - name: Setup Python
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: 3.12
-#
-#      - name: Install Dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install -r memory-tracker/requirements.txt
-#
-#      - name: Run PyTests
-#        run: |
-#          pytest memory-tracker/test-output.py
+  build-mtc-decoder-lib:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Build Main Target
+        run: |
+          cd components/common/mtc
+          make
+
+      - name: Upload libmtc_decoder.a artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmtc_decoder
+          path: components/common/mtc/libmtc_decoder.a
+
+  build-mtc-decoder-lib-test:
+    runs-on: ubuntu-latest
+    needs: [ build-mtc-decoder-lib ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+          
+      - name: Download libmtc_decoder.a  artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: libmtc_decoder
+
+      - name: Build Main Target
+        run: |
+          mv libmtc_decoder.a components/common/mtc
+          cd components/common/mtc
+          make test
+
+      - name: Upload mtc_tests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mtc_tests
+          path: components/common/mtc_tests
+
+  test-mtc-decoder-output:
+    runs-on: ubuntu-latest
+    needs: [ build-mtc-decoder-lib-test, run-tracker-tests]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Download dependant artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: |
+            mtc_tests
+            c-test-output-file
+
+      - name: Move artifacts
+        run: |
+          chmod +x ./mtc_tests
+          mv ./mtc_tests scripts/decode-test/
+          mv out.txt scripts/decode-test/
+          mv memory_tracker1.tmtc scripts/decode-test/
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/decode-test/requirements.txt
+
+      - name: Run PyTests
+        run: |
+          cd scripts/decode-test/
+          pytest test-output.py
+            
+
