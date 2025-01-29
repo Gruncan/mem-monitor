@@ -13,7 +13,7 @@
 void print_point(const struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
-            printf(MALLOC_FORMAT_STR, point->values[0], point->values[1]);
+            printf(MALLOC_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case CALLOC:
             printf(CALLOC_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
