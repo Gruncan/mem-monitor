@@ -281,7 +281,7 @@ void free(void* ptr) {
 void* operator new(std::size_t size) {
     void* ptr = real_new(size);
     DEBUG(NEW_FORMAT_STR, size, ptr);
-    uint64_t args[2] = {size, (uint64_t) ptr};
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(NEW, args);
     return ptr;
 }
@@ -289,7 +289,7 @@ void* operator new(std::size_t size) {
 void* operator new(std::size_t size, const std::nothrow_t& nothrow) {
     void* ptr = real_new_nothrow(size, nothrow);
     DEBUG(NEW_NOTHROW_FORMAT_STR, size, ptr);
-    uint64_t args[2] = {size, (uint64_t) ptr};
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(NEW_NOTHROW, args);
     return ptr;
 }
@@ -297,7 +297,7 @@ void* operator new(std::size_t size, const std::nothrow_t& nothrow) {
 void* operator new[](size_t size) {
     void* ptr = real_new_array(size);
     DEBUG(NEW_ARRAY_FORMAT_STR, size, ptr);
-    uint64_t args[2] = {size, (uint64_t) ptr};
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(NEW_ARRAY, args);
     return ptr;
 }
@@ -305,7 +305,7 @@ void* operator new[](size_t size) {
 void* operator new[](size_t size, const std::nothrow_t& nothrow) noexcept {
     void* ptr = real_new_array_nothrow(size, nothrow);
     DEBUG(NEW_ARRAY_NOTHROW_FORMAT_STR, size, ptr);
-    uint64_t args[2] = {size, (uint64_t) ptr};
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(NEW_ARRAY_NOTHROW, args);
     return ptr;
 }
@@ -357,7 +357,7 @@ void operator delete[](void* ptr, const std::nothrow_t& nothrow) noexcept {
 void* operator new(std::size_t size, std::align_val_t align) {
     void* ptr = real_new_align(size, align);
     DEBUG(NEW_ALIGN_FORMAT_STR, size, CONVERT_ALIGN(align), ptr);
-    uint64_t args[3] = {size, CONVERT_ALIGN(align), (uint64_t) ptr,};
+    uint64_t args[3] = {(uint64_t) ptr, size, CONVERT_ALIGN(align)};
     LOG_MEMORY(NEW_ALIGN, args);
     return ptr;
 }
@@ -365,7 +365,7 @@ void* operator new(std::size_t size, std::align_val_t align) {
 void* operator new[](std::size_t size, std::align_val_t align) {
     void* ptr = real_new_array_align(size, align);
     DEBUG(NEW_ARRAY_ALIGN_FORMAT_STR, size, CONVERT_ALIGN(align), ptr);
-    uint64_t args[3] = {size, CONVERT_ALIGN(align), (uint64_t) ptr};
+    uint64_t args[3] = {(uint64_t) ptr, size, CONVERT_ALIGN(align)};
     LOG_MEMORY(NEW_ARRAY_ALIGN, args);
     return ptr;
 }
