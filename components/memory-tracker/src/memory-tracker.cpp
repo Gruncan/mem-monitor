@@ -235,7 +235,7 @@ void* malloc(size_t size) {
     LOAD_SYMBOL(malloc, void* (*) (size_t))
     void* ptr = real_malloc(size);
     DEBUG(MALLOC_FORMAT_STR, size, ptr);
-    uint64_t args[2] = {size, (uint64_t) ptr};
+    uint64_t args[2] = {(uint64_t) ptr, size};
     LOG_MEMORY(MALLOC, args);
     return ptr;
 }
