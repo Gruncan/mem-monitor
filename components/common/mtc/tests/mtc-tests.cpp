@@ -10,7 +10,7 @@
 #include <cinttypes>
 #include <tmtcdecoder.h>
 
-void print_point(struct TMtcPoint* point) {
+void print_point(const struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
             printf(MALLOC_FORMAT_STR, point->values[0], point->values[1]);
@@ -28,16 +28,16 @@ void print_point(struct TMtcPoint* point) {
             printf(FREE_FORMAT_STR, point->values[0]);
             break;
         case NEW:
-            printf(NEW_FORMAT_STR, point->values[0], point->values[1]);
+            printf(NEW_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case NEW_NOTHROW:
-            printf(NEW_NOTHROW_FORMAT_STR, point->values[0], point->values[1]);
+            printf(NEW_NOTHROW_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case NEW_ARRAY:
-            printf(NEW_ARRAY_FORMAT_STR, point->values[0], point->values[1]);
+            printf(NEW_ARRAY_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case NEW_ARRAY_NOTHROW:
-            printf(NEW_ARRAY_NOTHROW_FORMAT_STR, point->values[0], point->values[1]);
+            printf(NEW_ARRAY_NOTHROW_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case DELETE:
             printf(DELETE_FORMAT_STR, point->values[0]);
@@ -58,10 +58,10 @@ void print_point(struct TMtcPoint* point) {
             printf(DELETE_ARRAY_NOTHROW_FORMAT_STR, point->values[0]);
             break;
         case NEW_ALIGN:
-            printf(NEW_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
+            printf(NEW_ALIGN_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case NEW_ARRAY_ALIGN:
-            printf(NEW_ARRAY_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
+            printf(NEW_ARRAY_ALIGN_FORMAT_STR, point->values[1], point->values[0]);
             break;
         case DELETE_ALIGN:
             printf(DELETE_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
