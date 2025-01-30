@@ -40,12 +40,12 @@ inline void createTMtcObject(struct TMtcObject* object) {
     object->_file_length = 0;
 }
 
-inline void destroyTMtcObject(struct TMtcObject* object){
-    if (object == NULL){
+inline void destroyTMtcObject(struct TMtcObject* object) {
+    if (object == NULL) {
         return;
     }
 
-    for (uint64_t i=0; i < object->size; i++) {
+    for (uint64_t i = 0; i < object->size; i++) {
         free(object->points[i].values);
     }
     free(object->points);
@@ -159,8 +159,8 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     }
 
     if (shouldTMtcPointOverride(point)) {
-        free(object->points[object->size-1].values);
-        object->points[object->size-1] = *point;
+        free(object->points[object->size - 1].values);
+        object->points[object->size - 1] = *point;
         goto exitFunction;
     }
 
@@ -215,12 +215,12 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 
         uint16_t offset = 0;
 
-        while(bytesRead >= offset + MIN_LOG_SIZE){
+        while (bytesRead >= offset + MIN_LOG_SIZE) {
             const uint8_t overshot = decode_tchunk(buffer + offset, object);
             offset += LOG_SIZE - overshot;
         }
 
-        if (fseeko(fp, -((off_t)bytesRead - offset), SEEK_CUR) != 0) {
+        if (fseeko(fp, -((off_t) bytesRead - offset), SEEK_CUR) != 0) {
             perror("Failed to shift overshot offset");
             goto cleanUpFunction;
         }
