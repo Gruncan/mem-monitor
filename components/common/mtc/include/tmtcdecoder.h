@@ -23,6 +23,7 @@ struct TMtcObject {
     uint64_t size;
     uint64_t _file_length;
     uint64_t _allocation_size;
+    char is_collapsable;
 };
 
 #ifdef __cplusplus
