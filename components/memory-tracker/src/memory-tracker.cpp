@@ -202,7 +202,7 @@ void __attribute__((constructor)) lib_init() {
 
     log_fd = open(FILE_NAME, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (log_fd < 0) {
-        fprintf(stderr, ERROR_PREFIX "Failed to open file %s", FILE_NAME);
+        fprintf(stderr, ERROR_PREFIX "Failed to open file %s\n", FILE_NAME);
     }
 
 #ifdef __cplusplus
