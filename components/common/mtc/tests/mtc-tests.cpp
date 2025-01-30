@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     createTMtcObject(&object);
     decode_tmtc(argv[1], &object);
 
-    for (int i=0; i < object.size; i++) {
+    for (int i = 0; i < object.size; i++) {
         print_point(&object.points[i]);
     }
 
