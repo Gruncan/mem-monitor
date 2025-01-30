@@ -1,6 +1,7 @@
 
 #include "tmtcdecoder.h"
 #include <malloc.h>
+#include <mem-monitor-config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -10,6 +11,7 @@
 
 #define MASK_32 0xFFFFFFFF
 #define MASK_8 0xFF
+#define MASK_8S 0x7F
 
 #define LOG_SIZE 34
 #define MIN_LOG_SIZE 18
@@ -23,6 +25,9 @@
 typedef unsigned char byte;
 
 static uint64_t prev_micro_seconds = 0;
+static char prev_key = -1;
+static uint64_t prev_address = 0;
+
 
 #define ARRAY_COMBINE4(array, index)                                                                                   \
     (((array)[index] << 24) | ((array)[(index) + 1] << 16) | ((array)[(index) + 2] << 8) | ((array)[(index) + 3]))
@@ -33,13 +38,82 @@ inline void createTMtcObject(struct TMtcObject* object) {
     object->points = malloc(sizeof(struct TMtcPoint) * object->_allocation_size);
     object->size = 0;
     object->_file_length = 0;
+    object->is_collapsable = 1;
 }
 
-inline void destroyTMtcObject(struct TMtcObject* object){
-    if (object == NULL){
+inline void destroyTMtcObject(struct TMtcObject* object) {
+    if (object == NULL) {
         return;
     }
+
+    for (uint64_t i = 0; i < object->size; i++) {
+        free(object->points[i].values);
+    }
     free(object->points);
+}
+
+inline uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
+    switch (point->key) {
+        case MALLOC:
+        case NEW:
+        case NEW_NOTHROW:
+        case NEW_ARRAY:
+        case NEW_ARRAY_NOTHROW:
+        case NEW_ALIGN:
+        case NEW_ARRAY_ALIGN:
+            return point->values[1];
+        case REALLOC:
+        case REALLOC_ARRAY:
+        case FREE:
+        case DELETE:
+        case DELETE_SIZED:
+        case DELETE_NOTHROW:
+        case DELETE_ARRAY:
+        case DELETE_ARRAY_SIZED:
+        case DELETE_ARRAY_NOTHROW:
+        case DELETE_ALIGN:
+        case DELETE_ARRAY_ALIGN:
+            return point->values[0];
+        case CALLOC:
+            return point->values[2];
+        default:
+            return 0;
+    }
+}
+
+inline unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t old_key) {
+    switch (old_key) {
+        case MALLOC:
+            return new_key == NEW;
+        case NEW:
+            return new_key == NEW_ARRAY;
+        case FREE:
+            return new_key == DELETE;
+        case DELETE:
+            return new_key == DELETE_ARRAY || new_key == DELETE_SIZED || new_key == DELETE_NOTHROW;
+        default:
+            return 0;
+    }
+}
+
+
+inline static unsigned char shouldTMtcPointOverride(const struct TMtcPoint* point) {
+    const uint64_t address = getTMtcPointAddress(point);
+
+    if (prev_key == -1) {
+        goto setPrevKeyAddress;
+    }
+
+    if (isTMtcKeyEncapsulated(point->key, prev_key) && prev_address == address) {
+        prev_key = (char) (point->key & MASK_8S);
+        prev_address = address;
+        return 1;
+    }
+
+setPrevKeyAddress:
+    prev_key = (char) (point->key & MASK_8S);
+    prev_address = address;
+    return 0;
 }
 
 
@@ -65,6 +139,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
         object->points = new_ptr;
     }
 
+
     struct TMtcPoint* point = &object->points[object->size];
     point->key = buffer[8];
     const uint8_t length = buffer[9];
@@ -84,6 +159,12 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
         }
     }
 
+    if (shouldTMtcPointOverride(point) && object->is_collapsable) {
+        free(object->points[object->size - 1].values);
+        object->points[object->size - 1] = *point;
+        goto exitFunction;
+    }
+
     if (object->size == 0) {
         point->time_offset = prev_micro_seconds;
     } else {
@@ -93,6 +174,8 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     prev_micro_seconds = micro_seconds;
 
     object->size++;
+
+exitFunction:
     return (MAX_LOG_VARS - length) * sizeof(uint64_t);
 }
 
@@ -133,12 +216,12 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 
         uint16_t offset = 0;
 
-        while(bytesRead >= offset + MIN_LOG_SIZE){
+        while (bytesRead >= offset + MIN_LOG_SIZE) {
             const uint8_t overshot = decode_tchunk(buffer + offset, object);
             offset += LOG_SIZE - overshot;
         }
 
-        if (fseeko(fp, -((off_t)bytesRead - offset), SEEK_CUR) != 0) {
+        if (fseeko(fp, -((off_t) bytesRead - offset), SEEK_CUR) != 0) {
             perror("Failed to shift overshot offset");
             goto cleanUpFunction;
         }
