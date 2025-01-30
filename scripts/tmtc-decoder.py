@@ -22,9 +22,9 @@ class AllocationPoint:
         return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')}] "
 
 class Malloc(AllocationPoint):
-    def __init__(self, timestamp, ptr, size):
+    def __init__(self, timestamp, size, ptr):
         super().__init__(timestamp)
-        self.ptr = hex(ptr)
+        self.ptr = ptr
         self.size = size
 
     @format_timestamp
@@ -252,8 +252,10 @@ class TMtcDecoder:
 
 start_time = time.time()
 
-decoder = TMtcDecoder("/home/duncan/Development/Uni/Thesis/Data/single_uwb_tests_run.tmtc")
-print(sum(1 for _ in decoder.decode()))
+decoder = TMtcDecoder("/home/duncan/Development/C/mem-monitor/components/memory-tracker/memory_tracker1.tmtc")
+
+for v in decoder.decode():
+    print(v)
 
 end_time = time.time()
 
