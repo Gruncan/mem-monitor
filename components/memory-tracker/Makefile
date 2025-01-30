@@ -13,7 +13,7 @@ TEST_OBJS = $(TEST_SRCS:.cpp=.o)
 all: $(LIB_NAME)
 
 test: $(LIB_TEST)
-test: CFLAGS += -I../common/testing/
+test: CFLAGS += -I../common/testing/ -O0
 
 libdebugprint: $(LIB_NAME)
 libdebugprint: CFLAGS += -DMEM_TEST
