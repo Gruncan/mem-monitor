@@ -5,7 +5,8 @@
 SET(memorysimulator_sources src/main.cpp)
 
 include_directories(include/
-        ../common/mtc/include)
+        ../common/mtc/include
+        ../common/config)
 
 
 add_executable(memorysimulator ${memorysimulator_sources})
