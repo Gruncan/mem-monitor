@@ -38,6 +38,7 @@ inline void createTMtcObject(struct TMtcObject* object) {
     object->points = malloc(sizeof(struct TMtcPoint) * object->_allocation_size);
     object->size = 0;
     object->_file_length = 0;
+    object->is_collapsable = 1;
 }
 
 inline void destroyTMtcObject(struct TMtcObject* object) {
@@ -158,7 +159,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
         }
     }
 
-    if (shouldTMtcPointOverride(point)) {
+    if (shouldTMtcPointOverride(point) && object->is_collapsable) {
         free(object->points[object->size - 1].values);
         object->points[object->size - 1] = *point;
         goto exitFunction;
