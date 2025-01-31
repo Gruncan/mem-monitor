@@ -175,6 +175,12 @@ int main(int argc, char* argv[]) {
     }
 
     printf("\nSimulation complete.\n");
+    printf("Address space analysis:\n");
+    printf("Memory leaks: %lu\n", addressMapping.size());
+
+    for (auto & it : addressMapping) {
+        printf("\t- Sim Address: %p, Logged address: %p\n", CAST_TO_PTR(it.second), CAST_TO_PTR(it.first));
+    }
 
     return 0;
 }
