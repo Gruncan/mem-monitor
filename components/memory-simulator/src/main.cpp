@@ -4,26 +4,38 @@
 
 #include "tmtcdecoder.h"
 #include <argp.h>
+#include <chrono>
 
 #include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <map>
 #include <mem-monitor-config.h>
-#include <ostream>
 #include <unistd.h>
+
+#define DEBUG_PRINT_OFFSET 10
+
+
+
+
+#define DEBUG_PRINT(index) \
+    for(uint64_t j = (index) - DEBUG_PRINT_OFFSET; j < (index) + DEBUG_PRINT_OFFSET; j++){ \
+        if (j == (index)) printf(">  "); \
+        print_point(&tmtc_object.points[j]); \
+    } \
+
 
 
 #define DOUBLE_FREE_CHECK(ptr) \
     if (addressMapping.count(ptr) == 0){ \
-        fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed."); \
+        fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed at index %lu.", i); \
+        DEBUG_PRINT(i) \
         _exit(-1); \
     }\
 
 #define CLEAN_ADDRESS_MAP(ptr) \
-    if (addressMapping.count(ptr) == 0){ \
+    if (addressMapping.count(ptr) == 1){ \
         addressMapping.erase(ptr);\
-    }\
+    }
 
 #define PTR_NULL_CHECK(ptr) \
     if ((ptr) == 0) break;
@@ -40,6 +52,7 @@ enum SimulationSpeed {
 
 static std::map<uintptr_t, uintptr_t> addressMapping = {};
 static uint64_t i;
+static TMtcObject tmtc_object;
 
 enum SimulationSpeed parseSpeed(const char* speedStr) {
     if (strcmp(speedStr, "nodelay") == 0)
@@ -48,6 +61,70 @@ enum SimulationSpeed parseSpeed(const char* speedStr) {
         return REAL;
 
     return NO_DELAY;
+}
+
+void print_point(const struct TMtcPoint* point) {
+    switch (point->key) {
+        case MALLOC:
+            printf(MALLOC_FORMAT_STR, point->values[1], point->values[0]);
+            break;
+        case CALLOC:
+            printf(CALLOC_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
+            break;
+        case REALLOC:
+            printf(REALLOC_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
+            break;
+        case REALLOC_ARRAY:
+            printf(REALLOC_ARRAY_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
+            break;
+        case FREE:
+            printf(FREE_FORMAT_STR, point->values[0]);
+            break;
+        case NEW:
+            printf(NEW_FORMAT_STR, point->values[1], point->values[0]);
+            break;
+        case NEW_NOTHROW:
+            printf(NEW_NOTHROW_FORMAT_STR, point->values[1], point->values[0]);
+            break;
+        case NEW_ARRAY:
+            printf(NEW_ARRAY_FORMAT_STR, point->values[1], point->values[0]);
+            break;
+        case NEW_ARRAY_NOTHROW:
+            printf(NEW_ARRAY_NOTHROW_FORMAT_STR, point->values[1], point->values[0]);
+            break;
+        case DELETE:
+            printf(DELETE_FORMAT_STR, point->values[0]);
+            break;
+        case DELETE_SIZED:
+            printf(DELETE_SIZED_FORMAT_STR, point->values[0], point->values[1]);
+            break;
+        case DELETE_NOTHROW:
+            printf(DELETE_NOTHROW_FORMAT_STR, point->values[0]);
+            break;
+        case DELETE_ARRAY:
+            printf(DELETE_ARRAY_FORMAT_STR, point->values[0]);
+            break;
+        case DELETE_ARRAY_SIZED:
+            printf(DELETE_ARRAY_SIZED_FORMAT_STR, point->values[0], point->values[1]);
+            break;
+        case DELETE_ARRAY_NOTHROW:
+            printf(DELETE_ARRAY_NOTHROW_FORMAT_STR, point->values[0]);
+            break;
+        case NEW_ALIGN:
+            printf(NEW_ALIGN_FORMAT_STR, point->values[1], point->values[0], point->values[2]);
+            break;
+        case NEW_ARRAY_ALIGN:
+            printf(NEW_ARRAY_ALIGN_FORMAT_STR, point->values[1], point->values[0]);
+            break;
+        case DELETE_ALIGN:
+            printf(DELETE_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
+            break;
+        case DELETE_ARRAY_ALIGN:
+            printf(DELETE_ARRAY_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
+            break;
+        default:
+            break;
+    }
 }
 
 void simulatePoint(struct TMtcPoint* point) {
@@ -160,23 +237,25 @@ int main(int argc, char* argv[]) {
     const char* speedStr = argv[2];
     const enum SimulationSpeed speed = parseSpeed(speedStr);
 
-    TMtcObject object;
-    createTMtcObject(&object);
+    createTMtcObject(&tmtc_object);
     printf("Loading file: %s into memory...\n", filename);
-    decode_tmtc(filename, &object);
+    decode_tmtc(filename, &tmtc_object);
     printf("Successfully loaded file: %s\n", filename);
 
     printf("Starting simulation...\n");
+    auto start = std::chrono::high_resolution_clock::now();
 
-    for (i = 0; i < object.size; i++) {
-        struct TMtcPoint point = object.points[i];
+    for (i = 0; i < tmtc_object.size; i++) {
+        struct TMtcPoint point = tmtc_object.points[i];
         simulatePoint(&point);
         if (speed == REAL) {
             usleep(point.time_offset);
         }
+        // printf("i = %lu\n", i);
     }
-
-    printf("\nSimulation complete.\n");
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    printf("\nSimulation complete in %f seconds.\n", duration.count() / 1'000'000.0);
     printf("Address space analysis:\n");
     printf("Memory leaks: %lu\n", addressMapping.size());
 
