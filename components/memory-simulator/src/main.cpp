@@ -38,8 +38,8 @@ enum SimulationSpeed {
 };
 
 
-std::map<uintptr_t, uintptr_t> addressMapping = {};
-
+static std::map<uintptr_t, uintptr_t> addressMapping = {};
+static uint64_t i;
 
 enum SimulationSpeed parseSpeed(const char* speedStr) {
     if (strcmp(speedStr, "nodelay") == 0)
@@ -144,7 +144,8 @@ void simulatePoint(struct TMtcPoint* point) {
             addressMapping[point->values[2]] = CAST_FROM_PTR(calloc(point->values[0], point->values[1]));
             break;
         default:
-            return;
+            fprintf(stderr, "Unknown allocation key: %d at log index %lu\n", point->key, i);
+            break;
     }
 }
 
@@ -156,8 +157,8 @@ int main(int argc, char* argv[]) {
     }
 
     char* filename = argv[1];
-    char* speedStr = argv[2];
-    enum SimulationSpeed speed = parseSpeed(speedStr);
+    const char* speedStr = argv[2];
+    const enum SimulationSpeed speed = parseSpeed(speedStr);
 
     TMtcObject object;
     createTMtcObject(&object);
@@ -166,7 +167,8 @@ int main(int argc, char* argv[]) {
     printf("Successfully loaded file: %s\n", filename);
 
     printf("Starting simulation...\n");
-    for (uint64_t i = 0; i < object.size; i++) {
+
+    for (i = 0; i < object.size; i++) {
         struct TMtcPoint point = object.points[i];
         simulatePoint(&point);
         if (speed == REAL) {
