@@ -58,7 +58,7 @@ void print_point(const struct TMtcPoint* point) {
             printf(DELETE_ARRAY_NOTHROW_FORMAT_STR, point->values[0]);
             break;
         case NEW_ALIGN:
-            printf(NEW_ALIGN_FORMAT_STR, point->values[1], point->values[0]);
+            printf(NEW_ALIGN_FORMAT_STR, point->values[1], point->values[0], point->values[2]);
             break;
         case NEW_ARRAY_ALIGN:
             printf(NEW_ARRAY_ALIGN_FORMAT_STR, point->values[1], point->values[0]);

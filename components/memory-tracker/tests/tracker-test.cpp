@@ -32,6 +32,7 @@ int main() {
     TEST(free_test)
     TEST(calloc_test)
 
+    sleep(2);
     TEST(new_test)
     TEST(delete_test)
     TEST(new_nothrow_test)
@@ -40,6 +41,8 @@ int main() {
     TEST(delete_array_test)
     TEST(new_array_nothrow_test)
     TEST(delete_array_nothrow_test)
+
+    sleep(5);
     TEST(delete_sized)
     TEST(delete_array_sized)
     TEST(new_aligned_test)

@@ -52,7 +52,7 @@ inline void destroyTMtcObject(struct TMtcObject* object) {
     free(object->points);
 }
 
-inline uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
+uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
         case NEW:
@@ -81,7 +81,7 @@ inline uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     }
 }
 
-inline unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t old_key) {
+unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t old_key) {
     switch (old_key) {
         case MALLOC:
             return new_key == NEW;
@@ -97,7 +97,7 @@ inline unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t 
 }
 
 
-inline static unsigned char shouldTMtcPointOverride(const struct TMtcPoint* point) {
+static unsigned char shouldTMtcPointOverride(const struct TMtcPoint* point) {
     const uint64_t address = getTMtcPointAddress(point);
 
     if (prev_key == -1) {
@@ -161,6 +161,8 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
 
     if (shouldTMtcPointOverride(point) && object->is_collapsable) {
         free(object->points[object->size - 1].values);
+        uint32_t timeoffset = object->points[object->size - 1].time_offset;
+        point->time_offset = timeoffset;
         object->points[object->size - 1] = *point;
         goto exitFunction;
     }
