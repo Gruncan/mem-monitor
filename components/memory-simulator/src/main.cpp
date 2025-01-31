@@ -53,27 +53,35 @@ enum SimulationSpeed parseSpeed(const char* speedStr) {
 void simulatePoint(struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(malloc(point->values[1]));
             break;
         case NEW:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1]));
             break;
         case NEW_NOTHROW:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new (point->values[1], std::nothrow));
             break;
         case NEW_ARRAY:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1]));
             break;
         case NEW_ARRAY_NOTHROW:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], std::nothrow));
             break;
         case NEW_ALIGN:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case NEW_ARRAY_ALIGN:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case REALLOC:
+            PTR_NULL_CHECK(point->values[0]);
             addressMapping[point->values[2]] = CAST_FROM_PTR(realloc(CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]));
             break;
         case REALLOC_ARRAY:
