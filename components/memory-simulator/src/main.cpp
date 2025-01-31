@@ -3,14 +3,16 @@
 
 
 #include "tmtcdecoder.h"
-#include <argp.h>
 #include <chrono>
 
+#include "stdlib.h"
 #include <cstdio>
 #include <cstring>
 #include <map>
 #include <mem-monitor-config.h>
 #include <unistd.h>
+
+#include <iostream>
 
 #define DEBUG_PRINT_OFFSET 10
 
@@ -26,11 +28,15 @@
 
 
 #define DOUBLE_FREE_CHECK(ptr) \
-    if (addressMapping.count(ptr) == 0){ \
-        fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed at index %lu.", i); \
-        DEBUG_PRINT(i) \
-        _exit(-1); \
-    }\
+    if (addressMapping.count(ptr) == 0) break; \
+    //     // fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed at index %lu.", i); \
+    //     // DEBUG_PRINT(i) \
+    //     // _exit(-1); \
+    //     break; \
+    // }\
+
+#define DOUBLE_ALLOCATION_CHECK(ptr) \
+    if (addressMapping.count(ptr) == 1) break; \
 
 #define CLEAN_ADDRESS_MAP(ptr) \
     if (addressMapping.count(ptr) == 1){ \
@@ -131,34 +137,42 @@ void simulatePoint(struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(malloc(point->values[1]));
             break;
         case NEW:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1]));
             break;
         case NEW_NOTHROW:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new (point->values[1], std::nothrow));
             break;
         case NEW_ARRAY:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1]));
             break;
         case NEW_ARRAY_NOTHROW:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], std::nothrow));
             break;
         case NEW_ALIGN:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case NEW_ARRAY_ALIGN:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case REALLOC:
             PTR_NULL_CHECK(point->values[0]);
+            DOUBLE_ALLOCATION_CHECK(point->values[0])
             addressMapping[point->values[2]] = CAST_FROM_PTR(realloc(CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]));
             break;
         case REALLOC_ARRAY:
@@ -243,25 +257,24 @@ int main(int argc, char* argv[]) {
     printf("Successfully loaded file: %s\n", filename);
 
     printf("Starting simulation...\n");
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (i = 0; i < tmtc_object.size; i++) {
-        struct TMtcPoint point = tmtc_object.points[i];
-        simulatePoint(&point);
-        if (speed == REAL) {
-            usleep(point.time_offset);
+    uint64_t interation_count = 0;
+    while (true) {
+        for (i = 0; i < tmtc_object.size; i++) {
+            struct TMtcPoint point = tmtc_object.points[i];
+            simulatePoint(&point);
+            if (speed == REAL) {
+                usleep(point.time_offset);
+            }
         }
-        // printf("i = %lu\n", i);
+        interation_count++;
+        if (interation_count % 100 == 0) {
+            auto now = std::chrono::system_clock::now();
+            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+            std::cout << "Timestamp: " << now_time << std::endl;
+            printf("Address space analysis (iter: %lu):\n", interation_count);
+            printf("Memory leaks: %lu\n", addressMapping.size());
+        }
+        addressMapping.clear();
     }
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    printf("\nSimulation complete in %f seconds.\n", duration.count() / 1'000'000.0);
-    printf("Address space analysis:\n");
-    printf("Memory leaks: %lu\n", addressMapping.size());
 
-    for (auto & it : addressMapping) {
-        printf("\t- Sim Address: %p, Logged address: %p\n", CAST_TO_PTR(it.second), CAST_TO_PTR(it.first));
-    }
-
-    return 0;
 }
