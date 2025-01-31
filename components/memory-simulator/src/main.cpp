@@ -15,10 +15,18 @@
 
 
 #define DOUBLE_FREE_CHECK(ptr) \
-    if (addressMapping.contains(ptr)){ \
+    if (addressMapping.count(ptr) == 0){ \
         fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed."); \
         _exit(-1); \
     }\
+
+#define CLEAN_ADDRESS_MAP(ptr) \
+    if (addressMapping.count(ptr) == 0){ \
+        addressMapping.erase(ptr);\
+    }\
+
+#define PTR_NULL_CHECK(ptr) \
+    if ((ptr) == 0) break;
 
 #define CAST_TO_PTR(integer) (reinterpret_cast<void*>(integer))
 #define CAST_FROM_PTR(ptr) (reinterpret_cast<uintptr_t>(ptr))
@@ -38,30 +46,32 @@ enum SimulationSpeed parseSpeed(const char* speedStr) {
         return NO_DELAY;
     else if (strcmp(speedStr, "real") == 0)
         return REAL;
+
+    return NO_DELAY;
 }
 
 void simulatePoint(struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(malloc(point->values[0]));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(malloc(point->values[1]));
             break;
         case NEW:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(operator new(point->values[0]));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1]));
             break;
         case NEW_NOTHROW:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(operator new (point->values[0], std::nothrow));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new (point->values[1], std::nothrow));
             break;
         case NEW_ARRAY:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(operator new[](point->values[0]));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1]));
             break;
         case NEW_ARRAY_NOTHROW:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(operator new[](point->values[0], std::nothrow));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], std::nothrow));
             break;
         case NEW_ALIGN:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(operator new(point->values[0], CAST_ALIGN(point->values[2])));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case NEW_ARRAY_ALIGN:
-            addressMapping[point->values[1]] = CAST_FROM_PTR(operator new[](point->values[0], CAST_ALIGN(point->values[2])));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case REALLOC:
             addressMapping[point->values[2]] = CAST_FROM_PTR(realloc(CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]));
@@ -69,40 +79,58 @@ void simulatePoint(struct TMtcPoint* point) {
         case REALLOC_ARRAY:
             break; // TODO fix this requires fixing memory-tracker ;( is it even used?
         case FREE:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             free(CAST_TO_PTR(addressMapping[point->values[0]]));
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete(CAST_TO_PTR(addressMapping[point->values[0]]));
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_SIZED:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete(CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]);
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_NOTHROW:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete(CAST_TO_PTR(addressMapping[point->values[0]]), std::nothrow);
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ARRAY:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]));
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ARRAY_SIZED:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]);
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ARRAY_NOTHROW:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]), std::nothrow);
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ALIGN:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete(CAST_TO_PTR(addressMapping[point->values[0]]), CAST_ALIGN(point->values[1]));
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ARRAY_ALIGN:
+            PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
             operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]), CAST_ALIGN(point->values[1]));
+            CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case CALLOC:
             addressMapping[point->values[2]] = CAST_FROM_PTR(calloc(point->values[0], point->values[1]));
@@ -114,9 +142,9 @@ void simulatePoint(struct TMtcPoint* point) {
 
 
 int main(int argc, char* argv[]) {
-
     if (argc != 3) {
         printf("Usage: ./simulator <filename>.tmtc <nodelay|real>\n");
+        return -1;
     }
 
     char* filename = argv[1];
@@ -134,7 +162,7 @@ int main(int argc, char* argv[]) {
         struct TMtcPoint point = object.points[i];
         simulatePoint(&point);
         if (speed == REAL) {
-            usleep(point.time_offset * 1000);
+            usleep(point.time_offset);
         }
     }
 
