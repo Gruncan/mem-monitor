@@ -170,7 +170,11 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
     if (object->size == 0) {
         point->time_offset = prev_micro_seconds;
     } else {
-        point->time_offset = (micro_seconds - prev_micro_seconds) & MASK_32;
+        if (micro_seconds < prev_micro_seconds) {
+            point->time_offset = 0;
+        } else {
+            point->time_offset = (micro_seconds - prev_micro_seconds) & MASK_32;
+        }
     }
 
     prev_micro_seconds = micro_seconds;
