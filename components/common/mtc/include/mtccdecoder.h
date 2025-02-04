@@ -3,7 +3,7 @@
 #define MTCCDECODER_H
 
 
-#define KEY_SIZE 225
+
 
 #include "stdint.h"
 
@@ -32,6 +32,7 @@ struct MtcObject {
     uint64_t _alloc_size_points;
     uint64_t _alloc_size_times;
     uint64_t file_length;
+    uint8_t _key_size;
 };
 
 
@@ -40,7 +41,7 @@ extern "C" {
 #endif
 void decode(const char* filename, struct MtcObject* object);
 
-void initaliseMtcObject(struct MtcObject* object);
+void createMtcObject(struct MtcObject* object);
 
 uint8_t queryDecodeProgress(struct MtcObject* object);
 #ifdef __cplusplus
