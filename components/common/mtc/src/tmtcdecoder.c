@@ -22,8 +22,6 @@
 #define _FILE_OFFSET_BITS 64
 
 
-typedef unsigned char byte;
-
 static uint64_t prev_micro_seconds = 0;
 static char prev_key = -1;
 static uint64_t prev_address = 0;
@@ -124,7 +122,7 @@ inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
     return (uint8_t) (((double) (object->size * LOG_SIZE) / (double) object->_file_length) * 100) & MASK_8;
 }
 
-static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
+static uint8_t decode_tchunk(const byte_t* buffer, struct TMtcObject* object) {
     uint64_t seconds = ARRAY_COMBINE4(buffer, 0);
     uint64_t micro_seconds = ARRAY_COMBINE4(buffer, 4);
     micro_seconds += seconds * 1000000;
@@ -196,7 +194,7 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     // TODO make this dynamic based on file length
     static const uint16_t CHUNKING_SIZE = LOG_SIZE * CHUNK_SIZE;
 
-    byte* buffer = malloc(CHUNKING_SIZE);
+    byte_t* buffer = malloc(CHUNKING_SIZE);
     if (buffer == NULL) {
         perror("Failed to allocate buffer!");
         fclose(fp);

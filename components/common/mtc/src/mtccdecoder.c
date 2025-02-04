@@ -9,11 +9,16 @@
 #define HEADER_SIZE 5
 #define INIT_SIZE 5120
 
-const static uint16_t CHUNK_SIZE = 679;
+#define MAX_PROC_SIZE 679
+#define MAX_NO_PROC_SIZE 652
 
-typedef unsigned char byte;
+#define KEY_SIZE_PROC 225
+#define KEY_SIZE_NO_PROC 216
 
-inline void initaliseMtcObject(struct MtcObject* object) {
+static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
+static uint8_t KEY_SIZE = KEY_SIZE_PROC;
+
+inline void createMtcObject(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
     object->_alloc_size_points = INIT_SIZE;
     for (mk_size_t i = 0; i < KEY_SIZE; i++) {
@@ -30,11 +35,12 @@ inline void initaliseMtcObject(struct MtcObject* object) {
     object->version = 0;
     object->file_length = 0;
     object->size = 0;
+    object->_key_size = KEY_SIZE;
 }
 
 // TODO implement a destroy function
 
-inline static void decode_header(const byte* buffer, struct MtcObject* object) {
+inline static void decode_header(const byte_t* buffer, struct MtcObject* object) {
     object->version = buffer[0];
     // todo add time decoding here
 }
@@ -47,11 +53,10 @@ inline uint8_t queryDecodeProgress(struct MtcObject* object) {
     return value;
 }
 
-static void decode_chunk(const byte* buffer, struct MtcObject* object) {
+static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     if (object == NULL) {
         return;
     }
-
 
     const uint16_t time_offset = buffer[0] << 8 | buffer[1];
     if (object->_times_length == object->_alloc_size_times) {
@@ -122,7 +127,7 @@ void decode(const char* filename, struct MtcObject* object) {
         return;
     }
 
-    byte* buffer = malloc(CHUNK_SIZE);
+    byte_t* buffer = malloc(CHUNK_SIZE);
     if (buffer == NULL) {
         perror("Failed to allocate buffer!");
         fclose(fp);
@@ -147,6 +152,13 @@ void decode(const char* filename, struct MtcObject* object) {
 
     decode_header(buffer, object);
 
+    if (object->version == 2) {
+        CHUNK_SIZE = MAX_PROC_SIZE;
+    }else {
+        // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
+        KEY_SIZE = KEY_SIZE_NO_PROC;
+        object->_key_size = KEY_SIZE_NO_PROC;
+    }
 
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
         if (bytesRead != CHUNK_SIZE) {
