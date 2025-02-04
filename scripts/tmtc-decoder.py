@@ -1,6 +1,5 @@
 import time
 from datetime import datetime, timedelta
-from pprint import pprint
 
 
 def format_timestamp(func):
@@ -14,6 +13,8 @@ class AllocationPoint:
 
     def __init__(self, timestamp):
         self.timestamp = timestamp
+        self.allocation_index_start = 0
+        self.allocation_index_end = 0
 
     def __repr__(self):
         return f"{self.__class__.__name__}: {getattr(self, 'ptr')}"
@@ -222,6 +223,7 @@ class TMtcDecoder:
 
         while index < file_length:
             time = self.__decode_time(self.content[index:index+8])
+            start_index = index
             index += 8
             key = self.content[index]
             length = self.content[index+1]
@@ -237,6 +239,8 @@ class TMtcDecoder:
                 values.append(value)
             index += length * 8
             inst = cls(time, *values)
+            inst.allocation_index_start = start_index
+            inst.allocation_index_end = index
             yield inst
 
     def decode(self):
@@ -249,15 +253,43 @@ class TMtcDecoder:
             else:
                 addresses[curr.ptr].append(curr)
 
+    def crop(self, start_index, end_index=None):
+        filename = self.filename.replace(".tmtc", "")
+        new_filename = filename + "_cropped.tmtc"
+        # file = open(new_filename, "x")
+        # file.close()
+
+        with open(new_filename, "wb") as f:
+            if end_index is None:
+                f.write(self.content[start_index:])
+            else:
+                f.write(self.content[start_index:end_index])
+        print("Wrote cropped data to:", new_filename)
 
 start_time = time.time()
 
-decoder = TMtcDecoder("/home/duncan/Development/C/mem-monitor/components/memory-tracker/memory_tracker1.tmtc")
 
-for v in decoder.decode():
-    print(v)
+decoder = TMtcDecoder("/home/duncan/Development/Uni/Thesis/Data/uwb_test_debug_onerun_cropped.tmtc")
+data = decoder.decode()
 
+first = next(data)
+value = None
+index = 1
+for d in data:
+    difference = (d.timestamp - first.timestamp).total_seconds()
+    if difference >= 60:
+        value = d
+        print(difference)
+        print(index)
+        break
+    first = d
+    index += 1
+
+# print("Range: ", sum(1 for _ in data) - index)
+# print(value.allocation_index_start)
 end_time = time.time()
+
+# decoder.crop(value.allocation_index_start)
 
 elapsed_time = end_time - start_time
 
