@@ -85,6 +85,10 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
     for (uint16_t i = 4; i < length_offset + 4; i += MTC_VALUE_WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
+        if (key >= KEY_SIZE) {
+            fprintf(stderr, "Key size out of range\nThis is likely due to version encoding/decoding mismatch!");
+            exit(-1);
+        }
         const mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
         if (object->point_map[key].length == object->_alloc_size_points) {
             object->_alloc_size_points *= 2;
