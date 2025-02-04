@@ -1,5 +1,5 @@
 
-include_directories(${COMMON_DIR})
+include_directories(${COMMON_DIR}/testing)
 include_directories(../include)
 
 add_executable(mem_monitor_test test.c

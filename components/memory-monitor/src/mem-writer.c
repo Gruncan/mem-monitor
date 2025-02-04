@@ -19,10 +19,10 @@
 #define MASK_32 0xFFFFFFFF
 #define MASK_16 0xFFFF
 #define MASK_12 0x0FFF
-#define MASK_8 0x00FF
-#define MASK_6 0x003F
-#define MASK_5 0x001F
-#define MASK_4 0x000F
+#define MASK_8 0xFF
+#define MASK_6 0x3F
+#define MASK_5 0x1F
+#define MASK_4 0x0F
 
 
 #define VERSION 1
@@ -120,7 +120,7 @@ struct timeval* get_current_time() {
     return tv;
 }
 
-void* write_mtc_header(struct timeval* tv) {
+void* write_mtc_header(const struct timeval* tv, const uint8_t version) {
     const struct tm* local_time = localtime(&tv->tv_sec);
 
     const uint year = local_time->tm_year % 100 & MASK_6;
@@ -136,7 +136,7 @@ void* write_mtc_header(struct timeval* tv) {
         header[i] = 0;
     }
 
-    header[0] = VERSION;
+    header[0] = version & MASK_8;
 
     header[1] |= year << 2;
     header[1] |= month >> 2;
@@ -203,7 +203,7 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
     if (mem_writer->has_written_header == 0) {
         mem_writer->prev_timestamp = get_current_time();
 
-        void* header = write_mtc_header(mem_writer->prev_timestamp);
+        void* header = write_mtc_header(mem_writer->prev_timestamp, mem_proc_info == NULL ? VERSION : VERSION + 1);
         add_to_mem_queue(mem_writer->writer_queue, header, 5);
         mem_writer->has_written_header = 1;
         return;
@@ -222,8 +222,8 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     unsigned char* miliBuf = buffer;
 
-    miliBuf[0] = (unsigned char) (milliseconds >> 8 & 0xFF);
-    miliBuf[1] = (unsigned char) (milliseconds & 0xFF);
+    miliBuf[0] = (unsigned char) (milliseconds >> 8 & MASK_8);
+    miliBuf[1] = (unsigned char) (milliseconds & MASK_8);
 
     free(mem_writer->prev_timestamp);
     mem_writer->prev_timestamp = tv;
@@ -245,8 +245,8 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     unsigned char* countBuf = buffer + 2;
     const ushort value = offset - starting_offset;
-    countBuf[0] = (unsigned char) (value >> 8 & 0xFF);
-    countBuf[1] = (unsigned char) (value & 0xFF);
+    countBuf[0] = (unsigned char) (value >> 8 & MASK_8);
+    countBuf[1] = (unsigned char) (value & MASK_8);
 
     add_to_mem_queue(mem_writer->writer_queue, buffer, offset);
 }
