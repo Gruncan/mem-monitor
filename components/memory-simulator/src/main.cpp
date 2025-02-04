@@ -266,14 +266,14 @@ int main(int argc, char* argv[]) {
                 usleep(point.time_offset);
             }
         }
-        interation_count++;
-        if (interation_count % 100 == 0) {
+        if (interation_count % 10 == 0) {
             auto now = std::chrono::system_clock::now();
             std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-            std::cout << "Timestamp: " << now_time << std::endl;
+            std::cout << "Timestamp (" << interation_count << "): " << now_time << std::endl;
             printf("Address space analysis (iter: %lu):\n", interation_count);
             printf("Memory leaks: %lu\n", addressMapping.size());
         }
+        interation_count++;
         addressMapping.clear();
     }
 
