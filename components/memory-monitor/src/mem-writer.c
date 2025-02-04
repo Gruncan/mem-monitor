@@ -24,8 +24,12 @@
 #define MASK_5 0x1F
 #define MASK_4 0x0F
 
+#define VERSION 3
 
+#ifdef VERSION_1
+#undef VERSION
 #define VERSION 1
+#endif
 
 
 void writer_routine(struct mem_writer_s* mem_writer) {
@@ -45,7 +49,7 @@ void writer_routine(struct mem_writer_s* mem_writer) {
         }
 
 #ifndef MEM_TEST
-        const size_t bytes_written = fwrite((unsigned char*) value->data, 1, value->length, mem_writer->file);
+        const size_t bytes_written = fwrite((byte_t*) value->data, 1, value->length, mem_writer->file);
         // We have failed to write to the file
         if (bytes_written < 1) {
             perror("Error writing to file, writer routine exiting..");
@@ -130,7 +134,7 @@ void* write_mtc_header(const struct timeval* tv, const uint8_t version) {
     const uint minute = local_time->tm_min & MASK_6;
     const uint second = local_time->tm_sec & MASK_6;
 
-    unsigned char* header = malloc(5);
+    byte_t* header = malloc(5);
 
     for (int i = 0; i < 5; i++) {
         header[i] = 0;
@@ -173,13 +177,20 @@ ushort timeval_diff_ms(const struct timeval* start_time, const struct timeval* e
 
 void write_data_content(void* buffer, const uint offset, mk_size_t key, ushort value) {
     value &= MASK_16;
-    key &= (char) MASK_8;
+    key &= (byte_t) MASK_8;
 
-    char* dest = (char*) buffer + offset;
+    byte_t* dest = (byte_t*) buffer + offset;
+
 
     dest[0] = key;
-    dest[1] = (char) (value >> 8) & MASK_8;
-    dest[2] = (char) (value & MASK_8);
+#ifdef VERSION_1
+    dest[1] = (byte_t) (value >> 8) & MASK_8;
+    dest[2] = (byte_t) (value & MASK_8);
+#else
+    dest[1] = (byte_t) (value >> 16) & MASK_8;
+    dest[2] = (byte_t) (value >> 8) & MASK_8;
+    dest[3] = (byte_t) (value & MASK_8);
+#endif
 }
 
 uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length, const uint mem_offset,
@@ -192,8 +203,12 @@ uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length,
         }
 
         write_data_content(buffer, mem_offset + writeOffset, i + key_offset,
-                           *(unsigned long*) ((char*) struct_ptr + value_offset));
+                           *(unsigned long*) ((byte_t*) struct_ptr + value_offset));
+#ifdef VERSION_1
         writeOffset += 3;
+#else
+        writeOffset += 4;
+#endif
     }
 
     return mem_offset + writeOffset;
@@ -220,10 +235,10 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     ushort milliseconds = timeval_diff_ms(mem_writer->prev_timestamp, tv) & MASK_16;
 
-    unsigned char* miliBuf = buffer;
+    byte_t* miliBuf = buffer;
 
-    miliBuf[0] = (unsigned char) (milliseconds >> 8 & MASK_8);
-    miliBuf[1] = (unsigned char) (milliseconds & MASK_8);
+    miliBuf[0] = (byte_t) (milliseconds >> 8 & MASK_8);
+    miliBuf[1] = (byte_t) (milliseconds & MASK_8);
 
     free(mem_writer->prev_timestamp);
     mem_writer->prev_timestamp = tv;
@@ -243,10 +258,10 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
     }
 
 
-    unsigned char* countBuf = buffer + 2;
+    byte_t* countBuf = buffer + 2;
     const ushort value = offset - starting_offset;
-    countBuf[0] = (unsigned char) (value >> 8 & MASK_8);
-    countBuf[1] = (unsigned char) (value & MASK_8);
+    countBuf[0] = (byte_t) (value >> 8 & MASK_8);
+    countBuf[1] = (byte_t) (value & MASK_8);
 
     add_to_mem_queue(mem_writer->writer_queue, buffer, offset);
 }
