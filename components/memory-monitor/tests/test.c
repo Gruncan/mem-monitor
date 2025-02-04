@@ -243,7 +243,7 @@ int test_write_mtc_header() {
     time->tv_sec = 1629387587;
     time->tv_usec = 510000;
 
-    unsigned char* buffer = write_mtc_header(time);
+    unsigned char* buffer = write_mtc_header(time, 1);
 
     ASSERT_EQUAL(buffer[0], 1);
 
