@@ -9,12 +9,11 @@
 #define HEADER_SIZE 5
 #define INIT_SIZE 5120
 
-#define MAX_PROC_SIZE 679
-#define MAX_NO_PROC_SIZE 652
-
 #define KEY_SIZE_PROC 225
 #define KEY_SIZE_NO_PROC 216
 
+#define MAX_PROC_SIZE ((KEY_SIZE_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
+#define MAX_NO_PROC_SIZE ((KEY_SIZE_NO_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
 
 static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
@@ -153,7 +152,7 @@ void decode(const char* filename, struct MtcObject* object) {
 
     decode_header(buffer, object);
 
-    if (object->version == 2) {
+    if (object->version % 2 == 0) {
         CHUNK_SIZE = MAX_PROC_SIZE;
     }else {
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
