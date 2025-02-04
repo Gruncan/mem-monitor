@@ -42,7 +42,7 @@ struct timeval* get_current_time();
 
 ushort timeval_diff_ms(const struct timeval* start_time, const struct timeval* end_time);
 
-void* write_mtc_header(struct timeval* tv);
+void* write_mtc_header(const struct timeval* tv, uint8_t version);
 
 uint write_struct_data(void* buffer, void* struct_ptr, uint struct_length, uint mem_offset, uint key_offset);
 
