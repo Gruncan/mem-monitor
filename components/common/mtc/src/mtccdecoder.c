@@ -15,6 +15,7 @@
 #define KEY_SIZE_PROC 225
 #define KEY_SIZE_NO_PROC 216
 
+
 static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
 
@@ -83,9 +84,9 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
         }
     }
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
-    for (uint16_t i = 4; i < length_offset + 4; i += 3) {
+    for (uint16_t i = 4; i < length_offset + 4; i += MTC_VALUE_WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
-        const uint16_t value = buffer[i + 1] << 8 | buffer[i + 2];
+        const mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
         if (object->point_map[key].length == object->_alloc_size_points) {
             object->_alloc_size_points *= 2;
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {

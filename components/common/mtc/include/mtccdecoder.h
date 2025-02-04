@@ -11,7 +11,7 @@
 
 struct MtcPoint {
     uint16_t* time_offset;
-    uint16_t value;
+    mtc_point_size_t value;
     uint64_t repeated;
 };
 
