@@ -12,6 +12,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(include/ ${COMMON_DIR}/config/)
 
-add_library(mtc_decoder STATIC ${MTC_SOURCES})
+add_library(mtcdecoder STATIC ${MTC_SOURCES})
 
 add_subdirectory(tests)

@@ -56,13 +56,7 @@ qt_add_executable(MemoryGUI MANUAL_FINALIZATION ${PROJECT_SOURCES})
 target_link_libraries(MemoryGUI PRIVATE Qt::Core Qt::Widgets Qt::OpenGL)
 target_link_libraries(MemoryGUI PRIVATE Qt::PrintSupport)
 
-if (UNIX)
-    target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}/common/mtc/libmtc_decoder.a)
-elseif(WIN32)
-    target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}\\common\\mtc\\libmtc_decoder.a)
-else ()
-    message(FATAL_ERROR "Can't link to decode library")
-endif ()
+target_link_libraries(MemoryGUI PRIVATE ${CMAKE_BINARY_DIR}/common/mtc/libmtcdecoder.a)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/MemoryGUI_autogen/include)
 

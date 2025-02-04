@@ -233,11 +233,11 @@ jobs:
           cd components/common/mtc
           make
 
-      - name: Upload libmtc_decoder.a artifact
+      - name: Upload libmtcdecoder.a artifact
         uses: actions/upload-artifact@v4
         with:
-          name: libmtc_decoder
-          path: components/common/mtc/libmtc_decoder.a
+          name: libmtcdecoder
+          path: components/common/mtc/libmtcdecoder.a
 
   build-mtc-decoder-lib-test:
     runs-on: ubuntu-latest
@@ -252,14 +252,14 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential
           
-      - name: Download libmtc_decoder.a  artifact
+      - name: Download libmtcdecoder.a  artifact
         uses: actions/download-artifact@v4
         with:
-          name: libmtc_decoder
+          name: libmtcdecoder
 
       - name: Build Main Target
         run: |
-          mv libmtc_decoder.a components/common/mtc
+          mv libmtcdecoder.a components/common/mtc
           cd components/common/mtc
           make test
 
