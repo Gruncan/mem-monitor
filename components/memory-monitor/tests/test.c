@@ -11,7 +11,9 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define STRUCT_WRITE_SIZE(s) ((sizeof(s) / SIZE_UL) * 3)
+#define WRITE_OFFSET 4
+
+#define STRUCT_WRITE_SIZE(s) ((sizeof(s) / SIZE_UL) * WRITE_OFFSET)
 
 
 int test_struct_writer();
@@ -76,12 +78,12 @@ int test_struct_writer() {
 
 
     int offset = write_struct_data(buffer, &t1, size, 0, 0);
-    ASSERT_EQUAL(offset, (length * 2) + 4);
+    ASSERT_EQUAL(offset, (length * (WRITE_OFFSET - 1)) + 4);
 
     int v = 0;
-    for (int i = 0; i < length + 4; i += 3) {
+    for (int i = 0; i < length + 4; i += 4) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        short value = buffer[i + 1] << 8 | buffer[i + 2];
+        ushort value = ((ushort) buffer[i + 1] << 16) | ((ushort) buffer[i + 2] << 8) | buffer[i + 3];
         ASSERT_EQUAL(value, v + 1);
         v++;
     }
@@ -92,44 +94,47 @@ int test_struct_writer() {
 }
 
 int test_data_writer1() {
-    char* buffer = malloc(3);
+    char* buffer = malloc(WRITE_OFFSET);
 
-    memset(buffer, 0, 3);
+    memset(buffer, 0, WRITE_OFFSET);
 
-    write_data_content(buffer, 0, 1, 4);
+    write_data_content(buffer, 0, 1, WRITE_OFFSET);
 
     ASSERT_EQUAL(buffer[0], 1);
     ASSERT_EQUAL(buffer[1], 0);
-    ASSERT_EQUAL(buffer[2], 4);
+    ASSERT_EQUAL(buffer[2], 0);
+    ASSERT_EQUAL(buffer[3], 4);
 
     return PASS;
 }
 
 int test_data_writer2() {
-    char* buffer = malloc(6);
+    char* buffer = malloc(3 + WRITE_OFFSET);
 
-    memset(buffer, 0, 6);
+    memset(buffer, 0, 3 + WRITE_OFFSET);
 
 
-    write_data_content(buffer, 3, 1, 4);
+    write_data_content(buffer, 3, 1, WRITE_OFFSET);
 
     ASSERT_EQUAL(buffer[3], 1);
     ASSERT_EQUAL(buffer[4], 0);
-    ASSERT_EQUAL(buffer[5], 4);
+    ASSERT_EQUAL(buffer[5], 0);
+    ASSERT_EQUAL(buffer[6], 4);
 
     return PASS;
 }
 
 int test_data_writer3() {
-    char* buffer = malloc(3);
+    char* buffer = malloc(WRITE_OFFSET);
 
-    memset(buffer, 0, 3);
+    memset(buffer, 0, WRITE_OFFSET);
 
     write_data_content(buffer, 0, 1, 65000);
 
     ASSERT_EQUAL(buffer[0], 1);
-    ASSERT_EQUAL((unsigned char) buffer[1], 253);
-    ASSERT_EQUAL((unsigned char) buffer[2], 232)
+    ASSERT_EQUAL(buffer[1], 0);
+    ASSERT_EQUAL((unsigned char) buffer[2], 253);
+    ASSERT_EQUAL((unsigned char) buffer[3], 232)
 
     return PASS;
 }
@@ -243,7 +248,7 @@ int test_write_mtc_header() {
     time->tv_sec = 1629387587;
     time->tv_usec = 510000;
 
-    unsigned char* buffer = write_mtc_header(time);
+    unsigned char* buffer = write_mtc_header(time, 1);
 
     ASSERT_EQUAL(buffer[0], 1);
 
@@ -327,10 +332,11 @@ int test_write_mem_body_1() {
 
     unsigned char* buffer = header_value->value->data + 4;
 
+
     int v = 0;
-    for (int i = 0; i < header_value->value->length - 4; i += 3) {
+    for (int i = 0; i < header_value->value->length - 4; i += WRITE_OFFSET) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        short value = buffer[i + 1] << 8 | buffer[i + 2];
+        short value = ((ushort) buffer[i + 1] << 16) | ((ushort)buffer[i+2] << 8) | (ushort) buffer[i + 3];
         ASSERT_EQUAL(value, v + 1);
         v++;
     }
@@ -373,9 +379,9 @@ int test_write_mem_body_2() {
     unsigned char* buffer = header_value->value->data + 4;
 
     int v = 0;
-    for (int i = 0; i < header_value->value->length - 4; i += 3) {
+    for (int i = 0; i < header_value->value->length - 4; i += WRITE_OFFSET) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        short value = buffer[i + 1] << 8 | buffer[i + 2];
+        ushort value = ((ushort) buffer[i + 1] << 16) | (buffer[i + 2] << 8) | buffer[i + 3];
         ASSERT_EQUAL(value, v + 1);
         v++;
     }
