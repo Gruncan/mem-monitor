@@ -47,4 +47,6 @@
 // Memory key size
 typedef uint8_t mk_size_t;
 
+typedef unsigned char byte_t;
+
 #endif // MEM_MONITOR_CONFIG_H

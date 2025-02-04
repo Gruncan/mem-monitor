@@ -18,8 +18,6 @@
 static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
 
-typedef unsigned char byte;
-
 inline void createMtcObject(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
     object->_alloc_size_points = INIT_SIZE;
@@ -42,7 +40,7 @@ inline void createMtcObject(struct MtcObject* object) {
 
 // TODO implement a destroy function
 
-inline static void decode_header(const byte* buffer, struct MtcObject* object) {
+inline static void decode_header(const byte_t* buffer, struct MtcObject* object) {
     object->version = buffer[0];
     // todo add time decoding here
 }
@@ -55,7 +53,7 @@ inline uint8_t queryDecodeProgress(struct MtcObject* object) {
     return value;
 }
 
-static void decode_chunk(const byte* buffer, struct MtcObject* object) {
+static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     if (object == NULL) {
         return;
     }
@@ -129,7 +127,7 @@ void decode(const char* filename, struct MtcObject* object) {
         return;
     }
 
-    byte* buffer = malloc(CHUNK_SIZE);
+    byte_t* buffer = malloc(CHUNK_SIZE);
     if (buffer == NULL) {
         perror("Failed to allocate buffer!");
         fclose(fp);
