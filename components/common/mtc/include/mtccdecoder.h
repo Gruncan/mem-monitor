@@ -7,6 +7,8 @@
 
 #include "stdint.h"
 
+#include "mem-monitor-config.h"
+
 struct MtcPoint {
     uint16_t* time_offset;
     uint16_t value;
@@ -32,7 +34,7 @@ struct MtcObject {
     uint64_t _alloc_size_points;
     uint64_t _alloc_size_times;
     uint64_t file_length;
-    uint8_t _key_size;
+    mk_size_t _key_size;
 };
 
 
