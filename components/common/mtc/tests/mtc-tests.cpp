@@ -81,12 +81,12 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    MtcObject object;
+    TMtcObject object;
 
-    createMtcObject(&object);
-    decode(argv[1], &object);
+    createTMtcObject(&object);
+    decode_tmtc(argv[1], &object);
 
-    printf("Size: %d\n", object.size);
+    printf("Size: %lu\n", object.size);
 
     return 0;
 }
