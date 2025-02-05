@@ -2,7 +2,7 @@
 
 cd /home/root/
 systemctl stop mrt.base
-mv /home/root/lib_mem_tracker.so /usr/lib/fw/RS.bbmpp/
+mv /home/root/libmemtracker.so /usr/lib/fw/RS.bbmpp/
 mv /usr/lib/fw/RS.bbmpp/bbmpp /usr/lib/fw/RS.bbmpp/bbmpp.bin
 mv /home/root/bbmpp_tracker_script.sh /usr/lib/fw/RS.bbmpp/bbmpp
 chmod 755 /usr/lib/fw/RS.bbmpp/bbmpp

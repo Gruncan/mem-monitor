@@ -14,7 +14,7 @@ ifdef INDEX
 endif
 
 
-LIB_NAME = lib_mem_tracker.so
+LIB_NAME = libmemtracker.so
 LIB_TEST = mem_tracker_test
 
 SRCS = src/memory-tracker.cpp

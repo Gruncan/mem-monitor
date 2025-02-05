@@ -81,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lib_mem_tracker
-          path: components/memory-tracker/lib_mem_tracker.so
+          path: components/memory-tracker/libmemtracker.so
 
   build-mem-tracker-test:
     runs-on: ubuntu-latest
@@ -206,7 +206,7 @@ jobs:
       - name: Run C Tests
         run: |
           # Redirect stderr from LD_PRELOAD debug print to stdout to out.txt
-          LD_PRELOAD=./lib_mem_tracker.so ./mem_tracker_test > out.txt 2>&1
+          LD_PRELOAD=./libmemtracker.so ./mem_tracker_test > out.txt 2>&1
 
       - name: Upload test output file
         uses: actions/upload-artifact@v4

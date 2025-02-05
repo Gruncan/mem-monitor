@@ -9,7 +9,7 @@ import argparse
 OWNER = "Gruncan"
 REPO = "mem-monitor"
 ARTIFACTS = [
-    "lib_mem_tracker.so",
+    "libmemtracker.so",
     "mem_monitor"
 ]
 
