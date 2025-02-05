@@ -84,9 +84,12 @@ int main(int argc, char* argv[]) {
     TMtcObject object;
 
     createTMtcObject(&object);
+    object.is_collapsable = 0;
     decode_tmtc(argv[1], &object);
 
-    printf("Size: %lu\n", object.size);
+    for (int i = 0; i < object.size; i++) {
+        print_point(&object.points[i]);
+    }
 
     return 0;
 }
