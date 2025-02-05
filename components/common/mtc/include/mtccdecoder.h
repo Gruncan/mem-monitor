@@ -41,11 +41,13 @@ struct MtcObject {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 void decode(const char* filename, struct MtcObject* object);
 
 void createMtcObject(struct MtcObject* object);
 
 uint8_t queryDecodeProgress(struct MtcObject* object);
+
 #ifdef __cplusplus
 }
 #endif

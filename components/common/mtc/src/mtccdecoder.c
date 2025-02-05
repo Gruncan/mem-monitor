@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define HEADER_SIZE 5
 #define INIT_SIZE 5120
@@ -123,8 +124,17 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     }
 }
 
+int has_extension(const char *filename, const char *extension) {
+    const char *dot = strrchr(filename, '.');
+    return (dot && strcmp(dot + 1, extension) == 0);
+}
+
 
 void decode(const char* filename, struct MtcObject* object) {
+    if (!has_extension(filename, "mtc")) {
+        fprintf(stderr, "This decoder only supports mtc extensions!\n");
+    }
+
     FILE* fp = fopen(filename, "rb");
     if (fp == NULL) {
         perror("Failed to open file!");
