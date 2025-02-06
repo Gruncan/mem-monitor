@@ -52,7 +52,7 @@ inline void destroyTMtcObject(struct TMtcObject* object) {
     free(object->points);
 }
 
-uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
+static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
         case NEW:
@@ -81,7 +81,7 @@ uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     }
 }
 
-unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t old_key) {
+static unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t old_key) {
     switch (old_key) {
         case MALLOC:
             return new_key == NEW;
@@ -159,7 +159,7 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
         }
     }
 
-    if (shouldTMtcPointOverride(point) && object->is_collapsable) {
+    if (shouldTMtcPointOverride(point) && object->is_collapsable && object->size > 0) {
         free(object->points[object->size - 1].values);
         uint32_t timeoffset = object->points[object->size - 1].time_offset;
         point->time_offset = timeoffset;
@@ -183,6 +183,30 @@ static uint8_t decode_tchunk(const byte* buffer, struct TMtcObject* object) {
 
 exitFunction:
     return (MAX_LOG_VARS - length) * sizeof(uint64_t);
+}
+
+
+static char parse_tmtc_file(byte* buffer, const uint16_t internalChunk, FILE* fp, struct TMtcObject* object) {
+    size_t bytesRead = 0;
+
+    bytesRead = fread(buffer, 1, internalChunk, fp);
+    if (bytesRead < MIN_LOG_SIZE) {
+        return 0;
+    }
+
+    uint16_t offset = 0;
+
+    while (bytesRead >= offset + MIN_LOG_SIZE) {
+        const uint8_t overshot = decode_tchunk(buffer + offset, object);
+        offset += LOG_SIZE - overshot;
+    }
+
+    if (fseeko(fp, -((off_t) bytesRead - offset), SEEK_CUR) != 0) {
+        perror("Failed to shift overshot offset");
+        return -1;
+    }
+
+    return 0;
 }
 
 
@@ -215,8 +239,6 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 
     while ((bytesRead = fread(buffer, 1, CHUNKING_SIZE, fp)) > 0) {
         if (bytesRead < MIN_LOG_SIZE) {
-            // we can maybe optimise this and not loose as much data, corruption maybe isn't even possible for a single
-            // write however CHUNK_SIZE multiplication will lose data
             break;
         }
 
@@ -243,4 +265,71 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
 cleanUpFunction:
     free(buffer);
     fclose(fp);
+}
+
+
+void createTMtcStream(struct TMtcStream* stream) {
+    stream->object = malloc(sizeof(struct TMtcObject) * 2); // More efficient than 1 mallocs
+    stream->_next = stream->object + 1;
+
+    if (stream->object == NULL || stream->_next == NULL) {
+        perror("Failed to allocate stream object!");
+        _exit(-1);
+    }
+
+    createTMtcObject(stream->object);
+    createTMtcObject(stream->object);
+
+    stream->index = 0;
+    stream->offset = 0;
+
+    stream->fp = NULL;
+    stream->_chunk_size = 0;
+    stream->flipper = 0;
+
+}
+
+
+void stream_decode_tmtc(const char* filename, struct TMtcStream* stream) {
+    if (stream->fp != NULL) {
+        fprintf(stderr, "Stream of the file has already been opened!\n");
+        return;
+    }
+
+    FILE* fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        perror("Failed to open file!");
+        return;
+    }
+    stream->fp = fp;
+
+
+    stream->_chunk_size = LOG_SIZE * CHUNK_SIZE;
+    stream->_read_buffer = malloc(stream->_chunk_size);
+
+    fseek(fp, 0, SEEK_END);
+#ifdef __unix__
+    stream->object->_file_length = ftell(fp);
+#else
+    stream->object->_file_length = _ftelli64(fp);
+#endif
+    fseek(fp, 0, SEEK_SET);
+
+    // parse_tmtc_file(stream->_read_buffer, stream->_chunk_size, fp, stream->object);
+
+    stream->_next->_file_length = stream->object->_file_length;
+
+}
+
+
+
+struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream) {
+    stream->object->size = 0;
+    parse_tmtc_file(stream->_read_buffer, stream->_chunk_size, stream->fp, stream->object);
+
+    return stream->object;
+}
+
+void stream_tmtc_destroy(struct TMtcStream* stream) {
+
 }
