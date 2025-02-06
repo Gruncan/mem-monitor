@@ -53,7 +53,7 @@ void decode_tmtc(const char* filepath, struct TMtcObject* object);
 
 void createTMtcStream(struct TMtcStream* stream);
 
-void stream_decode_tmtc(const char* filename, struct TMtcStream* stream);
+void stream_decode_tmtc(const char* filename, struct TMtcStream* stream, char is_collapsable);
 
 struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream);
 

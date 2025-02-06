@@ -78,18 +78,19 @@ int main(int argc, char* argv[]) {
 
     TMtcStream stream;
     createTMtcStream(&stream);
-    stream_decode_tmtc(argv[1], &stream);
+    stream_decode_tmtc(argv[1], &stream, 0);
 
-    for (int i = 0; i < 10; i++) {
-        struct TMtcObject* object = stream_tmtc_next(&stream);
-        printf("\nNext read %d!\n\n", i);
+    struct TMtcObject* object;
+    do {
+        object = stream_tmtc_next(&stream);
+        if (object == NULL) {
+            continue;
+        }
 
-        for (int j = 0; j < object->size; ++j) {
+        for (int j = 0; j < object->size; j++) {
             print_point(&object->points[j]);
         }
-    }
-
-
+    }while (object != NULL);
 
     return 0;
 }
