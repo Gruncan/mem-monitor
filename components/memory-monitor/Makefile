@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -std=c11 -I./include -I../common/config -pthread -O3 -march=native -funroll-loops -flto -ffast-math
+CFLAGS = -std=c11 -I./include -I../common/config -pthread -O3 -funroll-loops -flto -ffast-math
 
 TARGET = mem_monitor
 TEST_TARGET = mem_monitor_test

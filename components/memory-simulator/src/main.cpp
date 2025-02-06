@@ -58,7 +58,7 @@ enum SimulationSpeed {
 
 static std::map<uintptr_t, uintptr_t> addressMapping = {};
 static uint64_t i;
-static TMtcObject tmtc_object;
+static TMtcStream stream;
 
 enum SimulationSpeed parseSpeed(const char* speedStr) {
     if (strcmp(speedStr, "nodelay") == 0)
@@ -251,30 +251,56 @@ int main(int argc, char* argv[]) {
     const char* speedStr = argv[2];
     const enum SimulationSpeed speed = parseSpeed(speedStr);
 
-    createTMtcObject(&tmtc_object);
-    printf("Loading file: %s into memory...\n", filename);
-    decode_tmtc(filename, &tmtc_object);
-    printf("Successfully loaded file: %s\n", filename);
-
+    createTMtcStream(&stream);
+    stream_decode_tmtc(argv[1], &stream, 1);
+    if (stream.fp == NULL) {
+        return -1;
+    }
     printf("Starting simulation...\n");
-    uint64_t interation_count = 0;
-    while (true) {
-        for (i = 0; i < tmtc_object.size; i++) {
-            struct TMtcPoint point = tmtc_object.points[i];
+
+    struct TMtcObject* object;
+    do {
+        object = stream_tmtc_next(&stream);
+        if (object == NULL) {
+            continue;
+        }
+
+        for (i = 0; i < object->size; i++) {
+            struct TMtcPoint point = object->points[i];
             simulatePoint(&point);
             if (speed == REAL) {
                 usleep(point.time_offset);
             }
         }
-        if (interation_count % 10 == 0) {
+        i += object->size;
+        if (i % 10000 == 0) {
             auto now = std::chrono::system_clock::now();
             std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-            std::cout << "Timestamp (" << interation_count << "): " << now_time << std::endl;
-            printf("Address space analysis (iter: %lu):\n", interation_count);
-            printf("Memory leaks: %lu\n", addressMapping.size());
+            std::cout << "Timestamp (" << i << "): " << now_time << std::endl;
+            printf("Iteration %lu\n", i);
         }
-        interation_count++;
-        addressMapping.clear();
-    }
+    }while (object != NULL);
+    printf("Done..\n");
+    printf("Memory leaks: %lu\n", addressMapping.size());
+
+    return 0;
+    // while (true) {
+    //     for (i = 0; i < tmtc_object.size; i++) {
+    //         struct TMtcPoint point = tmtc_object.points[i];
+    //         simulatePoint(&point);
+    //         if (speed == REAL) {
+    //             usleep(point.time_offset);
+    //         }
+    //     }
+    //     if (interation_count % 10 == 0) {
+    //         auto now = std::chrono::system_clock::now();
+    //         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    //         std::cout << "Timestamp (" << interation_count << "): " << now_time << std::endl;
+    //         printf("Address space analysis (iter: %lu):\n", interation_count);
+    //         printf("Memory leaks: %lu\n", addressMapping.size());
+    //     }
+    //     interation_count++;
+    //     addressMapping.clear();
+    // }
 
 }
