@@ -41,7 +41,7 @@ inline void createMtcObject(struct MtcObject* object) {
 
 // TODO implement a destroy function
 
-inline static void decode_header(const byte_t* buffer, struct MtcObject* object) {
+static void decode_header(const byte_t* buffer, struct MtcObject* object) {
     object->version = buffer[0];
     // todo add time decoding here
 }
@@ -124,7 +124,7 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     }
 }
 
-int has_extension(const char *filename, const char *extension) {
+static int has_extension(const char *filename, const char* extension) {
     const char *dot = strrchr(filename, '.');
     return (dot && strcmp(dot + 1, extension) == 0);
 }
