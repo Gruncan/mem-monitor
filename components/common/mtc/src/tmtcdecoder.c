@@ -191,7 +191,7 @@ static char parse_tmtc_file(byte* buffer, const uint16_t internalChunk, FILE* fp
 
     bytesRead = fread(buffer, 1, internalChunk, fp);
     if (bytesRead < MIN_LOG_SIZE) {
-        return 0;
+        return 1;
     }
 
     uint16_t offset = 0;
@@ -290,7 +290,7 @@ void createTMtcStream(struct TMtcStream* stream) {
 }
 
 
-void stream_decode_tmtc(const char* filename, struct TMtcStream* stream) {
+void stream_decode_tmtc(const char* filename, struct TMtcStream* stream, const char is_collapsable) {
     if (stream->fp != NULL) {
         fprintf(stderr, "Stream of the file has already been opened!\n");
         return;
@@ -303,9 +303,9 @@ void stream_decode_tmtc(const char* filename, struct TMtcStream* stream) {
     }
     stream->fp = fp;
 
-
     stream->_chunk_size = LOG_SIZE * CHUNK_SIZE;
     stream->_read_buffer = malloc(stream->_chunk_size);
+    stream->object->is_collapsable = is_collapsable;
 
     fseek(fp, 0, SEEK_END);
 #ifdef __unix__
@@ -325,7 +325,9 @@ void stream_decode_tmtc(const char* filename, struct TMtcStream* stream) {
 
 struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream) {
     stream->object->size = 0;
-    parse_tmtc_file(stream->_read_buffer, stream->_chunk_size, stream->fp, stream->object);
+    if (parse_tmtc_file(stream->_read_buffer, stream->_chunk_size, stream->fp, stream->object) != 0) {
+        return NULL;
+    }
 
     return stream->object;
 }
