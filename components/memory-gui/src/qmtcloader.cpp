@@ -112,7 +112,7 @@ void QMtcLoader::loaded(const std::string& filePath) {
     for (mk_size_t i = 0; i < object->_key_size; i++) {
         (*nonDefaultFields)[i] = object->point_map[i].points[0].value == 0 && object->point_map[i].length == 1;
     }
-    if (object->version == 1) {
+    if (object->version % 2 != 0) {
         for (int arr[] = {0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf, 0xe0}; const auto v : arr) {
             (*nonDefaultFields)[v] = false;
         }

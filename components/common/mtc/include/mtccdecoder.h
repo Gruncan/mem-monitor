@@ -3,15 +3,13 @@
 #define MTCCDECODER_H
 
 
-
-
 #include "stdint.h"
 
 #include "mem-monitor-config.h"
 
 struct MtcPoint {
     uint16_t* time_offset;
-    uint16_t value;
+    mtc_point_size_t value;
     uint64_t repeated;
 };
 
@@ -41,11 +39,13 @@ struct MtcObject {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 void decode(const char* filename, struct MtcObject* object);
 
 void createMtcObject(struct MtcObject* object);
 
 uint8_t queryDecodeProgress(struct MtcObject* object);
+
 #ifdef __cplusplus
 }
 #endif

@@ -51,38 +51,14 @@
 #define SYMBOL_DELETE_ARRAY_PLACEMENT "_ZdaPvS_" // Unused
 
 
-#define MALLOC 0x0
-#define CALLOC 0x1
-#define REALLOC 0x2
-#define REALLOC_ARRAY 0x3
-#define FREE 0x4
-
-#define NEW 0x5
-#define NEW_NOTHROW 0x6
-#define NEW_ARRAY 0x7
-#define NEW_ARRAY_NOTHROW 0x8
-
-#define DELETE 0x9
-#define DELETE_SIZED 0xa
-#define DELETE_NOTHROW 0xb
-#define DELETE_ARRAY 0xc
-#define DELETE_ARRAY_SIZED 0xd
-#define DELETE_ARRAY_NOTHROW 0xe
-
-#define NEW_ALIGN 0xf
-#define NEW_ARRAY_ALIGN 0x10
-#define DELETE_ALIGN 0x11
-#define DELETE_ARRAY_ALIGN 0x12
-
-
 #define CPP_17 201703L
 
 #ifndef FILE_PATH
-    #define FILE_PATH "memory_tracker1.tmtc"
+#define FILE_PATH "memory_tracker1.tmtc"
 #endif
 
 #ifndef FILE_INDEX
-    #define FILE_INDEX 14
+#define FILE_INDEX 14
 #endif
 
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
