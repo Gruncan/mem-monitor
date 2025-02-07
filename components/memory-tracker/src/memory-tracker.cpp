@@ -54,11 +54,11 @@
 #define CPP_17 201703L
 
 #ifndef FILE_PATH
-    #define FILE_PATH "memory_tracker1.tmtc"
+#define FILE_PATH "memory_tracker1.tmtc"
 #endif
 
 #ifndef FILE_INDEX
-    #define FILE_INDEX 14
+#define FILE_INDEX 14
 #endif
 
 #define ERROR_PREFIX "[MEMORY_TRACKER] ERROR: "
