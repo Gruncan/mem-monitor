@@ -1,7 +1,6 @@
 
 #include "tmtcdecoder.h"
 #include <malloc.h>
-#include <mem-monitor-config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -189,7 +188,7 @@ int has_extension(const char* filename, const char* extension) {
 }
 
 
-static char parse_tmtc_file(byte* buffer, const uint16_t internalChunk, FILE* fp, struct TMtcObject* object) {
+static char parse_tmtc_file(byte_t* buffer, const uint16_t internalChunk, FILE* fp, struct TMtcObject* object) {
     size_t bytesRead = 0;
 
     bytesRead = fread(buffer, 1, internalChunk, fp);
