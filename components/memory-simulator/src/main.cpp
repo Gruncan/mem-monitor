@@ -219,6 +219,9 @@ int main(int argc, char* argv[]) {
         printf("Starting simulation...\n");
 
         struct TMtcObject* object;
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+        std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
         do {
             object = stream_tmtc_next(&stream);
             if (object == NULL) {
@@ -233,12 +236,11 @@ int main(int argc, char* argv[]) {
                 }
             }
             iteration += object->size;
-            if (iteration % 10000 == 0) {
-                auto now = std::chrono::system_clock::now();
-                std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-                std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
-            }
         } while (object != NULL);
+
+        now = std::chrono::system_clock::now();
+        now_time = std::chrono::system_clock::to_time_t(now);
+        std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
     }else {
         createTMtcObject(&tmtc_object);
         printf("Loading file...\n");

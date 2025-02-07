@@ -81,15 +81,21 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+
     TMtcObject object;
 
     createTMtcObject(&object);
     object.is_collapsable = 0;
+
+    auto start_time = std::chrono::high_resolution_clock::now();
     decode_tmtc(argv[1], &object);
 
-    for (int i = 0; i < object.size; i++) {
-        print_point(&object.points[i]);
-    }
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+
+    printf("Size: %lu\n", object.size);
+    std::cout << duration.count() / 1'000'000.0  << " seconds\n";
+
 
     return 0;
 }

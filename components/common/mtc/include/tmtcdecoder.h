@@ -8,8 +8,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define T_KEY_SIZE 0x12
-
 
 struct TMtcPoint {
     uint8_t key;
