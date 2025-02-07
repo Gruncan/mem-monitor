@@ -183,8 +183,8 @@ exitFunction:
     return (MAX_LOG_VARS - length) * sizeof(uint64_t);
 }
 
-int has_extension(const char *filename, const char *extension) {
-    const char *dot = strrchr(filename, '.');
+int has_extension(const char* filename, const char* extension) {
+    const char* dot = strrchr(filename, '.');
     return (dot && strcmp(dot + 1, extension) == 0);
 }
 
