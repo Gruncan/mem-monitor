@@ -63,6 +63,18 @@ QTreeWidgetItem* QPlotControlSidebar::createCategoryItem(const mtc::MtcCategorie
     return item;
 }
 
+void QPlotControlSidebar::disableFields() {
+    for (uint16_t i = 0; i < treeWidget->topLevelItemCount(); i++) {
+        QTreeWidgetItem* item = treeWidget->topLevelItem(i);
+        for (uint16_t j = 0; j < item->childCount(); j++) {
+            QTreeMemoryWidgetItem* child = reinterpret_cast<QTreeMemoryWidgetItem*>(item->child(j));
+            item->setDisabled(true);
+            child->setDisabled(true);
+        }
+    }
+}
+
+
 void QPlotControlSidebar::enableNonDefaultFields(const std::map<mk_size_t, bool>* defaultFields) {
     for (uint16_t i = 0; i < treeWidget->topLevelItemCount(); i++) {
         QTreeWidgetItem* item = treeWidget->topLevelItem(i);

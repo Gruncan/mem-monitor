@@ -33,7 +33,7 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     frameLayout->addWidget(button);
 
     connect(button, &QPushButton::clicked, this, &QMtcLoader::load);
-
+    hasLoaded = false;
 
     workerThread = new QThread;
     monitorThread = new QThread;
@@ -59,6 +59,7 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     connect(monitor, &DecodeMonitor::progressQueried, this, &QMtcLoader::updateProgress);
 
     connect(this, &QMtcLoader::enableNonDefaultFields, sidebar, &QPlotControlSidebar::enableNonDefaultFields);
+    connect(this, &QMtcLoader::disableFields, sidebar, &QPlotControlSidebar::disableFields);
 
     workerThread->start();
     monitorThread->start();
@@ -75,8 +76,24 @@ QMtcLoader::~QMtcLoader() {
     free(object);
 }
 
+void QMtcLoader::unload() {
+    hasLoaded = false;
+    destroyMtcObject(object);
+    workerThread->start();
+    monitorThread->start();
+    progressBar->setValue(0);
+    createMtcObject(object);
+    label->setText("");
+    button->setText("Load");
+    emit disableFields();
+}
+
 
 void QMtcLoader::load() {
+    if (hasLoaded) {
+        unload();
+        return;
+    }
     const QString filePath =
         QFileDialog::getOpenFileName(this, "Open File", "", "Memory Time Encoding (*.mtc);;All Files (*)");
     if (!filePath.isEmpty()) {
@@ -101,6 +118,7 @@ void QMtcLoader::updateProgress(const int progress) {
 
 void QMtcLoader::loaded(const std::string& filePath) {
     monitorThread->exit();
+    workerThread->exit();
     progressBar->setValue(100);
     label->setText(QString("%1\nVersion: %2\nLength: %3\n")
                        .arg(QString::fromStdString(filePath))
@@ -117,7 +135,8 @@ void QMtcLoader::loaded(const std::string& filePath) {
             (*nonDefaultFields)[v] = false;
         }
     }
-
+    button->setText("Unload");
+    hasLoaded = true;
     emit enableNonDefaultFields(nonDefaultFields);
 }
 

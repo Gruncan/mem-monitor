@@ -24,6 +24,8 @@ class QMtcLoader : public QWidget {
 
     MtcObject* getMtcObject();
 
+    void unload();
+
   public Q_SLOTS:
     void load();
     void loaded(const std::string& filePath);
@@ -34,6 +36,7 @@ class QMtcLoader : public QWidget {
     void removeFile();
     void displayMetaInfo();
     void enableNonDefaultFields(std::map<mk_size_t, bool>* defaultFields);
+    void disableFields();
 
   private:
     QVBoxLayout* mainLayout;
@@ -50,6 +53,7 @@ class QMtcLoader : public QWidget {
     QThread* monitorThread;
 
     MtcObject* object;
+    bool hasLoaded;
 };
 
 

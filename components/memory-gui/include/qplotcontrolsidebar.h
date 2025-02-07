@@ -19,6 +19,7 @@ class QPlotControlSidebar : public QWidget {
 
   public Q_SLOTS:
     void enableNonDefaultFields(const std::map<mk_size_t, bool>* activeFields);
+    void disableFields();
 
   Q_SIGNALS:
     void categoriesChanged(const QString& category, const QString& plot, bool enabled);

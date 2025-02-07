@@ -129,6 +129,10 @@ void QMemoryPlotter::removePlot(mk_size_t key) {
     _plot->replot();
 }
 
+void QMemoryPlotter::clearAllPlots() {
+
+}
+
 
 void QMemoryPlotter::plotToggleChange(const QString& category, const QString& plotString, const bool enabled) {
     const auto value = mtc::MTC_KEY_MAPPING.find(plotString.toStdString());
