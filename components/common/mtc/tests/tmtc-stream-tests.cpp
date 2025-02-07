@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
         for (int j = 0; j < object->size; j++) {
             print_point(&object->points[j]);
         }
-    }while (object != NULL);
+    } while (object != NULL);
 
     return 0;
 }

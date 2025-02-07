@@ -292,7 +292,6 @@ void createTMtcStream(struct TMtcStream* stream) {
     stream->fp = NULL;
     stream->_chunk_size = 0;
     stream->flipper = 0;
-
 }
 
 
@@ -321,12 +320,8 @@ void stream_decode_tmtc(const char* filename, struct TMtcStream* stream, const c
 #endif
     fseek(fp, 0, SEEK_SET);
 
-    // parse_tmtc_file(stream->_read_buffer, stream->_chunk_size, fp, stream->object);
-
     stream->_next->_file_length = stream->object->_file_length;
-
 }
-
 
 
 struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream) {
@@ -339,5 +334,4 @@ struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream) {
 }
 
 void stream_tmtc_destroy(struct TMtcStream* stream) {
-
 }

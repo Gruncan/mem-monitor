@@ -4,9 +4,9 @@
 #define MEMORY_MONITOR_TMTCDECODER_H
 
 
+#include "mem-monitor-config.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "mem-monitor-config.h"
 
 #define T_KEY_SIZE 0x12
 
