@@ -312,6 +312,84 @@ jobs:
       - name: Run PyTests
         run: |
           cd scripts/decode-test/
-          pytest decode-test.py
+          pytest decode-test.py::test_tmtc_decoding_match
             
 
+  build-tmtc-stream-decoder-lib-test:
+    runs-on: ubuntu-latest
+    needs: [ build-mtc-decoder-lib ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Download libmtc_decoder.a  artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: libmtc_decoder
+
+      - name: Build Main Target
+        run: |
+          mv libmtc_decoder.a components/common/mtc
+          cd components/common/mtc
+          make teststream
+
+      - name: Upload tmtc_stream_tests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tmtc_stream_tests
+          path: components/common/mtc/tmtc_stream_exec
+
+  test-tmtc-stream-decoder-output:
+    runs-on: ubuntu-latest
+    needs: [ build-mtc-decoder-lib-test, build-tmtc-stream-decoder-lib-test]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential
+
+      - name: Download mtc_tests artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mtc_tests
+
+      - name: Download tmtc_stream_tests artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tmtc_stream_tests
+
+      - name: Download output files artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: c-test-output-file
+
+      - name: Move artifacts
+        run: |
+          chmod +x ./mtc_tests ./tmtc_stream_exec
+          mv ./mtc_tests ./tmtc_stream_exec scripts/decode-test/
+          mv memory_tracker1.tmtc scripts/decode-test/
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/decode-test/requirements.txt
+
+      - name: Run PyTests
+        run: |
+          cd scripts/decode-test/
+          pytest decode-test.py::test_tmtc_stream_decoding_match
