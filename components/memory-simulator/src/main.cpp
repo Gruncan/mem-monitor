@@ -58,7 +58,7 @@ enum SimulationSpeed {
 
 static std::map<uintptr_t, uintptr_t> addressMapping = {};
 static uint64_t i;
-static TMtcStream stream;
+static TMtcObject tmtc_object;
 
 enum SimulationSpeed parseSpeed(const char* speedStr) {
     if (strcmp(speedStr, "nodelay") == 0)
@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
             }
         }
         i += object->size;
-        if (i % 10000 == 0) {
+        if (i % 1000 == 0) {
             auto now = std::chrono::system_clock::now();
             std::time_t now_time = std::chrono::system_clock::to_time_t(now);
             std::cout << "Timestamp (" << i << "): " << now_time << std::endl;
