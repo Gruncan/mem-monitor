@@ -5,15 +5,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define HEADER_SIZE 5
 #define INIT_SIZE 5120
 
-#define MAX_PROC_SIZE 679
-#define MAX_NO_PROC_SIZE 652
-
 #define KEY_SIZE_PROC 225
 #define KEY_SIZE_NO_PROC 216
+
+#define MAX_PROC_SIZE ((KEY_SIZE_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
+#define MAX_NO_PROC_SIZE ((KEY_SIZE_NO_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
 
 static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
@@ -40,7 +41,7 @@ inline void createMtcObject(struct MtcObject* object) {
 
 // TODO implement a destroy function
 
-inline static void decode_header(const byte_t* buffer, struct MtcObject* object) {
+static void decode_header(const byte_t* buffer, struct MtcObject* object) {
     object->version = buffer[0];
     // todo add time decoding here
 }
@@ -83,9 +84,13 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
         }
     }
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
-    for (uint16_t i = 4; i < length_offset + 4; i += 3) {
+    for (uint16_t i = 4; i < length_offset + 4; i += MTC_VALUE_WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
-        const uint16_t value = buffer[i + 1] << 8 | buffer[i + 2];
+        if (key >= KEY_SIZE) {
+            fprintf(stderr, "Key size out of range\nThis is likely due to version encoding/decoding mismatch!");
+            exit(-1);
+        }
+        const mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
         if (object->point_map[key].length == object->_alloc_size_points) {
             object->_alloc_size_points *= 2;
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {
@@ -119,8 +124,17 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     }
 }
 
+static int has_extension(const char* filename, const char* extension) {
+    const char* dot = strrchr(filename, '.');
+    return (dot && strcmp(dot + 1, extension) == 0);
+}
+
 
 void decode(const char* filename, struct MtcObject* object) {
+    if (!has_extension(filename, "mtc")) {
+        fprintf(stderr, "This decoder only supports mtc extensions!\n");
+    }
+
     FILE* fp = fopen(filename, "rb");
     if (fp == NULL) {
         perror("Failed to open file!");
@@ -152,9 +166,9 @@ void decode(const char* filename, struct MtcObject* object) {
 
     decode_header(buffer, object);
 
-    if (object->version == 2) {
+    if (object->version % 2 == 0) {
         CHUNK_SIZE = MAX_PROC_SIZE;
-    }else {
+    } else {
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
         KEY_SIZE = KEY_SIZE_NO_PROC;
         object->_key_size = KEY_SIZE_NO_PROC;

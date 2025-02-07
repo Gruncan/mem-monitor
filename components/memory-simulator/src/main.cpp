@@ -1,7 +1,6 @@
 
 
 
-
 #include "tmtcdecoder.h"
 #include <chrono>
 
@@ -17,34 +16,35 @@
 #define DEBUG_PRINT_OFFSET 10
 
 
+#define DEBUG_PRINT(index)                                                                                             \
+    for (uint64_t j = (index) - DEBUG_PRINT_OFFSET; j < (index) + DEBUG_PRINT_OFFSET; j++) {                           \
+        if (j == (index))                                                                                              \
+            printf(">  ");                                                                                             \
+        print_point(&tmtc_object.points[j]);                                                                           \
+    }
 
 
-#define DEBUG_PRINT(index) \
-    for(uint64_t j = (index) - DEBUG_PRINT_OFFSET; j < (index) + DEBUG_PRINT_OFFSET; j++){ \
-        if (j == (index)) printf(">  "); \
-        print_point(&tmtc_object.points[j]); \
-    } \
-
-
-
-#define DOUBLE_FREE_CHECK(ptr) \
-    if (addressMapping.count(ptr) == 0) break; \
+#define DOUBLE_FREE_CHECK(ptr)                                                                                         \
+    if (addressMapping.count(ptr) == 0)                                                                                \
+        break;                                                                                                         \
     //     // fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed at index %lu.", i); \
     //     // DEBUG_PRINT(i) \
     //     // _exit(-1); \
     //     break; \
     // }\
 
-#define DOUBLE_ALLOCATION_CHECK(ptr) \
-    if (addressMapping.count(ptr) == 1) break; \
+#define DOUBLE_ALLOCATION_CHECK(ptr)                                                                                   \
+    if (addressMapping.count(ptr) == 1)                                                                                \
+        break;
 
-#define CLEAN_ADDRESS_MAP(ptr) \
-    if (addressMapping.count(ptr) == 1){ \
-        addressMapping.erase(ptr);\
+#define CLEAN_ADDRESS_MAP(ptr)                                                                                         \
+    if (addressMapping.count(ptr) == 1) {                                                                              \
+        addressMapping.erase(ptr);                                                                                     \
     }
 
-#define PTR_NULL_CHECK(ptr) \
-    if ((ptr) == 0) break;
+#define PTR_NULL_CHECK(ptr)                                                                                            \
+    if ((ptr) == 0)                                                                                                    \
+        break;
 
 #define CAST_TO_PTR(integer) (reinterpret_cast<void*>(integer))
 #define CAST_FROM_PTR(ptr) (reinterpret_cast<uintptr_t>(ptr))
@@ -148,7 +148,7 @@ void simulatePoint(struct TMtcPoint* point) {
         case NEW_NOTHROW:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_ALLOCATION_CHECK(point->values[0])
-            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new (point->values[1], std::nothrow));
+            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1], std::nothrow));
             break;
         case NEW_ARRAY:
             PTR_NULL_CHECK(point->values[0]);
@@ -163,17 +163,20 @@ void simulatePoint(struct TMtcPoint* point) {
         case NEW_ALIGN:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_ALLOCATION_CHECK(point->values[0])
-            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new(point->values[1], CAST_ALIGN(point->values[2])));
+            addressMapping[point->values[0]] =
+                CAST_FROM_PTR(operator new(point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case NEW_ARRAY_ALIGN:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_ALLOCATION_CHECK(point->values[0])
-            addressMapping[point->values[0]] = CAST_FROM_PTR(operator new[](point->values[1], CAST_ALIGN(point->values[2])));
+            addressMapping[point->values[0]] =
+                CAST_FROM_PTR(operator new[](point->values[1], CAST_ALIGN(point->values[2])));
             break;
         case REALLOC:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_ALLOCATION_CHECK(point->values[0])
-            addressMapping[point->values[2]] = CAST_FROM_PTR(realloc(CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]));
+            addressMapping[point->values[2]] =
+                CAST_FROM_PTR(realloc(CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]));
             break;
         case REALLOC_ARRAY:
             break; // TODO fix this requires fixing memory-tracker ;( is it even used?
@@ -204,19 +207,19 @@ void simulatePoint(struct TMtcPoint* point) {
         case DELETE_ARRAY:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
-            operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]));
+            operator delete[](CAST_TO_PTR(addressMapping[point->values[0]]));
             CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ARRAY_SIZED:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
-            operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]);
+            operator delete[](CAST_TO_PTR(addressMapping[point->values[0]]), point->values[1]);
             CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ARRAY_NOTHROW:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
-            operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]), std::nothrow);
+            operator delete[](CAST_TO_PTR(addressMapping[point->values[0]]), std::nothrow);
             CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case DELETE_ALIGN:
@@ -228,7 +231,7 @@ void simulatePoint(struct TMtcPoint* point) {
         case DELETE_ARRAY_ALIGN:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_FREE_CHECK(point->values[0]);
-            operator delete [](CAST_TO_PTR(addressMapping[point->values[0]]), CAST_ALIGN(point->values[1]));
+            operator delete[](CAST_TO_PTR(addressMapping[point->values[0]]), CAST_ALIGN(point->values[1]));
             CLEAN_ADDRESS_MAP(point->values[0])
             break;
         case CALLOC:
@@ -276,5 +279,4 @@ int main(int argc, char* argv[]) {
         interation_count++;
         addressMapping.clear();
     }
-
 }

@@ -183,8 +183,17 @@ exitFunction:
     return (MAX_LOG_VARS - length) * sizeof(uint64_t);
 }
 
+int has_extension(const char* filename, const char* extension) {
+    const char* dot = strrchr(filename, '.');
+    return (dot && strcmp(dot + 1, extension) == 0);
+}
+
 
 void decode_tmtc(const char* filename, struct TMtcObject* object) {
+    if (!has_extension(filename, "tmtc")) {
+        fprintf(stderr, "This decoder only supports tmtc extensions!\n");
+    }
+
     FILE* fp = fopen(filename, "rb");
     if (fp == NULL) {
         perror("Failed to open file!");

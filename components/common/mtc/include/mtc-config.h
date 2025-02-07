@@ -238,6 +238,7 @@ static const std::map<std::string, mk_size_t> MTC_KEY_MAPPING = {
     {"p_data", 0xdf},
     {"p_dirty", 0xe0},
 };
+
 static const std::map<mk_size_t, std::string> MTC_INDEX_MAPPING{
     {0x0, "nr_free_pages"},
     {0x1, "nr_zone_inactive_anon"},
