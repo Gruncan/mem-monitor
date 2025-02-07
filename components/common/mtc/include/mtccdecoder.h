@@ -46,6 +46,8 @@ void createMtcObject(struct MtcObject* object);
 
 uint8_t queryDecodeProgress(struct MtcObject* object);
 
+void destroyMtcObject(const struct MtcObject* object);
+
 #ifdef __cplusplus
 }
 #endif

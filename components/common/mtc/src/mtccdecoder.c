@@ -39,7 +39,17 @@ inline void createMtcObject(struct MtcObject* object) {
     object->_key_size = KEY_SIZE;
 }
 
-// TODO implement a destroy function
+void destroyMtcObject(const struct MtcObject* object) {
+    for (uint64_t i = 0; i < object->_times_length; i++) {
+        free(object->times[i].time_offset);
+    }
+    free(object->times);
+    for (mk_size_t i = 0; i < KEY_SIZE; i++) {
+        free(object->point_map[i].points);
+        // TODO add cleaning of the time_offset malloc here?
+    }
+    free(object->point_map);
+}
 
 static void decode_header(const byte_t* buffer, struct MtcObject* object) {
     object->version = buffer[0];
