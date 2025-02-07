@@ -45,18 +45,18 @@
 #define DELETE_ARRAY_ALIGN_FORMAT_STR "delete_align[](%p, %zd)\n"
 
 
-
 #ifndef VERSION_1
-#define LOAD_MTC_VALUE_DATA(buffer, index) \
-(((mtc_point_size_t) (buffer)[(index) + 1] << 16) | ((mtc_point_size_t) (buffer)[(index) + 2] << 8) | (buffer)[(index) + 3])
+#define LOAD_MTC_VALUE_DATA(buffer, index)                                                                             \
+    (((mtc_point_size_t) (buffer)[(index) + 1] << 16) | ((mtc_point_size_t) (buffer)[(index) + 2] << 8) |              \
+     (buffer)[(index) + 3])
 
 typedef uint32_t mtc_point_size_t;
 
 #define MTC_VALUE_WRITE_OFFSET 4
 
 #else
-#define LOAD_VALUE_DATA(buffer, index) \
-(((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2])
+#define LOAD_VALUE_DATA(buffer, index)                                                                                 \
+    (((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2])
 
 typedef uint16_t mtc_point_size_t;
 

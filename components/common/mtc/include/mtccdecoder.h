@@ -3,8 +3,6 @@
 #define MTCCDECODER_H
 
 
-
-
 #include "stdint.h"
 
 #include "mem-monitor-config.h"

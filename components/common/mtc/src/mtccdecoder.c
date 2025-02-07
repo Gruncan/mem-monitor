@@ -124,8 +124,8 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     }
 }
 
-static int has_extension(const char *filename, const char* extension) {
-    const char *dot = strrchr(filename, '.');
+static int has_extension(const char* filename, const char* extension) {
+    const char* dot = strrchr(filename, '.');
     return (dot && strcmp(dot + 1, extension) == 0);
 }
 
@@ -168,7 +168,7 @@ void decode(const char* filename, struct MtcObject* object) {
 
     if (object->version % 2 == 0) {
         CHUNK_SIZE = MAX_PROC_SIZE;
-    }else {
+    } else {
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
         KEY_SIZE = KEY_SIZE_NO_PROC;
         object->_key_size = KEY_SIZE_NO_PROC;
