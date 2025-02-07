@@ -82,6 +82,7 @@ int main(int argc, char* argv[]) {
     }
 
     TMtcObject object;
+
     createTMtcObject(&object);
     object.is_collapsable = 0;
     decode_tmtc(argv[1], &object);

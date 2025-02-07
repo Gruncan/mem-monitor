@@ -2,6 +2,12 @@ CC = gcc
 
 CFLAGS = -std=c11 -I./include -I../common/config -pthread -O3 -funroll-loops -flto -ffast-math
 
+
+VERSION_1 :=
+ifdef VERSION_1
+	CFLAGS += -DVERSION_1
+endif
+
 TARGET = mem_monitor
 TEST_TARGET = mem_monitor_test
 
