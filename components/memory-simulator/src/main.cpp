@@ -55,9 +55,15 @@ enum SimulationSpeed {
     REAL,
 };
 
+enum SimulationMode {
+    SINGLE,
+    SIMULATION,
+};
+
 
 static std::map<uintptr_t, uintptr_t> addressMapping = {};
-static uint64_t i;
+static uint64_t iteration = 0;
+static TMtcStream stream;
 static TMtcObject tmtc_object;
 
 enum SimulationSpeed parseSpeed(const char* speedStr) {
@@ -69,69 +75,17 @@ enum SimulationSpeed parseSpeed(const char* speedStr) {
     return NO_DELAY;
 }
 
-void print_point(const struct TMtcPoint* point) {
-    switch (point->key) {
-        case MALLOC:
-            printf(MALLOC_FORMAT_STR, point->values[1], point->values[0]);
-            break;
-        case CALLOC:
-            printf(CALLOC_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
-            break;
-        case REALLOC:
-            printf(REALLOC_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
-            break;
-        case REALLOC_ARRAY:
-            printf(REALLOC_ARRAY_FORMAT_STR, point->values[0], point->values[1], point->values[2]);
-            break;
-        case FREE:
-            printf(FREE_FORMAT_STR, point->values[0]);
-            break;
-        case NEW:
-            printf(NEW_FORMAT_STR, point->values[1], point->values[0]);
-            break;
-        case NEW_NOTHROW:
-            printf(NEW_NOTHROW_FORMAT_STR, point->values[1], point->values[0]);
-            break;
-        case NEW_ARRAY:
-            printf(NEW_ARRAY_FORMAT_STR, point->values[1], point->values[0]);
-            break;
-        case NEW_ARRAY_NOTHROW:
-            printf(NEW_ARRAY_NOTHROW_FORMAT_STR, point->values[1], point->values[0]);
-            break;
-        case DELETE:
-            printf(DELETE_FORMAT_STR, point->values[0]);
-            break;
-        case DELETE_SIZED:
-            printf(DELETE_SIZED_FORMAT_STR, point->values[0], point->values[1]);
-            break;
-        case DELETE_NOTHROW:
-            printf(DELETE_NOTHROW_FORMAT_STR, point->values[0]);
-            break;
-        case DELETE_ARRAY:
-            printf(DELETE_ARRAY_FORMAT_STR, point->values[0]);
-            break;
-        case DELETE_ARRAY_SIZED:
-            printf(DELETE_ARRAY_SIZED_FORMAT_STR, point->values[0], point->values[1]);
-            break;
-        case DELETE_ARRAY_NOTHROW:
-            printf(DELETE_ARRAY_NOTHROW_FORMAT_STR, point->values[0]);
-            break;
-        case NEW_ALIGN:
-            printf(NEW_ALIGN_FORMAT_STR, point->values[1], point->values[0], point->values[2]);
-            break;
-        case NEW_ARRAY_ALIGN:
-            printf(NEW_ARRAY_ALIGN_FORMAT_STR, point->values[1], point->values[0]);
-            break;
-        case DELETE_ALIGN:
-            printf(DELETE_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
-            break;
-        case DELETE_ARRAY_ALIGN:
-            printf(DELETE_ARRAY_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
-            break;
-        default:
-            break;
+enum SimulationMode parseMode(const char* modeStr) {
+    if (strcmp(modeStr, "single") == 0) {
+        return SINGLE;
+    }else if (strcmp(modeStr, "repeat") == 0) {
+        return SIMULATION;
     }
+    return SINGLE;
 }
+
+
+
 
 void simulatePoint(struct TMtcPoint* point) {
     switch (point->key) {
@@ -238,71 +192,80 @@ void simulatePoint(struct TMtcPoint* point) {
             addressMapping[point->values[2]] = CAST_FROM_PTR(calloc(point->values[0], point->values[1]));
             break;
         default:
-            fprintf(stderr, "Unknown allocation key: %d at log index %lu\n", point->key, i);
+            fprintf(stderr, "Unknown allocation key: %d at log index %lu\n", point->key, iteration);
             break;
     }
 }
 
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        printf("Usage: ./simulator <filename>.tmtc <nodelay|real>\n");
+    if (argc != 4) {
+        printf("Usage: ./simulator <filename>.tmtc <nodelay|real> <single|repeat>\n");
         return -1;
     }
 
     char* filename = argv[1];
     const char* speedStr = argv[2];
+    const char* modeStr = argv[3];
     const enum SimulationSpeed speed = parseSpeed(speedStr);
+    const enum SimulationMode mode = parseMode(modeStr);
 
-    createTMtcStream(&stream);
-    stream_decode_tmtc(argv[1], &stream, 1);
-    if (stream.fp == NULL) {
-        return -1;
-    }
-    printf("Starting simulation...\n");
-
-    struct TMtcObject* object;
-    do {
-        object = stream_tmtc_next(&stream);
-        if (object == NULL) {
-            continue;
+    if (mode == SINGLE) {
+        createTMtcStream(&stream);
+        stream_decode_tmtc(filename, &stream, 1);
+        if (stream.fp == NULL) {
+            return -1;
         }
+        printf("Starting simulation...\n");
 
-        for (i = 0; i < object->size; i++) {
-            struct TMtcPoint point = object->points[i];
-            simulatePoint(&point);
-            if (speed == REAL) {
-                usleep(point.time_offset);
+        struct TMtcObject* object;
+        do {
+            object = stream_tmtc_next(&stream);
+            if (object == NULL) {
+                continue;
             }
+
+            for (uint64_t i = 0; i < object->size; i++) {
+                struct TMtcPoint point = object->points[i];
+                simulatePoint(&point);
+                if (speed == REAL) {
+                    usleep(point.time_offset);
+                }
+            }
+            iteration += object->size;
+            if (iteration % 10000 == 0) {
+                auto now = std::chrono::system_clock::now();
+                std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+                std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
+            }
+        } while (object != NULL);
+    }else {
+        createTMtcObject(&tmtc_object);
+        printf("Loading file...\n");
+        decode_tmtc(filename, &tmtc_object);
+        while (true) {
+            for (uint64_t i = 0; i < tmtc_object.size; i++) {
+                struct TMtcPoint point = tmtc_object.points[i];
+                simulatePoint(&point);
+                if (speed == REAL) {
+                    usleep(point.time_offset);
+                }
+            }
+            if (iteration % 10 == 0) {
+                auto now = std::chrono::system_clock::now();
+                std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+                std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
+                printf("Address space analysis (iter: %lu):\n", iteration);
+                printf("Memory leaks: %lu\n", addressMapping.size());
+            }
+            iteration++;
+            addressMapping.clear();
         }
-        i += object->size;
-        if (i % 1000 == 0) {
-            auto now = std::chrono::system_clock::now();
-            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-            std::cout << "Timestamp (" << i << "): " << now_time << std::endl;
-            printf("Iteration %lu\n", i);
-        }
-    } while (object != NULL);
+    }
+
     printf("Done..\n");
     printf("Memory leaks: %lu\n", addressMapping.size());
 
     return 0;
-    // while (true) {
-    //     for (i = 0; i < tmtc_object.size; i++) {
-    //         struct TMtcPoint point = tmtc_object.points[i];
-    //         simulatePoint(&point);
-    //         if (speed == REAL) {
-    //             usleep(point.time_offset);
-    //         }
-    //     }
-    //     if (interation_count % 10 == 0) {
-    //         auto now = std::chrono::system_clock::now();
-    //         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    //         std::cout << "Timestamp (" << interation_count << "): " << now_time << std::endl;
-    //         printf("Address space analysis (iter: %lu):\n", interation_count);
-    //         printf("Memory leaks: %lu\n", addressMapping.size());
-    //     }
-    //     interation_count++;
-    //     addressMapping.clear();
-    // }
+
 }
