@@ -335,7 +335,7 @@ int test_write_mem_body_1() {
     int v = 0;
     for (int i = 0; i < header_value->value->length - 4; i += MTC_VALUE_WRITE_OFFSET) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        short value = ((ushort) buffer[i + 1] << 16) | ((ushort)buffer[i+2] << 8) | (ushort) buffer[i + 3];
+        short value = ((ushort) buffer[i + 1] << 16) | ((ushort) buffer[i + 2] << 8) | (ushort) buffer[i + 3];
         ASSERT_EQUAL(value, v + 1);
         v++;
     }
