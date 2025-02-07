@@ -267,7 +267,9 @@ int main(int argc, char* argv[]) {
 
     printf("Done..\n");
     printf("Memory leaks: %lu\n", addressMapping.size());
-
+    //for (std::map<uintptr_t, uintptr_t>::iterator it = addressMapping.begin(); it != addressMapping.end(); it++) {
+    //    std::cout << "0x" << std::hex << it->first << std::endl;
+   // }
     return 0;
 
 }

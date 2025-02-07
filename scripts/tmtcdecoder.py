@@ -266,32 +266,39 @@ class TMtcDecoder:
                 f.write(self.content[start_index:end_index])
         print("Wrote cropped data to:", new_filename)
 
-start_time = time.time()
 
 
-decoder = TMtcDecoder("/home/duncan/Development/Uni/Thesis/Data/uwb_test_debug_onerun_cropped.tmtc")
-data = decoder.decode()
 
-first = next(data)
-value = None
-index = 1
-for d in data:
-    difference = (d.timestamp - first.timestamp).total_seconds()
-    if difference >= 60:
-        value = d
-        print(difference)
-        print(index)
-        break
-    first = d
-    index += 1
 
-# print("Range: ", sum(1 for _ in data) - index)
-# print(value.allocation_index_start)
-end_time = time.time()
 
-# decoder.crop(value.allocation_index_start)
 
-elapsed_time = end_time - start_time
 
-print(f"Elapsed time: {elapsed_time} seconds")
+
+if __name__ == "__main__":
+    start_time = time.time()
+
+
+    decoder = TMtcDecoder("/home/duncan/Development/Uni/Thesis/Simulation/cmp200-0120-memory_tracker.tmtc")
+    data = decoder.decode()
+
+    first = next(data)
+
+    for last in data:
+        pass
+
+    print(first)
+
+    print()
+
+    print(last)
+
+    # print("Range: ", sum(1 for _ in data) - index)
+    # print(value.allocation_index_start)
+    end_time = time.time()
+
+    # decoder.crop(value.allocation_index_start)
+
+    elapsed_time = end_time - start_time
+
+    print(f"Elapsed time: {elapsed_time} seconds")
 
