@@ -21,11 +21,11 @@ QPlotRender::~QPlotRender() {
 
 void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& times, const uint64_t length,
                                  QCPGraph* graph) {
-    const uint64_t sampleRate = 50;
+    const uint64_t sampleRate = 1;
 
     values.clear();
 
-    values.reserve(length / sampleRate);
+    values.reserve(length / 1);
 
 
     uint64_t c = 0;
@@ -34,12 +34,13 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
             valueMax = point_map->points[i].value;
         }
         for (uint64_t j = 0; j < point_map->points[i].repeated + 1; j++) {
-            if (c == sampleRate) {
-                values.push_back(point_map->points[i].value);
-                c = 0;
-                continue;
-            }
-            c++;
+            values.push_back(point_map->points[i].value);
+            // if (c == sampleRate) {
+            //     values.push_back(point_map->points[i].value);
+            //     c = 0;
+            //     continue;
+            // }
+            // c++;
         }
     }
 
@@ -76,7 +77,7 @@ void QPlotRender::queueAnimationRendering(MtcPointMap* point_map, MtcTime* times
     uint64_t c = 0;
     for (uint64_t i = 0; i < timesLength; i++) {
         for (uint64_t j = 0; j < times[i].repeated + 1; j++) {
-            timeSum += *times[i].time_offset;
+            timeSum += times[i].time_offset;
             if (c == sampleRate) {
                 this->times.push_back(timeSum);
                 c = 0;

@@ -19,6 +19,8 @@
 static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
 
+static uint64_t i =0;
+
 inline void createMtcObject(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
     object->_alloc_size_points = INIT_SIZE;
@@ -70,19 +72,18 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
         object->times = new_ptr;
     }
     if (object->_times_length == 0) {
-        *object->times[0].time_offset = time_offset;
+        object->times[0].time_offset = time_offset;
         object->_times_length++;
     } else {
-        if (*object->times[object->_times_length - 1].time_offset == time_offset) {
+        if (object->times[object->_times_length - 1].time_offset == time_offset) {
             object->times[object->_times_length - 1].repeated++;
         } else {
-            object->times[object->_times_length].time_offset = malloc(sizeof(uint16_t));
-            *object->times[object->_times_length].time_offset = time_offset;
-
+            object->times[object->_times_length].time_offset = time_offset;
             object->times[object->_times_length].repeated = 0;
             object->_times_length++;
         }
     }
+
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
     for (uint16_t i = 4; i < length_offset + 4; i += MTC_VALUE_WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
@@ -90,7 +91,10 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
             fprintf(stderr, "Key size out of range\nThis is likely due to version encoding/decoding mismatch!");
             exit(-1);
         }
+
+
         const mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
+        // printf("Key %d | Value %d\n", key, value);
         if (object->point_map[key].length == object->_alloc_size_points) {
             object->_alloc_size_points *= 2;
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {
@@ -105,7 +109,7 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
         }
 
         if (object->point_map[key].length == 0) {
-            object->point_map[key].points[0].time_offset = object->times[object->_times_length - 1].time_offset;
+            object->point_map[key].points[0].time_offset = &object->times[object->_times_length - 1].time_offset;
             object->point_map[key].points[0].value = value;
             object->point_map[key].points[0].repeated = 0;
             object->point_map[key].length++;
@@ -115,13 +119,18 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
                 object->point_map[key].points[length - 1].repeated++;
             } else {
                 object->point_map[key].points[length].time_offset =
-                    object->times[object->_times_length - 1].time_offset;
+                    &object->times[object->_times_length - 1].time_offset;
                 object->point_map[key].points[length].value = value;
                 object->point_map[key].points[length].repeated = 0;
                 object->point_map[key].length++;
             }
         }
     }
+    // uint64_t timeLength = 0;
+    // for (uint64_t i = 0; i < object->_times_length; i++) {
+    //     timeLength += object->times[i].repeated;
+    // }
+
 }
 
 static int has_extension(const char* filename, const char* extension) {
@@ -202,5 +211,5 @@ void decode(const char* filename, struct MtcObject* object) {
 
 cleanUpFunction:
     free(buffer);
-    fclose(fp);
+    // fclose(fp);
 }

@@ -18,6 +18,9 @@ endif ()
 find_package(Qt6 COMPONENTS Core Widgets OpenGL REQUIRED)
 find_package(Qt6 COMPONENTS PrintSupport REQUIRED)
 
+message(WARNING "MemoryGUI has debug symbols")
+set(CMAKE_BUILD_TYPE Debug)
+
 SET(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp

@@ -89,28 +89,23 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     }
 
     const MtcObject* object = _loader->getMtcObject();
-    uint64_t sampleRate = 50;
+    uint64_t sampleRate = 1;
 
     QVector<double> times;
     uint64_t timeSum = 0;
     times.reserve(object->size / sampleRate);
     uint64_t c = 0;
     for (uint64_t i = 0; i < object->_times_length; i++) {
-        for (uint64_t j = 0; j < object->times[i].repeated; j++) {
-            timeSum += *object->times[i].time_offset;
-            if (c == sampleRate) {
-                times.push_back(timeSum);
-                c = 0;
-                continue;
-            }
-            c++;
+        for (uint64_t j = 0; j < object->times[i].repeated + 1; j++) {
+            timeSum += object->times[i].time_offset;
+            times.push_back(timeSum);
         }
     }
     // _plot->xAxis->setRange(0, times.last());
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
     // std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
-    graph->setPen(QPen(generateRandomColor()));
+    graph->setPen(QPen(QColor(255, 0, 0 ), 2));
     graph->setName(QString::fromStdString(mtc::MTC_INDEX_MAPPING.at(key)));
 
     emit queueRendering(&object->point_map[key], times, object->size, graph);

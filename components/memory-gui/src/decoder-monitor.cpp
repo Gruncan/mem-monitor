@@ -15,5 +15,5 @@ void DecodeMonitor::monitorProgress() {
         progress = queryDecodeProgress(_object);
         emit progressQueried(progress);
         QThread::msleep(100);
-    } while (progress < 98);
+    } while (progress < 97);
 }

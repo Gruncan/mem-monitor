@@ -19,7 +19,7 @@ struct MtcPointMap {
 };
 
 struct MtcTime {
-    uint16_t* time_offset;
+    uint16_t time_offset;
     uint64_t repeated;
 };
 
