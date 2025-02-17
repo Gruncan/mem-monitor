@@ -123,9 +123,9 @@ inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
 
 static uint8_t decode_tchunk(const byte_t* buffer, struct TMtcObject* object) {
     uint64_t seconds = ARRAY_COMBINE4(buffer, 0);
-    if (object->size == 0) {
-        printf("Starting timestamp: %llu seconds\n", seconds);
-    }
+    // if (object->size == 0) {
+    //     printf("Starting timestamp: %llu seconds\n", seconds);
+    // }
     uint64_t micro_seconds = ARRAY_COMBINE4(buffer, 4);
     micro_seconds += seconds * 1000000;
 
@@ -271,7 +271,7 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     }
     object->points = new_points_ptr;
 
-    printf("Last timestamp: %llu\n", prev_micro_seconds / 1000000);
+    // printf("Last timestamp: %llu\n", prev_micro_seconds / 1000000);
 cleanUpFunction:
     free(buffer);
     fclose(fp);
