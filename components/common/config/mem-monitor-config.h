@@ -55,8 +55,8 @@ typedef uint32_t mtc_point_size_t;
 #define MTC_VALUE_WRITE_OFFSET 4
 
 #else
-#define LOAD_VALUE_DATA(buffer, index)                                                                                 \
-    (((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2])
+#define LOAD_MTC_VALUE_DATA(buffer, index)                                                                                 \
+    (((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2]))
 
 typedef uint16_t mtc_point_size_t;
 
