@@ -15,7 +15,7 @@
 #define READS_BEFORE 100
 
 
-const char* argp_program_version = "3.0";
+const char* argp_program_version = "3.1";
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
 static char doc[] = "Pull memory information";
@@ -198,11 +198,11 @@ int main(int argc, char* argv[]) {
     struct arguments arguments;
 
     arguments.time = 5000;
-    arguments.filename = "memlog.json";
+    arguments.filename = "test.mtc";
     arguments.command = NULL;
     arguments.args = NULL;
     arguments.process_id = -1;
-    arguments.process_name = NULL;
+    arguments.process_name = "MemoryGUI";
     arguments.is_collecting_args = 0;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
