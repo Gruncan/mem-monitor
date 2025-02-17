@@ -91,7 +91,7 @@ void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     const size_t length = 3;
     char* files[] = {"/proc/%d/oom_adj", "/proc/%d/oom_score", "/proc/%d/oom_score_adj"};
 
-    char filenames[length][20];
+    char filenames[length][30];
 
     for (int i = 0; i < length; i++) {
         sprintf(filenames[i], files[i], pid);
