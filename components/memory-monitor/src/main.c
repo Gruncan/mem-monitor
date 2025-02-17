@@ -15,8 +15,8 @@
 #define READS_BEFORE 100
 
 
-const char* argp_program_version = "1.5";
-const char* argp_program_bug_address = "<bug@example.com>";
+const char* argp_program_version = "3.0";
+const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
 static char doc[] = "Pull memory information";
 static char args_doc[] = "-f <filename> -t <delay time> -p <program to run>";
