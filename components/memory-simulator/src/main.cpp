@@ -57,7 +57,7 @@ enum SimulationSpeed {
 
 enum SimulationMode {
     SINGLE,
-    SIMULATION,
+    REPEAT,
 };
 
 
@@ -79,7 +79,7 @@ enum SimulationMode parseMode(const char* modeStr) {
     if (strcmp(modeStr, "single") == 0) {
         return SINGLE;
     }else if (strcmp(modeStr, "repeat") == 0) {
-        return SIMULATION;
+        return REPEAT;
     }
     return SINGLE;
 }
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
     const enum SimulationSpeed speed = parseSpeed(speedStr);
     const enum SimulationMode mode = parseMode(modeStr);
 
-    if (mode == SINGLE) {
+    if (mode == REPEAT) {
         createTMtcStream(&stream);
         stream_decode_tmtc(filename, &stream, 1);
         if (stream.fp == NULL) {
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
         struct TMtcObject* object;
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-        std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
+
         do {
             object = stream_tmtc_next(&stream);
             if (object == NULL) {
@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
 
         now = std::chrono::system_clock::now();
         now_time = std::chrono::system_clock::to_time_t(now);
-        std::cout << "Timestamp (" << iteration << "): " << now_time << std::endl;
+
     }else {
         createTMtcObject(&tmtc_object);
         printf("Loading file...\n");
@@ -261,7 +261,8 @@ int main(int argc, char* argv[]) {
                 printf("Memory leaks: %lu\n", addressMapping.size());
             }
             iteration++;
-            addressMapping.clear();
+            // addressMapping.clear();
+            break;
         }
     }
 
