@@ -9,7 +9,7 @@ TEST_EXEC = mtc_tests
 TEST_STREAM_EXEC = tmtc_stream_exec
 
 SRCS = src/mtccdecoder.c src/tmtcdecoder.c
-TEST_SRC = tests/mtc-tests.cpp
+TEST_SRC = tests/tmtc-tests.cpp
 TEST_STREAM_SRC = tests/tmtc-stream-tests.cpp
 
 OBJS = $(SRCS:.c=.o)
