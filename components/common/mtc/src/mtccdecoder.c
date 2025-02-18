@@ -16,7 +16,7 @@
 #define MAX_PROC_SIZE ((KEY_SIZE_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
 #define MAX_NO_PROC_SIZE ((KEY_SIZE_NO_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
 
-static uint16_t CHUNK_SIZE = MAX_NO_PROC_SIZE;
+static uint16_t CHUNK_SIZE = MAX_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
 
 inline void createMtcObject(struct MtcObject* object) {
@@ -83,6 +83,9 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
             object->_times_length++;
         }
     }
+
+    static int iter = 0;
+
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
     for (uint16_t i = 4; i < length_offset + 4; i += MTC_VALUE_WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
@@ -122,6 +125,7 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
             }
         }
     }
+    printf("Iteration: %d\n", iter++);
 }
 
 static int has_extension(const char* filename, const char* extension) {
@@ -166,9 +170,9 @@ void decode(const char* filename, struct MtcObject* object) {
 
     decode_header(buffer, object);
 
-    if (object->version % 2 == 0) {
-        CHUNK_SIZE = MAX_PROC_SIZE;
-    } else {
+    printf("CHUNKSIZE: %d\n", CHUNK_SIZE);
+    if (object->version % 2 != 0) {
+        CHUNK_SIZE = MAX_NO_PROC_SIZE;
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
         KEY_SIZE = KEY_SIZE_NO_PROC;
         object->_key_size = KEY_SIZE_NO_PROC;
