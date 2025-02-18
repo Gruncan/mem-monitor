@@ -287,6 +287,7 @@ int test_write_mem_header() {
     struct mem_value_s* header_value = test_queue.head;
 
     ASSERT_EQUAL(header_value->value->length, 5);
+    // TODO type should be changed
     ushort* header_content = header_value->value->data;
 
     ASSERT_EQUAL(header_content[0], 1);
@@ -316,6 +317,8 @@ int test_write_mem_body_1() {
 
     set_struct_incremental_values((unsigned long*) (&mem_info), sizeof(MemInfo), sizeof(MemVmInfo) / SIZE_UL);
 
+    // mem_info.directMap1G = 14444444;
+
     write_mem(&test_writer, &mem_info, &mem_vm_info, NULL);
 
     struct mem_value_s* header_value = test_queue.head;
@@ -335,7 +338,7 @@ int test_write_mem_body_1() {
     int v = 0;
     for (int i = 0; i < header_value->value->length - 4; i += MTC_VALUE_WRITE_OFFSET) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        short value = ((ushort) buffer[i + 1] << 16) | ((ushort) buffer[i + 2] << 8) | (ushort) buffer[i + 3];
+        mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
         ASSERT_EQUAL(value, v + 1);
         v++;
     }
@@ -380,7 +383,7 @@ int test_write_mem_body_2() {
     int v = 0;
     for (int i = 0; i < header_value->value->length - 4; i += MTC_VALUE_WRITE_OFFSET) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        ushort value = ((ushort) buffer[i + 1] << 16) | (buffer[i + 2] << 8) | buffer[i + 3];
+        mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
         ASSERT_EQUAL(value, v + 1);
         v++;
     }

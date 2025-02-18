@@ -17,6 +17,7 @@
 
 #define MASK_40 0xFFFFFFFFFF
 #define MASK_32 0xFFFFFFFF
+#define MASK_24 0xFFFFFF
 #define MASK_16 0xFFFF
 #define MASK_12 0x0FFF
 #define MASK_8 0xFF
@@ -25,10 +26,15 @@
 #define MASK_4 0x0F
 
 #define VERSION 3
+#define MTC_VALUE_MASK MASK_24
 
 #ifdef VERSION_1
 #undef VERSION
 #define VERSION 1
+
+#undef MTC_VALUE_MASK
+#define MTC_VALUE_MASK MASK_16
+
 #endif
 
 
@@ -175,8 +181,8 @@ ushort timeval_diff_ms(const struct timeval* start_time, const struct timeval* e
 }
 
 
-void write_data_content(void* buffer, const uint offset, mk_size_t key, ushort value) {
-    value &= MASK_16;
+void write_data_content(void* buffer, const uint offset, mk_size_t key, mtc_point_size_t value) {
+    value &= MTC_VALUE_MASK;
     key &= (byte_t) MASK_8;
 
     byte_t* dest = (byte_t*) buffer + offset;

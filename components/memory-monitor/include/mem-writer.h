@@ -46,6 +46,6 @@ void* write_mtc_header(const struct timeval* tv, uint8_t version);
 
 uint write_struct_data(void* buffer, void* struct_ptr, uint struct_length, uint mem_offset, uint key_offset);
 
-void write_data_content(void* buffer, uint offset, mk_size_t key, ushort value);
+void write_data_content(void* buffer, uint offset, mk_size_t key, mtc_point_size_t value);
 
 #endif // MEM_WRITER_H
