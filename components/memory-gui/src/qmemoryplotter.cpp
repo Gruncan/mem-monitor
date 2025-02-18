@@ -96,7 +96,7 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     times.reserve(object->size / sampleRate);
     uint64_t c = 0;
     for (uint64_t i = 0; i < object->_times_length; i++) {
-        for (uint64_t j = 0; j < object->times[i].repeated; j++) {
+        for (uint64_t j = 0; j < object->times[i].repeated + 1; j++) {
             timeSum += *object->times[i].time_offset;
             if (c == sampleRate) {
                 times.push_back(timeSum);
