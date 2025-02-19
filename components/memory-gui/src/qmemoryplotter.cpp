@@ -13,9 +13,9 @@
 
 static constexpr int QUALITY = 1000;
 
-QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
+QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoadersGroup* loaders,
                                QMemoryAnimateControls* animateControls)
-    : QWidget(parent), _plot(plot), _loader(loader), gen(1), animateControls(animateControls),
+    : QWidget(parent), _plot(plot), _loaders(loaders), gen(1), animateControls(animateControls),
       isAnimationRunning(false), isLoaded(false) {
     _plotRender = new QPlotRender(_plot);
 
@@ -88,22 +88,23 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
         _plot->legend->setBorderPen(QPen(Qt::black));
     }
 
-    const MtcObject* object = _loader->getMtcObject();
-    uint64_t sampleRate = 50;
+    const MtcObject* object = _loaders->getSelectedLoader()->getMtcObject();
+    uint64_t sampleRate = 1;
 
     QVector<double> times;
     uint64_t timeSum = 0;
-    times.reserve(object->size / sampleRate);
+    times.reserve(object->size);
     uint64_t c = 0;
     for (uint64_t i = 0; i < object->_times_length; i++) {
         for (uint64_t j = 0; j < object->times[i].repeated + 1; j++) {
             timeSum += *object->times[i].time_offset;
-            if (c == sampleRate) {
-                times.push_back(timeSum);
-                c = 0;
-                continue;
-            }
-            c++;
+            times.push_back(timeSum);
+        //    if (c == sampleRate) {
+          //      times.push_back(timeSum);
+          //      c = 0;
+            //    continue;
+           // }
+           // c++;
         }
     }
     // _plot->xAxis->setRange(0, times.last());
@@ -208,7 +209,7 @@ void QMemoryPlotter::playClicked() {
 
     _plot->xAxis->setRange(0, timeSpacing);
     const mk_size_t key = plotsEnabled.begin()->first;
-    const MtcObject* object = _loader->getMtcObject();
+    const MtcObject* object = _loaders->getSelectedLoader()->getMtcObject();
     if (!hasPlayed) {
         hasPlayed = true;
         emit queueAnimationRendering(&object->point_map[key], object->times, object->size, object->_times_length,

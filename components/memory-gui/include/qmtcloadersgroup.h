@@ -16,8 +16,13 @@ class QMtcLoadersGroup : public QWidget {
 
     QMtcLoader* getLoader(mk_size_t index) const;
 
+    QMtcLoader* getSelectedLoader() const;
+
+    void checkboxChanged(uint8_t index);
+
   private:
     std::vector<QMtcLoader*> mtcLoaders;
+    uint8_t selectedLoader;
 };
 
 

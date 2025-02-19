@@ -64,6 +64,9 @@ else ()
     message(FATAL_ERROR "Can't link to decode library")
 endif ()
 
+message(WARNING "MemoryGui has debug symbols")
+set(CMAKE_BUILD_TYPE Debug)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/MemoryGUI_autogen/include)
 
 target_compile_definitions(MemoryGUI PRIVATE QCUSTOMPLOT_COMPILE_LIBRARY QCUSTOMPLOT_USE_OPENGL)
