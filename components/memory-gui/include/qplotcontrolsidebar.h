@@ -18,7 +18,8 @@ class QPlotControlSidebar : public QWidget {
     void setCategories(const std::vector<mtc::MtcCategories>& categories);
 
   public Q_SLOTS:
-    void enableNonDefaultFields(const std::map<mk_size_t, bool>* activeFields);
+    void enableNonDefaultFields(const std::map<mk_size_t, bool>* activeFields, uint8_t index);
+    void setCheckedItems(const std::vector<mk_size_t>& keys);
 
   Q_SIGNALS:
     void categoriesChanged(const QString& category, const QString& plot, bool enabled);

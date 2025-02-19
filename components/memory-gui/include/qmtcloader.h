@@ -20,14 +20,17 @@ class QMtcLoader : public QWidget {
     Q_OBJECT
 
   public:
-    explicit QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar, bool checked=false);
+    explicit QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar, uint8_t index, bool checked=false);
     ~QMtcLoader() override;
 
     MtcObject* getMtcObject();
 
     void setIsChecked(bool checked);
 
+    void setCheckedPlots(const std::vector<mk_size_t>& keys);
+
     bool isChecked;
+
 
   public Q_SLOTS:
     void load();
@@ -39,7 +42,8 @@ class QMtcLoader : public QWidget {
     void decode(const std::string& filename);
     void removeFile();
     void displayMetaInfo();
-    void enableNonDefaultFields(std::map<mk_size_t, bool>* defaultFields);
+    void enableNonDefaultFields(std::map<mk_size_t, bool>* defaultFields, uint8_t index);
+    void setCheckedItems(std::vector<mk_size_t> keys);
     void stateChanged();
 
   private:
@@ -59,6 +63,12 @@ class QMtcLoader : public QWidget {
     QThread* monitorThread;
 
     MtcObject* object;
+
+    uint8_t index;
+
+    std::map<mk_size_t, bool>* nonDefaultFields;
+
+    bool isLoaded;
 };
 
 

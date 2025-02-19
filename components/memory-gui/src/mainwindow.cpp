@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     std::vector<QMtcLoader*> loaders;
     for (int i = 1; i <= 3; i++) {
-        loaders.push_back(new QMtcLoader(this, QString("Load %1").arg(i).toStdString().c_str(), sidebar, i == 1));
+        loaders.push_back(new QMtcLoader(this, QString("Load %1").arg(i).toStdString().c_str(), sidebar, i-1, i == 1));
     }
 
     loadersGroup = new QMtcLoadersGroup(this, loaders);
@@ -31,9 +31,11 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 void MainWindow::initialisePlot() {
-    ui->plot->setDisabled(false);
-    plotter->setIsLoaded(true);
-    connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
+    if (!plotter->loaded()) {
+        ui->plot->setDisabled(false);
+        plotter->setIsLoaded(true);
+        connect(sidebar, &QPlotControlSidebar::categoriesChanged, plotter, &QMemoryPlotter::plotToggleChange);
+    }
 }
 
 MainWindow::~MainWindow() {

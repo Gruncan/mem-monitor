@@ -17,11 +17,6 @@ QPlotControlSidebar::QPlotControlSidebar(QWidget* parent) : QWidget(parent) {
     treeWidget->setContentsMargins(0, 0, 0, 10);
     layout->addWidget(treeWidget);
 
-    connect(treeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item) {
-        if (item->parent()) {
-            emit categoriesChanged(item->parent()->text(0), item->text(0), item->checkState(0) == Qt::Checked);
-        }
-    });
     connect(this, &QPlotControlSidebar::initialisePlot, reinterpret_cast<MainWindow*>(parent),
             &MainWindow::initialisePlot);
 }
@@ -38,6 +33,12 @@ void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& c
         }
         item->setDisabled(true);
     }
+    connect(treeWidget, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem* item) {
+        qDebug() << "item changed";
+        if (item->parent()) {
+            emit categoriesChanged(item->parent()->text(0), item->text(0), item->checkState(0) == Qt::Checked);
+        }
+    });
 }
 
 
@@ -63,7 +64,7 @@ QTreeWidgetItem* QPlotControlSidebar::createCategoryItem(const mtc::MtcCategorie
     return item;
 }
 
-void QPlotControlSidebar::enableNonDefaultFields(const std::map<mk_size_t, bool>* defaultFields) {
+void QPlotControlSidebar::enableNonDefaultFields(const std::map<mk_size_t, bool>* defaultFields, uint8_t index) {
     for (uint16_t i = 0; i < treeWidget->topLevelItemCount(); i++) {
         QTreeWidgetItem* item = treeWidget->topLevelItem(i);
         for (uint16_t j = 0; j < item->childCount(); j++) {
@@ -72,7 +73,21 @@ void QPlotControlSidebar::enableNonDefaultFields(const std::map<mk_size_t, bool>
                 item->setDisabled(false);
                 child->setDisabled(false);
             }
+            child->setCheckState(0, Qt::Unchecked);
         }
     }
     emit initialisePlot();
+}
+
+void QPlotControlSidebar::setCheckedItems(const std::vector<mk_size_t>& keys) {
+    // TODO improve this
+    for (int i = 0; i < treeWidget->topLevelItemCount(); i++) {
+        const QTreeWidgetItem* item = treeWidget->topLevelItem(i);
+        for (int j = 0; j < item->childCount(); j++) {
+            QTreeMemoryWidgetItem* child = reinterpret_cast<QTreeMemoryWidgetItem*>(item->child(j));
+            if (std::find(keys.begin(), keys.end(), child->get_key()) != keys.end()) {
+                child->setCheckState(0, Qt::Checked);
+            }
+        }
+    }
 }
