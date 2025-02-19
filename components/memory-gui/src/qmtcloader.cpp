@@ -6,9 +6,11 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QThread>
+#include <qcheckbox.h>
 
 
-QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent) {
+QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar, bool checked) : QWidget(parent),
+isChecked(checked){
     setObjectName(name);
 
     mainLayout = new QVBoxLayout(this);
@@ -16,8 +18,13 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     frame->setFrameShape(QFrame::StyledPanel);
     mainLayout->addWidget(frame);
 
+
     frameLayout = new QVBoxLayout(frame);
     frameLayout->setContentsMargins(10, 10, 10, 10);
+
+    checkbox = new QCheckBox("", this);
+    checkbox->setChecked(isChecked);
+    mainLayout->addWidget(checkbox);
 
     label = new QLabel("", this);
     label->setAlignment(Qt::AlignCenter);
@@ -33,6 +40,7 @@ QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* s
     frameLayout->addWidget(button);
 
     connect(button, &QPushButton::clicked, this, &QMtcLoader::load);
+    connect(checkbox, &QCheckBox::checkStateChanged, this, &QMtcLoader::checkBoxStateChanged);
 
 
     workerThread = new QThread;
@@ -120,6 +128,25 @@ void QMtcLoader::loaded(const std::string& filePath) {
 
     emit enableNonDefaultFields(nonDefaultFields);
 }
+
+
+void QMtcLoader::checkBoxStateChanged(Qt::CheckState state) {
+    if (state == Qt::CheckState::Checked && !isChecked) {
+        isChecked = true;
+        emit stateChanged();
+    } else if (state == Qt::CheckState::Unchecked && isChecked) {
+        isChecked = false;
+        emit stateChanged();
+    }else {
+        return; //What is partially checked?
+    }
+}
+
+void QMtcLoader::setIsChecked(bool checked) {
+    isChecked = checked;
+    checkbox->setCheckState(checked ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+}
+
 
 MtcObject* QMtcLoader::getMtcObject() {
     return object;

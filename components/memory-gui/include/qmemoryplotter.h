@@ -6,6 +6,7 @@
 #include "qcustomplot.h"
 #include "qmemoryanimatecontrols.h"
 #include "qmtcloader.h"
+#include "qmtcloadersgroup.h"
 #include "qplotrender.h"
 
 
@@ -13,7 +14,7 @@ class QMemoryPlotter : public QWidget {
     Q_OBJECT
 
   public:
-    explicit QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
+    explicit QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoadersGroup* loaders,
                             QMemoryAnimateControls* animateControls);
 
     void addPlot(mk_size_t key);
@@ -58,7 +59,7 @@ class QMemoryPlotter : public QWidget {
 
     std::map<mk_size_t, QCPGraph*> plotsEnabled;
 
-    QMtcLoader* _loader;
+    QMtcLoadersGroup* _loaders;
 
     QPlotRender* _plotRender;
 

@@ -25,7 +25,7 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
 
     values.clear();
 
-    values.reserve(length / sampleRate);
+    values.reserve(length);
 
 
     uint64_t c = 0;
@@ -34,12 +34,13 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
             valueMax = point_map->points[i].value;
         }
         for (uint64_t j = 0; j < point_map->points[i].repeated + 1; j++) {
-            if (c == sampleRate) {
-                values.push_back(point_map->points[i].value);
-                c = 0;
-                continue;
-            }
-            c++;
+            values.push_back(point_map->points[i].value);
+          //  if (c == sampleRate) {
+           //     values.push_back(point_map->points[i].value);
+           //     c = 0;
+             //   continue;
+           // }
+            //c++;
         }
     }
 
