@@ -43,8 +43,16 @@ QMtcLoader* QMtcLoadersGroup::getLoader(const mk_size_t index) const {
     return mtcLoaders.at(index);
 }
 
+uint8_t QMtcLoadersGroup::getSelectedLoaderIndex() const {
+    return selectedLoader;
+}
+
 QMtcLoader* QMtcLoadersGroup::getSelectedLoader() const {
     return mtcLoaders.at(selectedLoader);
+}
+
+bool QMtcLoadersGroup::isSelectedLoader(uint8_t i) const {
+    return i == selectedLoader;
 }
 
 
@@ -54,4 +62,5 @@ void QMtcLoadersGroup::checkboxChanged(uint8_t index) {
             mtcLoaders[i]->setIsChecked(false);
         }
     }
+
 }

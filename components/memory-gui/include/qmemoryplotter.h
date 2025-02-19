@@ -28,6 +28,7 @@ class QMemoryPlotter : public QWidget {
     void setSpinBoxRanges(double xMin, double xMax, double yMin, double yMax);
 
     void setIsLoaded(bool isLoaded);
+    bool loaded() const;
 
   public Q_SLOTS:
 
@@ -57,7 +58,7 @@ class QMemoryPlotter : public QWidget {
   private:
     QCustomPlot* _plot;
 
-    std::map<mk_size_t, QCPGraph*> plotsEnabled;
+    std::vector<std::map<mk_size_t, QCPGraph*>*> plotsEnabled;
 
     QMtcLoadersGroup* _loaders;
 

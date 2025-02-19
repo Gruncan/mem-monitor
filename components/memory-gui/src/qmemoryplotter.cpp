@@ -33,7 +33,12 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoadersGr
     connect(this, &QMemoryPlotter::stopAnimation, _plotRender, &QPlotRender::stopAnimation);
 
     renderThread->start();
-    plotsEnabled.clear();
+    plotsEnabled = std::vector<std::map<mk_size_t, QCPGraph*>*>();
+    plotsEnabled.reserve(_loaders->length());
+
+    for (uint8_t i =0; i < _loaders->length(); i++) {
+        plotsEnabled[i] = new std::map<mk_size_t, QCPGraph*>();
+    }
 
     QWidget* controlsWidget = new QWidget(parent);
     controlsWidget->setGeometry(QRect(200, 520, 100, 150));
@@ -80,8 +85,10 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoadersGr
 }
 
 void QMemoryPlotter::addPlot(mk_size_t key) {
+    uint8_t index = _loaders->getSelectedLoaderIndex();
     QCPGraph* graph = _plot->addGraph();
-    plotsEnabled[key] = graph;
+
+    (*plotsEnabled[index])[key] = graph;
     if (_plot->graphCount() == 1) {
         _plot->legend->setVisible(true);
         _plot->legend->setBrush(QBrush(QColor(255, 255, 255, 230)));
@@ -111,18 +118,19 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread
     // std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
-    graph->setPen(QPen(generateRandomColor()));
+    graph->setPen(QPen(generateRandomColor(), 2));
     graph->setName(QString::fromStdString(mtc::MTC_INDEX_MAPPING.at(key)));
 
     emit queueRendering(&object->point_map[key], times, object->size, graph);
 }
 
 void QMemoryPlotter::removePlot(mk_size_t key) {
+    uint8_t index = _loaders->getSelectedLoaderIndex();
     if (_plot->graphCount() == 1) {
         _plot->legend->setVisible(false);
     }
-    _plot->removeGraph(plotsEnabled[key]);
-    plotsEnabled.erase(key);
+    _plot->removeGraph(plotsEnabled[index]->at(key));
+    plotsEnabled[index]->erase(key);
     if (plotsEnabled.empty()) {
         hasPlayed = false;
     }
@@ -139,7 +147,17 @@ void QMemoryPlotter::plotToggleChange(const QString& category, const QString& pl
     }
 
     const mk_size_t key = value->second;
+    int index = _loaders->getSelectedLoaderIndex();
 
+    std::vector<mk_size_t> keys;
+    keys.reserve(plotsEnabled[index]->size());
+    for (const auto& pair : *plotsEnabled[index]) {
+        keys.push_back(pair.first);
+    }
+
+    qDebug() << "Plot: " << keys;
+
+    _loaders->getSelectedLoader()->setCheckedPlots(keys);
     if (enabled) {
         addPlot(key);
     } else {
@@ -206,14 +224,15 @@ void QMemoryPlotter::playClicked() {
     if (_plot->graphCount() != 1) {
         return;
     }
+    uint8_t index = _loaders->getSelectedLoaderIndex();
 
     _plot->xAxis->setRange(0, timeSpacing);
-    const mk_size_t key = plotsEnabled.begin()->first;
+    const mk_size_t key = plotsEnabled[index]->begin()->first;
     const MtcObject* object = _loaders->getSelectedLoader()->getMtcObject();
     if (!hasPlayed) {
         hasPlayed = true;
         emit queueAnimationRendering(&object->point_map[key], object->times, object->size, object->_times_length,
-                                     plotsEnabled[key], this->timeSpacing);
+                                     plotsEnabled[index]->at(key), this->timeSpacing);
     } else {
         emit startAnimation();
     }
@@ -240,6 +259,10 @@ void QMemoryPlotter::onTimeSpacingUpdate(int timeSpacing) {
 
 void QMemoryPlotter::setIsLoaded(const bool isLoaded) {
     this->isLoaded = isLoaded;
+}
+
+bool QMemoryPlotter::loaded() const {
+    return this->isLoaded;
 }
 
 void QMemoryPlotter::exportPlot() {

@@ -9,9 +9,10 @@
 #include <qcheckbox.h>
 
 
-QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar, bool checked) : QWidget(parent),
-isChecked(checked){
+QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar, uint8_t i, bool checked) : QWidget(parent),
+index(i), isChecked(checked), isLoaded(false){
     setObjectName(name);
+    nonDefaultFields = new std::map<mk_size_t, bool>();
 
     mainLayout = new QVBoxLayout(this);
     frame = new QFrame(this);
@@ -67,6 +68,7 @@ isChecked(checked){
     connect(monitor, &DecodeMonitor::progressQueried, this, &QMtcLoader::updateProgress);
 
     connect(this, &QMtcLoader::enableNonDefaultFields, sidebar, &QPlotControlSidebar::enableNonDefaultFields);
+    connect(this, &QMtcLoader::setCheckedItems, sidebar, &QPlotControlSidebar::setCheckedItems);
 
     workerThread->start();
     monitorThread->start();
@@ -108,6 +110,7 @@ void QMtcLoader::updateProgress(const int progress) {
 }
 
 void QMtcLoader::loaded(const std::string& filePath) {
+    isLoaded = true;
     monitorThread->exit();
     progressBar->setValue(100);
     label->setText(QString("%1\nVersion: %2\nLength: %3\n")
@@ -115,7 +118,6 @@ void QMtcLoader::loaded(const std::string& filePath) {
                        .arg(object->version)
                        .arg(object->size));
     label->setStyleSheet("");
-    std::map<mk_size_t, bool>* nonDefaultFields = new std::map<mk_size_t, bool>();
 
     for (mk_size_t i = 0; i < object->_key_size; i++) {
         (*nonDefaultFields)[i] = object->point_map[i].points[0].value == 0 && object->point_map[i].length == 1;
@@ -126,17 +128,25 @@ void QMtcLoader::loaded(const std::string& filePath) {
         }
     }
 
-    emit enableNonDefaultFields(nonDefaultFields);
+    if (isChecked) {
+        emit enableNonDefaultFields(nonDefaultFields, index);
+    }
 }
 
 
 void QMtcLoader::checkBoxStateChanged(Qt::CheckState state) {
+    qDebug() << "Checkbox state:" << isChecked << " Index: " << index;
+    if (!isLoaded) {
+        return;
+    }
     if (state == Qt::CheckState::Checked && !isChecked) {
         isChecked = true;
         emit stateChanged();
+        emit enableNonDefaultFields(nonDefaultFields, index);
     } else if (state == Qt::CheckState::Unchecked && isChecked) {
         isChecked = false;
         emit stateChanged();
+        emit enableNonDefaultFields(nonDefaultFields, index);
     }else {
         return; //What is partially checked?
     }
@@ -147,6 +157,10 @@ void QMtcLoader::setIsChecked(bool checked) {
     checkbox->setCheckState(checked ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 }
 
+
+void QMtcLoader::setCheckedPlots(const std::vector<mk_size_t>& keys) {
+    emit setCheckedItems(keys);
+}
 
 MtcObject* QMtcLoader::getMtcObject() {
     return object;
