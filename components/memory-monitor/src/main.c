@@ -15,7 +15,7 @@
 #define READS_BEFORE 100
 
 
-const char* argp_program_version = "3.2";
+const char* argp_program_version = "3.3";
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
 static char doc[] = "Pull memory information";
@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
 
             if (result != 0) {
                 if (is_child_proc != 1) {
-                    printf("Unsure exit status!\n");
+                    printf("Unsure exit status! %d\n", result);
                 } else if (WIFEXITED(status)) {
                     printf("Child exited with status %d\n", WEXITSTATUS(status));
                 } else if (WIFSTOPPED(status)) {
