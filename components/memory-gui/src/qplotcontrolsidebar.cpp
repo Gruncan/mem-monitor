@@ -34,7 +34,6 @@ void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& c
         item->setDisabled(true);
     }
     connect(treeWidget, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem* item) {
-        qDebug() << "item changed";
         if (item->parent()) {
             emit categoriesChanged(item->parent()->text(0), item->text(0), item->checkState(0) == Qt::Checked);
         }
@@ -87,6 +86,8 @@ void QPlotControlSidebar::setCheckedItems(const std::vector<mk_size_t>& keys) {
             QTreeMemoryWidgetItem* child = reinterpret_cast<QTreeMemoryWidgetItem*>(item->child(j));
             if (std::find(keys.begin(), keys.end(), child->get_key()) != keys.end()) {
                 child->setCheckState(0, Qt::Checked);
+            }else {
+                child->setCheckState(0, Qt::Unchecked);
             }
         }
     }

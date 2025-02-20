@@ -149,20 +149,19 @@ void QMemoryPlotter::plotToggleChange(const QString& category, const QString& pl
     const mk_size_t key = value->second;
     int index = _loaders->getSelectedLoaderIndex();
 
+    if (enabled) {
+        addPlot(key);
+    } else {
+        removePlot(key);
+    }
+
     std::vector<mk_size_t> keys;
     keys.reserve(plotsEnabled[index]->size());
     for (const auto& pair : *plotsEnabled[index]) {
         keys.push_back(pair.first);
     }
 
-    qDebug() << "Plot: " << keys;
-
     _loaders->getSelectedLoader()->setCheckedPlots(keys);
-    if (enabled) {
-        addPlot(key);
-    } else {
-        removePlot(key);
-    }
 }
 
 QColor QMemoryPlotter::generateRandomColor() {
