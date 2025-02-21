@@ -25,16 +25,23 @@
 #define MASK_5 0x1F
 #define MASK_4 0x0F
 
+
+#define VERSION 5
+#define MTC_VALUE_MASK MASK_32
+
+#ifdef VERSION_3
+#undef VERSION
 #define VERSION 3
+
+#undef MTC_VALUE_MASK
 #define MTC_VALUE_MASK MASK_24
 
-#ifdef VERSION_1
+#elifdef VERSION_1
 #undef VERSION
 #define VERSION 1
 
 #undef MTC_VALUE_MASK
 #define MTC_VALUE_MASK MASK_16
-
 #endif
 
 
