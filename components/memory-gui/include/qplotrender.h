@@ -20,6 +20,8 @@ class QPlotRender : public QObject {
 
     void setTimeSpacing(int spacing);
 
+    void setPointValues(MtcPointMap* point_map, int sampleRate=0);
+
 
   public Q_SLOTS:
     void queueRendering(MtcPointMap* point_map, const QVector<double>& times, uint64_t length, QCPGraph* graph);

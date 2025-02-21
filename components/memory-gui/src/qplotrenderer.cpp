@@ -19,6 +19,17 @@ QPlotRender::QPlotRender(QCustomPlot* plot) : plot(plot), timeSum(0), valueMax(0
 QPlotRender::~QPlotRender() {
 }
 
+void QPlotRender::setPointValues(MtcPointMap* point_map, ) {
+    for (uint64_t i = 0; i < point_map->length; i++) {
+        if (point_map->points[i].value > valueMax) {
+            valueMax = point_map->points[i].value;
+        }
+        for (uint64_t j = 0; j < point_map->points[i].repeated + 1; j++) {
+            values.push_back(point_map->points[i].value);
+        }
+    }
+}
+
 void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& times, const uint64_t length,
                                  QCPGraph* graph) {
     const uint64_t sampleRate = 50;
