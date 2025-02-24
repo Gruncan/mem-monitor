@@ -88,7 +88,10 @@ void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     free(content);
 }
 
-void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+char read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+    if (mem_proc_info == NULL)
+        return -1;
+
     const size_t length = 3;
 
     char* files[] = {"/proc/%d/oom_adj", "/proc/%d/oom_score", "/proc/%d/oom_score_adj"};
@@ -102,7 +105,7 @@ void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     if (stat(directory, &stats) == 0) {
         if (!S_ISDIR(stats.st_mode)) {
             reset_process_info(mem_proc_info);
-            return;
+            return -1;
         }
     }
 
@@ -127,6 +130,7 @@ void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     }
 
     read_process_mem_info(mem_proc_info, pid);
+    return 0;
 }
 
 void reset_process_info(MemProcInfo* mem_proc_info) {
