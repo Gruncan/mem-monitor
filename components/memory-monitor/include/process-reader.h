@@ -23,7 +23,7 @@ int init_process_info(MemProcInfo* mem_proc_info, pid_t pid);
 
 void read_process_mem_info(MemProcInfo* mem_proc_info, pid_t pid);
 
-void read_process_info(MemProcInfo* mem_proc_info, pid_t pid);
+char read_process_info(MemProcInfo* mem_proc_info, pid_t pid);
 
 void reset_process_info(MemProcInfo* mem_proc_info);
 
