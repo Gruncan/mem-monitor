@@ -8,9 +8,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MASK_32 0xFFFFFFFF
-#define MASK_8 0xFF
-#define MASK_8S 0x7F
 
 #define LOG_SIZE 34
 #define MIN_LOG_SIZE 18
