@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
 
 
-    printf("Size: %u\n", object.version);
+    printf("Size: %lu\n", object.version);
     std::cout << duration.count() / 1'000'000.0  << " seconds\n";
 
 
