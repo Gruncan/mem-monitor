@@ -19,6 +19,30 @@
 static uint16_t CHUNK_SIZE = MAX_PROC_SIZE;
 static uint8_t KEY_SIZE = KEY_SIZE_PROC;
 
+
+GEN_MTC_LOAD_FUNC_IMP(1, 2)
+
+GEN_MTC_LOAD_FUNC_IMP(3, 3)
+
+GEN_MTC_LOAD_FUNC_IMP(5, 4)
+
+static mtc_point_size_t load_mtc_data(const uint8_t version, const byte_t* buffer, const uint16_t index) {
+    switch (version) {
+        case 1:
+        case 2:
+            return MTC_LOAD_DATA(1, buffer, index);
+        case 3:
+        case 4:
+            return MTC_LOAD_DATA(3, buffer, index);
+        case 5:
+        case 6:
+            return MTC_LOAD_DATA(5, buffer, index);
+        default:
+            return 0;
+    }
+}
+
+
 inline void createMtcObject(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
     object->_alloc_size_points = INIT_SIZE;
@@ -84,15 +108,16 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
         }
     }
 
-
+    const uint8_t WRITE_OFFSET = MTC_WRITE_OFFSET[object->version-1];
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
-    for (uint16_t i = 4; i < length_offset + 4; i += MTC_VALUE_WRITE_OFFSET) {
+    for (uint16_t i = 4; i < length_offset + 4; i += WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
         if (key >= KEY_SIZE) {
             fprintf(stderr, "Key size out of range\nThis is likely due to version encoding/decoding mismatch!");
             exit(-1);
         }
-        const mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
+
+        const mtc_point_size_t value = load_mtc_data(object->version, buffer, i);
         if (object->point_map[key].length == object->_alloc_size_points) {
             object->_alloc_size_points *= 2;
             for (mk_size_t j = 0; j < KEY_SIZE; j++) {
