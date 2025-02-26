@@ -59,25 +59,24 @@
 #define MTC_V3_VALUE_WRITE_OFFSET 4
 #define MTC_V5_VALUE_WRITE_OFFSET 5
 
-static uint8_t MTC_WRITE_OFFSET[] = {MTC_V1_VALUE_WRITE_OFFSET, MTC_V1_VALUE_WRITE_OFFSET,
-                                    MTC_V3_VALUE_WRITE_OFFSET, MTC_V3_VALUE_WRITE_OFFSET,
-                                    MTC_V5_VALUE_WRITE_OFFSET, MTC_V5_VALUE_WRITE_OFFSET,
+static uint8_t MTC_WRITE_OFFSET[] = {
+    MTC_V1_VALUE_WRITE_OFFSET, MTC_V1_VALUE_WRITE_OFFSET,
+    MTC_V3_VALUE_WRITE_OFFSET, MTC_V3_VALUE_WRITE_OFFSET,
+    MTC_V5_VALUE_WRITE_OFFSET, MTC_V5_VALUE_WRITE_OFFSET,
 };
 
 #ifndef VERSION_3
 typedef uint32_t mtc_point_size_t;
 
 #define LOAD_MTC_VALUE_DATA(buffer, index)                                                                             \
-  (((mtc_point_size_t) (buffer)[(index) + 1] << 24) | \
-   ((mtc_point_size_t) (buffer)[(index) + 2] << 16) |              \
-   ((mtc_point_size_t) (buffer)[(index) + 3] << 8)  | \
-      ((buffer)[(index) + 4])) \
+    (((mtc_point_size_t) (buffer)[(index) + 1] << 24) | ((mtc_point_size_t) (buffer)[(index) + 2] << 16) |             \
+     ((mtc_point_size_t) (buffer)[(index) + 3] << 8) | ((buffer)[(index) + 4]))
 
-#define WRITE_MTC_VALUE_DATA(dest, value)   \
-    (dest)[1] = (byte_t) ((value) >> 24) & MASK_8;   \
-    (dest)[2] = (byte_t) ((value) >> 16) & MASK_8;   \
-    (dest)[3] = (byte_t) ((value) >> 8) & MASK_8;   \
-    (dest)[4] = (byte_t) ((value) & MASK_8);   \
+#define WRITE_MTC_VALUE_DATA(dest, value)                                                                              \
+    (dest)[1] = (byte_t) ((value) >> 24) & MASK_8;                                                                     \
+    (dest)[2] = (byte_t) ((value) >> 16) & MASK_8;                                                                     \
+    (dest)[3] = (byte_t) ((value) >> 8) & MASK_8;                                                                      \
+    (dest)[4] = (byte_t) ((value) & MASK_8);
 
 #define MTC_VALUE_WRITE_OFFSET 5
 
@@ -85,24 +84,22 @@ typedef uint32_t mtc_point_size_t;
 typedef uint32_t mtc_point_size_t;
 
 #define LOAD_MTC_VALUE_DATA(buffer, index)                                                                             \
-  (((mtc_point_size_t) (buffer)[(index) + 1] << 16) | \
-   ((mtc_point_size_t) (buffer)[(index) + 2] << 8) |              \
-      ((buffer)[(index) + 3]))   \
+    (((mtc_point_size_t) (buffer)[(index) + 1] << 16) | ((mtc_point_size_t) (buffer)[(index) + 2] << 8) |              \
+     ((buffer)[(index) + 3]))
 
-#define WRITE_MTC_VALUE_DATA(dest, value)   \
-    (dest)[1] = (byte_t) ((value) >> 16) & MASK_8;   \
-    (dest)[2] = (byte_t) ((value) >> 8) & MASK_8;   \
-    (dest)[3] = (byte_t) ((value) & MASK_8);   \
+#define WRITE_MTC_VALUE_DATA(dest, value)                                                                              \
+    (dest)[1] = (byte_t) ((value) >> 16) & MASK_8;                                                                     \
+    (dest)[2] = (byte_t) ((value) >> 8) & MASK_8;                                                                      \
+    (dest)[3] = (byte_t) ((value) & MASK_8);
 
 #define MTC_VALUE_WRITE_OFFSET 4
 
 #else
-#define LOAD_MTC_VALUE_DATA(buffer, index)                                                                                 \
-    (((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2])) \
+#define LOAD_MTC_VALUE_DATA(buffer, index) (((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2]))
 
-#define WRITE_MTC_VALUE_DATA(dest, value)   \
-    (dest)[1] = (byte_t) ((value) >> 8) & MASK_8; \
-    (dest)[2] = (byte_t) ((value) & MASK_8); \
+#define WRITE_MTC_VALUE_DATA(dest, value)                                                                              \
+    (dest)[1] = (byte_t) ((value) >> 8) & MASK_8;                                                                      \
+    (dest)[2] = (byte_t) ((value) & MASK_8);
 
 typedef uint16_t mtc_point_size_t;
 

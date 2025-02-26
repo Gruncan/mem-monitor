@@ -11,8 +11,6 @@
 #include <tmtcdecoder.h>
 
 
-
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
@@ -32,7 +30,7 @@ int main(int argc, char* argv[]) {
 
 
     printf("Size: %lu\n", object.version);
-    std::cout << duration.count() / 1'000'000.0  << " seconds\n";
+    std::cout << duration.count() / 1'000'000.0 << " seconds\n";
 
 
     return 0;
