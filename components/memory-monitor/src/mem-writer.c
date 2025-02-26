@@ -16,7 +16,6 @@
 #define FLUSH_INTERVAL 1
 
 
-
 #define VERSION 5
 #define MTC_VALUE_MASK MASK_32
 

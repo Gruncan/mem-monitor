@@ -15,20 +15,19 @@
 #define KEY_SIZE_NO_PROC 216
 
 
-
-#define MAX_PROC_SIZE(version) ((KEY_SIZE_PROC * MTC_WRITE_OFFSET[(version)-1]) + 4)
-#define MAX_NO_PROC_SIZE(version) ((KEY_SIZE_NO_PROC * MTC_WRITE_OFFSET[(version)-1]) + 4)
+#define MAX_PROC_SIZE(version) ((KEY_SIZE_PROC * MTC_WRITE_OFFSET[(version) - 1]) + 4)
+#define MAX_NO_PROC_SIZE(version) ((KEY_SIZE_NO_PROC * MTC_WRITE_OFFSET[(version) - 1]) + 4)
 
 static uint16_t CHUNK_SIZE = 0;
 
 static mk_size_t KEY_SIZE = KEY_SIZE_PROC;
 
-#define BUFFER_CHECK(buffer) \
-    if ((buffer) == NULL) {   \
-        perror("Failed to allocate buffer!");   \
-        fclose(fp);     \
-        return;     \
-    } \
+#define BUFFER_CHECK(buffer)                                                                                           \
+    if ((buffer) == NULL) {                                                                                            \
+        perror("Failed to allocate buffer!");                                                                          \
+        fclose(fp);                                                                                                    \
+        return;                                                                                                        \
+    }
 
 
 GEN_MTC_LOAD_FUNC_IMP(1, 2)
@@ -119,7 +118,7 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
         }
     }
 
-    const uint8_t WRITE_OFFSET = MTC_WRITE_OFFSET[object->version-1];
+    const uint8_t WRITE_OFFSET = MTC_WRITE_OFFSET[object->version - 1];
     const uint16_t length_offset = buffer[2] << 8 | buffer[3];
     for (uint16_t i = 4; i < length_offset + 4; i += WRITE_OFFSET) {
         const mk_size_t key = buffer[i];
@@ -207,7 +206,7 @@ void decode(const char* filename, struct MtcObject* object) {
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
         KEY_SIZE = KEY_SIZE_NO_PROC;
         object->_key_size = KEY_SIZE_NO_PROC;
-    }else {
+    } else {
         CHUNK_SIZE = MAX_PROC_SIZE(object->version);
     }
 
