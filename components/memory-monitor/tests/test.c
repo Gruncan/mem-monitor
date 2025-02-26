@@ -80,9 +80,9 @@ int test_struct_writer() {
     ASSERT_EQUAL(offset, (length * (MTC_VALUE_WRITE_OFFSET - 1)) + 4);
 
     int v = 0;
-    for (int i = 0; i < length + 4; i += 4) {
+    for (int i = 0; i < length + 4; i += MTC_VALUE_WRITE_OFFSET) {
         ASSERT_EQUAL(buffer[i], v); // Key
-        ushort value = ((ushort) buffer[i + 1] << 16) | ((ushort) buffer[i + 2] << 8) | buffer[i + 3];
+        const mtc_point_size_t value = LOAD_MTC_VALUE_DATA(buffer, i);
         ASSERT_EQUAL(value, v + 1);
         v++;
     }
@@ -102,7 +102,8 @@ int test_data_writer1() {
     ASSERT_EQUAL(buffer[0], 1);
     ASSERT_EQUAL(buffer[1], 0);
     ASSERT_EQUAL(buffer[2], 0);
-    ASSERT_EQUAL(buffer[3], 4);
+    ASSERT_EQUAL(buffer[3], 0);
+    ASSERT_EQUAL(buffer[4], MTC_VALUE_WRITE_OFFSET)
 
     return PASS;
 }
@@ -118,7 +119,8 @@ int test_data_writer2() {
     ASSERT_EQUAL(buffer[3], 1);
     ASSERT_EQUAL(buffer[4], 0);
     ASSERT_EQUAL(buffer[5], 0);
-    ASSERT_EQUAL(buffer[6], 4);
+    ASSERT_EQUAL(buffer[6], 0);
+    ASSERT_EQUAL(buffer[7], MTC_VALUE_WRITE_OFFSET);
 
     return PASS;
 }
@@ -128,12 +130,13 @@ int test_data_writer3() {
 
     memset(buffer, 0, MTC_VALUE_WRITE_OFFSET);
 
-    write_data_content(buffer, 0, 1, 65000);
+    write_data_content(buffer, 0, 1, 4000090000);
 
     ASSERT_EQUAL(buffer[0], 1);
-    ASSERT_EQUAL(buffer[1], 0);
-    ASSERT_EQUAL((unsigned char) buffer[2], 253);
-    ASSERT_EQUAL((unsigned char) buffer[3], 232)
+    ASSERT_EQUAL((byte_t) buffer[1], 0xee);
+    ASSERT_EQUAL((byte_t) buffer[2], 0x6c);
+    ASSERT_EQUAL((byte_t) buffer[3], 0x87)
+    ASSERT_EQUAL((byte_t) buffer[4], 0x90)
 
     return PASS;
 }
