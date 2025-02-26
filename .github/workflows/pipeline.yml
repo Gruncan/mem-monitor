@@ -347,7 +347,7 @@ jobs:
 
   test-tmtc-stream-decoder-output:
     runs-on: ubuntu-latest
-    needs: [ build-mtc-decoder-lib-test, build-tmtc-stream-decoder-lib-test]
+    needs: [ build-mtc-decoder-lib-test, build-tmtc-stream-decoder-lib-test, run-tracker-tests]
 
     steps:
       - name: Checkout Repository
