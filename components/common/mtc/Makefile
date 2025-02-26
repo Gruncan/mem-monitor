@@ -5,6 +5,7 @@ CFLAGS = -Wall -Wextra -O3
 AR = ar
 
 LIB_NAME = libmtc_decoder.a
+LIB_NAME_SHR = libmtc_decoder.so
 TEST_EXEC = mtc_tests
 TEST_STREAM_EXEC = tmtc_stream_exec
 
@@ -21,14 +22,21 @@ INCLUDES = -Iinclude -I../config
 all: $(LIB_NAME)
 all: CFLAGS += -std=c17
 
+shared: $(LIB_NAME_SHR)
+shared: CFLAGS += -fPIC
+
 test: $(TEST_EXEC)
 test: CFLAGS += -std=c++17
 
 teststream: $(TEST_STREAM_EXEC)
 teststream: CFLAGS += -std=c++17
 
+
 $(LIB_NAME): $(OBJS)
 	$(AR) rcs $@ $^
+
+$(LIB_NAME_SHR): $(OBJS)
+	$(CC) -shared -o $@ $^
 
 $(TEST_EXEC): $(TEST_OBJS)
 	$(CCPP) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIB_NAME)
