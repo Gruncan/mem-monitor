@@ -80,7 +80,7 @@ typedef uint32_t mtc_point_size_t;
 
 #define MTC_VALUE_WRITE_OFFSET 5
 
-#elifndef VERSION_1
+#elif !defined(VERSION_1)
 typedef uint32_t mtc_point_size_t;
 
 #define LOAD_MTC_VALUE_DATA(buffer, index)                                                                             \
