@@ -15,7 +15,7 @@
 #define READS_BEFORE 100
 
 
-const char* argp_program_version = "3.4";
+const char* argp_program_version = "4.0";
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
 static char doc[] = "Pull memory information";
