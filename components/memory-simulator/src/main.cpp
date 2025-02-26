@@ -78,13 +78,11 @@ enum SimulationSpeed parseSpeed(const char* speedStr) {
 enum SimulationMode parseMode(const char* modeStr) {
     if (strcmp(modeStr, "single") == 0) {
         return SINGLE;
-    }else if (strcmp(modeStr, "repeat") == 0) {
+    } else if (strcmp(modeStr, "repeat") == 0) {
         return REPEAT;
     }
     return SINGLE;
 }
-
-
 
 
 void simulatePoint(struct TMtcPoint* point) {
@@ -241,7 +239,7 @@ int main(int argc, char* argv[]) {
         now = std::chrono::system_clock::now();
         now_time = std::chrono::system_clock::to_time_t(now);
 
-    }else {
+    } else {
         createTMtcObject(&tmtc_object);
         printf("Loading file...\n");
         decode_tmtc(filename, &tmtc_object);
@@ -270,5 +268,4 @@ int main(int argc, char* argv[]) {
     printf("Memory leaks: %lu\n", addressMapping.size());
 
     return 0;
-
 }

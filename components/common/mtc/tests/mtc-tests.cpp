@@ -11,8 +11,6 @@
 #include <tmtcdecoder.h>
 
 
-
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
@@ -31,8 +29,8 @@ int main(int argc, char* argv[]) {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
 
 
-    printf("Size: %u\n", object.version);
-    std::cout << duration.count() / 1'000'000.0  << " seconds\n";
+    printf("Size: %lu\n", object.version);
+    std::cout << duration.count() / 1'000'000.0 << " seconds\n";
 
 
     return 0;

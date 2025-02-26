@@ -15,26 +15,23 @@
 
 #define FLUSH_INTERVAL 1
 
-#define MASK_40 0xFFFFFFFFFF
-#define MASK_32 0xFFFFFFFF
-#define MASK_24 0xFFFFFF
-#define MASK_16 0xFFFF
-#define MASK_12 0x0FFF
-#define MASK_8 0xFF
-#define MASK_6 0x3F
-#define MASK_5 0x1F
-#define MASK_4 0x0F
 
+#define VERSION 5
+#define MTC_VALUE_MASK MASK_32
+
+#ifdef VERSION_3
+#undef VERSION
 #define VERSION 3
+
+#undef MTC_VALUE_MASK
 #define MTC_VALUE_MASK MASK_24
 
-#ifdef VERSION_1
+#elifdef VERSION_1
 #undef VERSION
 #define VERSION 1
 
 #undef MTC_VALUE_MASK
 #define MTC_VALUE_MASK MASK_16
-
 #endif
 
 
@@ -189,14 +186,7 @@ void write_data_content(void* buffer, const uint offset, mk_size_t key, mtc_poin
 
 
     dest[0] = key;
-#ifdef VERSION_1
-    dest[1] = (byte_t) (value >> 8) & MASK_8;
-    dest[2] = (byte_t) (value & MASK_8);
-#else
-    dest[1] = (byte_t) (value >> 16) & MASK_8;
-    dest[2] = (byte_t) (value >> 8) & MASK_8;
-    dest[3] = (byte_t) (value & MASK_8);
-#endif
+    WRITE_MTC_VALUE_DATA(dest, value);
 }
 
 uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length, const uint mem_offset,
@@ -210,11 +200,8 @@ uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length,
 
         write_data_content(buffer, mem_offset + writeOffset, i + key_offset,
                            *(unsigned long*) ((byte_t*) struct_ptr + value_offset));
-#ifdef VERSION_1
-        writeOffset += 3;
-#else
-        writeOffset += 4;
-#endif
+
+        writeOffset += MTC_VALUE_WRITE_OFFSET;
     }
 
     return mem_offset + writeOffset;

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -87,11 +88,26 @@ void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     free(content);
 }
 
-void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+char read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+    if (mem_proc_info == NULL)
+        return -1;
+
     const size_t length = 3;
+
     char* files[] = {"/proc/%d/oom_adj", "/proc/%d/oom_score", "/proc/%d/oom_score_adj"};
 
     char filenames[length][30];
+
+    char directory[20];
+    sprintf(directory, "/proc/%d", pid);
+
+    struct stat stats;
+    if (stat(directory, &stats) == 0) {
+        if (!S_ISDIR(stats.st_mode)) {
+            reset_process_info(mem_proc_info);
+            return -1;
+        }
+    }
 
     for (int i = 0; i < length; i++) {
         sprintf(filenames[i], files[i], pid);
@@ -114,6 +130,7 @@ void read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     }
 
     read_process_mem_info(mem_proc_info, pid);
+    return 0;
 }
 
 void reset_process_info(MemProcInfo* mem_proc_info) {

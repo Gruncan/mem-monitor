@@ -3,6 +3,22 @@
 #define MTCCDECODER_H
 
 
+#define MTC_LOAD_FUNC_NAME(version) load_mtc_##version##_value_data
+
+#define MTC_LOAD_DATA(version, buffer, index) MTC_LOAD_FUNC_NAME(version)(buffer, index)
+
+#define GEN_MTC_LOAD_FUNC_SIG(version)                                                                                 \
+    mtc_point_size_t MTC_LOAD_FUNC_NAME(version)(const byte_t* buffer, uint16_t index)
+
+#define GEN_MTC_LOAD_FUNC_IMP(version, count)                                                                          \
+    inline GEN_MTC_LOAD_FUNC_SIG(version) {                                                                            \
+        mtc_point_size_t value = 0;                                                                                    \
+        for (uint8_t i = 1; i <= (count); i++) {                                                                       \
+            value |= (mtc_point_size_t) (buffer)[(index) + i] << (((count) - i) * 8);                                  \
+        }                                                                                                              \
+        return value;                                                                                                  \
+    }
+
 #include "stdint.h"
 
 #include "mem-monitor-config.h"
@@ -45,6 +61,13 @@ void decode(const char* filename, struct MtcObject* object);
 void createMtcObject(struct MtcObject* object);
 
 uint8_t queryDecodeProgress(struct MtcObject* object);
+
+
+GEN_MTC_LOAD_FUNC_SIG(1);
+
+GEN_MTC_LOAD_FUNC_SIG(3);
+
+GEN_MTC_LOAD_FUNC_SIG(5);
 
 #ifdef __cplusplus
 }

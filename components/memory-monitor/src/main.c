@@ -258,7 +258,9 @@ int main(int argc, char* argv[]) {
         read_mem_info(mem_info);
         read_mem_vm_info(mem_vm_info);
         if (pid != -1) {
-            read_process_info(mem_proc_info, pid);
+            const char result = read_process_info(mem_proc_info, pid);
+            if (result < 0)
+                pid = -1;
         }
         write_mem(mw, mem_info, mem_vm_info, mem_proc_info);
 
