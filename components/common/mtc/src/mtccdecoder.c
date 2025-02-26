@@ -7,17 +7,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #define HEADER_SIZE 5
 #define INIT_SIZE 5120
 
 #define KEY_SIZE_PROC 225
 #define KEY_SIZE_NO_PROC 216
 
-#define MAX_PROC_SIZE ((KEY_SIZE_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
-#define MAX_NO_PROC_SIZE ((KEY_SIZE_NO_PROC * MTC_VALUE_WRITE_OFFSET) + 4)
 
-static uint16_t CHUNK_SIZE = MAX_PROC_SIZE;
-static uint8_t KEY_SIZE = KEY_SIZE_PROC;
+
+#define MAX_PROC_SIZE(version) ((KEY_SIZE_PROC * MTC_WRITE_OFFSET[(version)-1]) + 4)
+#define MAX_NO_PROC_SIZE(version) ((KEY_SIZE_NO_PROC * MTC_WRITE_OFFSET[(version)-1]) + 4)
+
+static uint16_t CHUNK_SIZE = 0;
+
+static mk_size_t KEY_SIZE = KEY_SIZE_PROC;
+
+#define BUFFER_CHECK(buffer) \
+    if ((buffer) == NULL) {   \
+        perror("Failed to allocate buffer!");   \
+        fclose(fp);     \
+        return;     \
+    } \
 
 
 GEN_MTC_LOAD_FUNC_IMP(1, 2)
@@ -168,12 +179,8 @@ void decode(const char* filename, struct MtcObject* object) {
         return;
     }
 
-    byte_t* buffer = malloc(CHUNK_SIZE);
-    if (buffer == NULL) {
-        perror("Failed to allocate buffer!");
-        fclose(fp);
-        return;
-    }
+    byte_t* header_buffer = malloc(HEADER_SIZE * 2);
+    BUFFER_CHECK(header_buffer);
 
     fseek(fp, 0, SEEK_END);
 #ifdef __unix__
@@ -184,21 +191,28 @@ void decode(const char* filename, struct MtcObject* object) {
     fseek(fp, 0, SEEK_SET);
 
     size_t bytesRead = 0;
-    bytesRead = fread(buffer, 1, HEADER_SIZE, fp);
+    bytesRead = fread(header_buffer, 1, HEADER_SIZE, fp);
 
     if (bytesRead != HEADER_SIZE) {
         perror("Failed to read header!");
         goto cleanUpFunction;
     }
 
-    decode_header(buffer, object);
+    decode_header(header_buffer, object);
+
+    free(header_buffer);
 
     if (object->version % 2 != 0) {
-        CHUNK_SIZE = MAX_NO_PROC_SIZE;
+        CHUNK_SIZE = MAX_NO_PROC_SIZE(object->version);
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
         KEY_SIZE = KEY_SIZE_NO_PROC;
         object->_key_size = KEY_SIZE_NO_PROC;
+    }else {
+        CHUNK_SIZE = MAX_PROC_SIZE(object->version);
     }
+
+    byte_t* buffer = malloc(CHUNK_SIZE);
+    BUFFER_CHECK(buffer);
 
     while ((bytesRead = fread(buffer, 1, CHUNK_SIZE, fp)) > 0) {
         if (bytesRead != CHUNK_SIZE) {
