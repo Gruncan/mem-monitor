@@ -16,4 +16,6 @@ cd common/mtc
 make clean
 cd -
 
+rm lib_mem_tracker.so libmtc_decoder.a mem_monitor memorysimulator
+
 echo "Cleaned all artifacts"
