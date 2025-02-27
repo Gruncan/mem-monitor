@@ -68,5 +68,6 @@ char* mem_parse_file(const char* filename, size_t buffer_size, const uint8_t val
 
     fclose(fp);
 
+    if (content_size == 0) return NULL;
     return content;
 }

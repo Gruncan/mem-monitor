@@ -112,6 +112,7 @@ char read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     for (int i = 0; i < length; i++) {
         sprintf(filenames[i], files[i], pid);
         char* content = mem_parse_file(filenames[i], 8, READ_RAW);
+        if (content == NULL) break;
         const int value = atoi(content);
         switch (i) {
             case 0:

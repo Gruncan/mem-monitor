@@ -15,7 +15,15 @@
 #define READS_BEFORE 100
 
 
-const char* argp_program_version = "4.0";
+#ifndef MEM_DEBUG
+#define GET_MEM_VERSION(v) #v
+#else
+#define GET_MEM_VERSION(v) #v "d"
+#endif
+
+
+const char* argp_program_version = GET_MEM_VERSION(4.2);
+
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
 static char doc[] = "Pull memory information";
