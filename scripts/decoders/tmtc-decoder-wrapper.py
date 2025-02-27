@@ -56,6 +56,16 @@ class _TMtcStream(ctypes.Structure):
     ]
 
 
+class TMtcPoints:
+
+    def __init__(self, _points, _size):
+        self._points = _points
+        self.size = _size
+
+    def __iter__(self):
+        return iter(self._points)
+
+
 class TMtcPoint:
 
     def __init__(self, key, length, time_offset, values):
@@ -66,7 +76,6 @@ class TMtcPoint:
 
 
 class TMtcDecoder(metaclass=TMtcMeta):
-
 
     @classmethod
     def __init_lib(cls):
@@ -104,9 +113,8 @@ class TMtcDecoder(metaclass=TMtcMeta):
     def __del__(self):
         self._lib.destroyTMtcObject(ctypes.byref(self.__obj))
 
-    def decode(self, file: str):
-        c_file = ctypes.c_char_p(file.encode('utf-8'))
-        self._lib.decode_tmtc(c_file, ctypes.byref(self.__obj))
+
+    def __decode_internal(self):
         for i in range(self.__obj.size):
             point = self.__obj.points[i]
             values_array = ctypes.cast(
@@ -115,8 +123,13 @@ class TMtcDecoder(metaclass=TMtcMeta):
             ).contents
             yield TMtcPoint(point.key, point.length, point.time_offset, values_array)
 
+    def decode(self, file: str):
+        c_file = ctypes.c_char_p(file.encode('utf-8'))
+        self._lib.decode_tmtc(c_file, ctypes.byref(self.__obj))
+        return TMtcPoints(self.__decode_internal(), self.__obj.size)
+
 if __name__ == "__main__":
     decoder = TMtcDecoder()
-    data = decoder.decode("/home/duncan/Desktop/memory_tracker.tmtc")
-    print([next(data) for _ in range(10)])
-    print("Finished")
+    points = decoder.decode("/home/duncan/Desktop/memory_tracker.tmtc")
+    for p in points:
+        print(p)
