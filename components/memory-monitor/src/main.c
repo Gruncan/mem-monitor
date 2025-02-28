@@ -34,6 +34,7 @@ static struct argp_option options[] = {{"time", 't', "VALUE", 0, "The time delay
                                        {"process", 'p', "COMMAND", 0, "The command to execute and pull proc data for"},
                                        {"processid", 'i', "ID", 0, "The existing process ID to monitor"},
                                        {"processname", 'n', "NAME", 0, "The existing process name to monitor"},
+                                       {"proconly", 'o', "BOOL", 0, "Collect multiple process information override other keys"},
                                        {0}};
 
 struct arguments {
@@ -42,6 +43,7 @@ struct arguments {
     char* command;
     long int process_id;
     char* process_name;
+    unsigned char is_proc_only;
     char** args;
     int is_collecting_args;
 };
@@ -69,7 +71,6 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
             arguments->command = arg;
             arguments->is_collecting_args = 1;
             break;
-
         case 'i': {
             char* p_end_ptr;
             long int p_value = strtol(arg, &p_end_ptr, 10);
@@ -82,6 +83,9 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
         }
         case 'n':
             arguments->process_name = arg;
+            break;
+        case 'o':
+            arguments->is_proc_only = 1;
             break;
         case ARGP_KEY_ARG:
             if (arguments->args == NULL) {
@@ -177,7 +181,7 @@ inline int _launch_process(struct arguments* args) {
     }
 }
 
-inline ProcessIds* init_process_ids(pid_t pid) {
+inline ProcessIds* init_process_ids(pid_t pid, unsigned char is_proc_override) {
     ProcessIds* process_ids = malloc(sizeof(ProcessIds));
     if (process_ids == NULL) {
         perror("Error: Memory allocation failed.\n");
@@ -186,6 +190,7 @@ inline ProcessIds* init_process_ids(pid_t pid) {
     process_ids->name = NULL;
     process_ids->size = 1;
     process_ids->pids = malloc(sizeof(pid_t));
+    process_ids->is_proc_override;
     if (process_ids->pids == NULL) {
         perror("Error: Memory allocation failed.\n");
         free(process_ids);
@@ -201,7 +206,7 @@ inline ProcessIds* launch_process(struct arguments* args) {
         return NULL;
     }
 
-    return init_process_ids(id);
+    return init_process_ids(id, args->is_collecting_args);
 }
 
 
@@ -217,6 +222,7 @@ int main(int argc, char* argv[]) {
     arguments.args = NULL;
     arguments.process_id = -1;
     arguments.process_name = NULL;
+    arguments.is_proc_only = 0;
     arguments.is_collecting_args = 0;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
@@ -236,7 +242,7 @@ int main(int argc, char* argv[]) {
             return -1;
         }
     } else if (arguments.process_name != NULL) {
-        pids = get_pids_by_name(arguments.process_name);
+        pids = get_pids_by_name(arguments.process_name, arguments.is_collecting_args);
         if (pids == NULL) {
             return -1;
         }
@@ -249,7 +255,11 @@ int main(int argc, char* argv[]) {
     MemProcInfo* mem_proc_info = NULL;
 
     if (pids != NULL) {
-        mem_proc_info = malloc(sizeof(MemProcInfo));
+        if(arguments.is_proc_only == 1) {
+            mem_proc_info = malloc(sizeof(MemProcInfo) * pids->size);
+        } else {
+            mem_proc_info = malloc(sizeof(MemProcInfo));
+        }
         if (init_process_info(mem_proc_info, pids) == -1) {
             return -1;
         }

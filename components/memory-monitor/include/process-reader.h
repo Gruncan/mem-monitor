@@ -21,11 +21,12 @@ typedef struct process_ids_s {
     pid_t* pids;
     size_t size;
     char* name;
+    unsigned char is_proc_override;
 } ProcessIds;
 
 
 
-ProcessIds* get_pids_by_name(const char* name);
+ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override);
 
 int check_process_exists(pid_t pid);
 

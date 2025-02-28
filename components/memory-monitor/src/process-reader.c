@@ -17,7 +17,7 @@
 
 
 
-ProcessIds* get_pids_by_name(char* name) {
+ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override) {
     char command[256];
     // pgrep is probably more efficient that what i would do.. and quicker for me :)
     snprintf(command, sizeof(command), "pgrep %s", name);
@@ -68,7 +68,8 @@ ProcessIds* get_pids_by_name(char* name) {
         process_ids->pids = NULL;
         process_ids->size = 0;
         process_ids->name = name;
-        return NULL;
+        process_ids->is_proc_override = is_proc_override;
+        return process_ids;
     }
 
     pid_t* shrunk_pids = realloc(pids, sizeof(pid_t) * i);
@@ -81,6 +82,7 @@ ProcessIds* get_pids_by_name(char* name) {
     process_ids->size = i;
     process_ids->pids = shrunk_pids;
     process_ids->name = name;
+    process_ids->is_proc_override = is_proc_override;
     return process_ids;
 
 cleanUpFunc:

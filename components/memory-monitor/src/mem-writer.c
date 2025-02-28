@@ -242,8 +242,10 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     offset = write_struct_data(buffer, mem_vm_info, sizeof(MemVmInfo), offset, 0);
 
-    size_t value_length = sizeof(MemVmInfo) / SIZE_UL;
+    mk_size_t value_length = sizeof(MemVmInfo) / SIZE_UL;
     offset = write_struct_data(buffer, mem_info, sizeof(MemInfo), offset, value_length);
+
+
 
     if (mem_proc_info != NULL) {
         value_length += sizeof(MemInfo) / SIZE_UL;
