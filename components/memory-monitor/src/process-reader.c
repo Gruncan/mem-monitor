@@ -16,6 +16,80 @@
 #define STATM_FIELDS 6
 
 
+
+ProcessIds* get_pids_by_name(char* name) {
+    char command[256];
+    // pgrep is probably more efficient that what i would do.. and quicker for me :)
+    snprintf(command, sizeof(command), "pgrep %s", name);
+
+    FILE* pipe = popen(command, "r");
+    if (pipe == NULL) {
+        perror("popen");
+        return NULL;
+    }
+
+    size_t size = 0;
+    pid_t* pids = malloc(sizeof(pid_t));
+    if (pids == NULL) {
+        perror("Failed failed to allocate memory for process ids");
+        return NULL;
+    }
+
+    char line[32];
+    int i = 0;
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        const size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') {
+            line[len-1] = '\0';
+        }
+        if (size != 0 && i == size) {
+            size *= 2;
+            pid_t* new_pids = realloc(pids, sizeof(pid_t) * size);
+            if (new_pids == NULL) {
+                perror("Failed failed to allocate memory for pids");
+                goto cleanUpFunc;
+            }
+            pids = new_pids;
+        }
+
+        pids[i] = atoi(line);
+        if (size == 0) size = 1;
+
+        i++;
+    }
+
+
+    ProcessIds* process_ids = malloc(sizeof(ProcessIds));
+    if (process_ids == NULL) {
+        perror("Failed failed to allocate memory for process ids");
+        goto cleanUpFunc;
+    }else if (size == 0) {
+        free(pids);
+        process_ids->pids = NULL;
+        process_ids->size = 0;
+        process_ids->name = name;
+        return NULL;
+    }
+
+    pid_t* shrunk_pids = realloc(pids, sizeof(pid_t) * i);
+    if (shrunk_pids == NULL) {
+        perror("Failed failed to allocate memory for pids");
+        goto cleanUpFunc;
+    }
+
+    pclose(pipe);
+    process_ids->size = i;
+    process_ids->pids = shrunk_pids;
+    process_ids->name = name;
+    return process_ids;
+
+cleanUpFunc:
+    free(pids);
+    pclose(pipe);
+    return NULL;
+}
+
+
 int check_process_exists(pid_t pid) {
     if (kill(pid, 0) == 0)
         return 1;

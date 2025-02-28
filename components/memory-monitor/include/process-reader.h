@@ -17,6 +17,16 @@ typedef struct mem_proc_info_s {
 } MemProcInfo;
 
 
+typedef struct process_ids_s {
+    pid_t* pids;
+    size_t size;
+    char* name;
+} ProcessIds;
+
+
+
+ProcessIds* get_pids_by_name(const char* name);
+
 int check_process_exists(pid_t pid);
 
 int init_process_info(MemProcInfo* mem_proc_info, pid_t pid);

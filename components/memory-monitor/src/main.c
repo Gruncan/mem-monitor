@@ -48,7 +48,6 @@ struct arguments {
 
 static MemWriter* mw;
 
-
 static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
     struct arguments* arguments = state->input;
 
@@ -147,29 +146,9 @@ void handle_signal(const int sig) {
     }
 }
 
-pid_t get_pid_by_name(const char* name) {
-    char command[256];
-    // pgrep is probably more efficient that what i would do.. and quicker for me :)
-    snprintf(command, sizeof(command), "pgrep %s", name);
 
-    FILE* fp = popen(command, "r");
-    if (fp == NULL) {
-        perror("popen");
-        return -1;
-    }
 
-    pid_t pid = -1;
-    if (fscanf(fp, "%d", &pid) != 1) {
-        printf("No process found with name: %s\n", name);
-        fclose(fp);
-        return -2;
-    }
-
-    fclose(fp);
-    return pid;
-}
-
-int launch_process(struct arguments* args) {
+inline int _launch_process(struct arguments* args) {
     pid_t pid = fork();
 
     if (pid < 0) {
@@ -194,10 +173,37 @@ int launch_process(struct arguments* args) {
         return -1;
     } else {
         printf("Executing %s (%d)..\n", args->command, pid);
-
         return pid;
     }
 }
+
+inline ProcessIds* init_process_ids(pid_t pid) {
+    ProcessIds* process_ids = malloc(sizeof(ProcessIds));
+    if (process_ids == NULL) {
+        perror("Error: Memory allocation failed.\n");
+        return NULL;
+    }
+    process_ids->name = NULL;
+    process_ids->size = 1;
+    process_ids->pids = malloc(sizeof(pid_t));
+    if (process_ids->pids == NULL) {
+        perror("Error: Memory allocation failed.\n");
+        free(process_ids);
+        return NULL;
+    }
+    process_ids->pids[0] = (pid_t) pid;
+    return process_ids;
+}
+
+inline ProcessIds* launch_process(struct arguments* args) {
+    int id = _launch_process(args);
+    if (id <= 0) {
+        return NULL;
+    }
+
+    return init_process_ids(id);
+}
+
 
 int main(int argc, char* argv[]) {
     signal(SIGTERM, handle_signal);
@@ -217,30 +223,34 @@ int main(int argc, char* argv[]) {
 
     int is_child_proc = 0;
 
-    pid_t pid = -1;
+    ProcessIds* pids;
     if (arguments.command != NULL) {
-        pid = launch_process(&arguments);
-        if (pid <= 0) {
+        pids = launch_process(&arguments);
+        if (pids == NULL) {
             return -1;
         }
         is_child_proc = 1;
     } else if (arguments.process_id != -1) {
-        pid = (pid_t) arguments.process_id;
+        pids = init_process_ids(arguments.process_id);
+        if (pids == NULL) {
+            return -1;
+        }
     } else if (arguments.process_name != NULL) {
-        pid = get_pid_by_name(arguments.process_name);
+        pids = get_pids_by_name(arguments.process_name);
+        if (pids == NULL) {
+            return -1;
+        }
+    }else {
+        return -1;
     }
-
 
     MemInfo* mem_info = malloc(sizeof(MemInfo));
     MemVmInfo* mem_vm_info = malloc(sizeof(MemVmInfo));
     MemProcInfo* mem_proc_info = NULL;
 
-    if (pid == -2) {
-        return -1;
-    }
-    if (pid != -1) {
+    if (pids != NULL) {
         mem_proc_info = malloc(sizeof(MemProcInfo));
-        if (init_process_info(mem_proc_info, pid) == -1) {
+        if (init_process_info(mem_proc_info, pids) == -1) {
             return -1;
         }
     }
@@ -265,10 +275,11 @@ int main(int argc, char* argv[]) {
     while (1) {
         read_mem_info(mem_info);
         read_mem_vm_info(mem_vm_info);
-        if (pid != -1) {
-            const char result = read_process_info(mem_proc_info, pid);
+        if (pids != NULL) {
+            const char result = read_process_info(mem_proc_info, pids);
             if (result < 0)
-                pid = -1;
+                free(pids);
+                pids = NULL;
         }
         write_mem(mw, mem_info, mem_vm_info, mem_proc_info);
 
@@ -278,13 +289,13 @@ int main(int argc, char* argv[]) {
             break;
         } else if (process_terminated == 1) {
             counter++;
-        } else if (pid != -1) {
+        } else if (pids != NULL) {
             int result;
             int status;
             if (is_child_proc == 1) {
-                result = waitpid(pid, &status, WNOHANG);
+                result = waitpid(pids, &status, WNOHANG);
             } else {
-                result = check_process_exists(pid);
+                result = check_process_exists(pids);
                 if (result == 1) {
                     result = 0;
                 } else if (result == 0) {
@@ -309,13 +320,14 @@ int main(int argc, char* argv[]) {
                     printf("Process exited with unknown status: %d\n", status);
                 }
                 printf("Collecting %d more data points..\n", READS_BEFORE);
-                pid = -1;
+                pids = NULL;
                 reset_process_info(mem_proc_info);
                 process_terminated = 1;
             }
         }
     }
 
+    free(pids);
     free(mem_info);
     free(mem_vm_info);
     if (mem_proc_info != NULL) {
