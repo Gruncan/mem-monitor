@@ -13,10 +13,15 @@
 
 #define KEY_SIZE_PROC 225
 #define KEY_SIZE_NO_PROC 216
+#define PROC_KEY_SIZE 10
+#define META_INFO_SIZE 4
 
+#define PROC_KEY_LENGTH(size) ((size) * PROC_KEY_SIZE)
 
-#define MAX_PROC_SIZE(version) ((KEY_SIZE_PROC * MTC_WRITE_OFFSET[(version) - 1]) + 4)
-#define MAX_NO_PROC_SIZE(version) ((KEY_SIZE_NO_PROC * MTC_WRITE_OFFSET[(version) - 1]) + 4)
+#define MAX_PROC_SIZE(version) ((KEY_SIZE_PROC * MTC_WRITE_OFFSET[(version) - 1]) + META_INFO_SIZE)
+#define MAX_NO_PROC_SIZE(version) ((KEY_SIZE_NO_PROC * MTC_WRITE_OFFSET[(version) - 1]) + META_INFO_SIZE)
+#define MAX_PROC_ONLY_SIZE(version, size) (PROC_KEY_LENGTH(size) * MTC_WRITE_OFFSET[(version) - 1] + META_INFO_SIZE)
+
 
 static uint16_t CHUNK_SIZE = 0;
 
@@ -46,6 +51,7 @@ static mtc_point_size_t load_mtc_data(const uint8_t version, const byte_t* buffe
             return MTC_LOAD_DATA(3, buffer, index);
         case 5:
         case 6:
+        case 7:
             return MTC_LOAD_DATA(5, buffer, index);
         default:
             return 0;
@@ -68,6 +74,7 @@ inline void createMtcObject(struct MtcObject* object) {
     object->times[0].time_offset = malloc(sizeof(uint16_t));
     object->_times_length = 0;
     object->version = 0;
+    object->_proc_size = 0;
     object->file_length = 0;
     object->size = 0;
     object->_key_size = KEY_SIZE;
@@ -76,7 +83,13 @@ inline void createMtcObject(struct MtcObject* object) {
 // TODO implement a destroy function
 
 static void decode_header(const byte_t* buffer, struct MtcObject* object) {
-    object->version = buffer[0];
+    uint8_t upper_version = buffer[0] >> 4;
+    if (upper_version == 7) {
+        object->version = upper_version;
+        object->_proc_size = buffer[0] & MASK_4;
+    }else {
+        object->version = buffer[0];
+    }
     // todo add time decoding here
 }
 
@@ -201,7 +214,11 @@ void decode(const char* filename, struct MtcObject* object) {
 
     free(header_buffer);
 
-    if (object->version % 2 != 0) {
+    if (object->version == 7) {
+        CHUNK_SIZE = MAX_PROC_ONLY_SIZE(object->version, object->_proc_size);
+        object->_key_size = PROC_KEY_LENGTH(object->_proc_size);
+        KEY_SIZE = object->_key_size;
+    } else if (object->version % 2 != 0) {
         CHUNK_SIZE = MAX_NO_PROC_SIZE(object->version);
         // TODO fix this so redundant memory is wasted, we still alloc memory for all keys but not used.
         KEY_SIZE = KEY_SIZE_NO_PROC;

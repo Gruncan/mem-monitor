@@ -104,11 +104,11 @@ void init_process_ids(ProcessIds* process_id, const pid_t* pids, const size_t si
         process_id->proc_info[j].pid = pids[j];
         process_id->proc_info[j].mem_info = malloc(sizeof(MemProcInfo));
         process_id->proc_info[j].is_alive = 1;
-        init_process_info(process_id->proc_info[j].mem_info);
+        init_process_info(process_id->proc_info[j].mem_info, pids[j]);
     }
 }
 
-inline char check_process_exists(const pid_t pid) {
+static char check_process_exists(const pid_t pid) {
     if (kill(pid, 0) == 0)
         return 1;
 
@@ -129,7 +129,7 @@ void check_processes_exists(const ProcessIds* pids) {
 
 
 
-int init_process_info(MemProcInfo* mem_proc_info) {
+int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
     mem_proc_info->oom_adj = -1;
     mem_proc_info->oom_score = -1;
     mem_proc_info->oom_score_adj = -1;
@@ -140,6 +140,7 @@ int init_process_info(MemProcInfo* mem_proc_info) {
     mem_proc_info->text = 0;
     mem_proc_info->data = 0;
     mem_proc_info->dirty = 0;
+    mem_proc_info->pid = pid;
 
     return 0;
 }

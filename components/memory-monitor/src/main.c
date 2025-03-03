@@ -18,11 +18,11 @@
 #ifndef MEM_DEBUG
 #define GET_MEM_VERSION(v) #v
 #else
-#define GET_MEM_VERSION(v) #v "d"
+#define GET_MEM_VERSION(v) #v "_d"
 #endif
 
 
-const char* argp_program_version = GET_MEM_VERSION(4.2);
+const char* argp_program_version = GET_MEM_VERSION(5.0p);
 
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
@@ -152,35 +152,6 @@ void handle_signal(const int sig) {
 
 
 
-inline int _launch_process(struct arguments* args) {
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        perror("fork");
-        return -1;
-    }
-
-    if (pid == 0) {
-        char* exec_args[1024];
-        exec_args[0] = args->command;
-
-        int i = 0;
-        while (args->args[i] != NULL) {
-            exec_args[i + 1] = args->args[i];
-            i++;
-        }
-        exec_args[i + 1] = NULL;
-
-        execvp(exec_args[0], exec_args);
-
-        perror("execvp");
-        return -1;
-    } else {
-        printf("Executing %s (%d)..\n", args->command, pid);
-        return pid;
-    }
-}
-
 static ProcessIds* construct_process_ids(const pid_t pid, const unsigned char is_proc_override) {
     ProcessIds* process_ids = malloc(sizeof(ProcessIds));
     if (process_ids == NULL) {
@@ -190,15 +161,6 @@ static ProcessIds* construct_process_ids(const pid_t pid, const unsigned char is
     init_process_ids(process_ids, &pid, 1, NULL, is_proc_override);
 
     return process_ids;
-}
-
-inline ProcessIds* launch_process(struct arguments* args) {
-    int id = _launch_process(args);
-    if (id <= 0) {
-        return NULL;
-    }
-
-    return construct_process_ids(id, args->is_collecting_args);
 }
 
 
@@ -244,9 +206,10 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         const unsigned char result = read_processes(pids);
-        if (result == 0) {
+        if (result == 1) {
             break; // All processes are dead
         }
+
         write_proc_mem(mw, pids);
         usleep(arguments.time);
     }

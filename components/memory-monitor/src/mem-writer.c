@@ -251,6 +251,8 @@ void write_proc_mem(MemWriter* mem_writer, const ProcessIds* process_ids) {
 
     byte_t* countBuf = buffer + 2;
     const ushort value = offset - starting_offset;
+    printf("offset: %d\n", offset);
+    fflush(stdout);
     countBuf[0] = (byte_t) (value >> 8 & MASK_8);
     countBuf[1] = (byte_t) (value & MASK_8);
 

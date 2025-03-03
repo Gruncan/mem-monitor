@@ -29,8 +29,13 @@ int main(int argc, char* argv[]) {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
 
 
-    printf("Size: %lu\n", object.version);
+    printf("Size: %lu\n", object.size);
     std::cout << duration.count() / 1'000'000.0 << " seconds\n";
+
+    struct MtcPointMap* map = &object.point_map[0];
+    for (int j=0; j < map->length; j++) {
+        printf("%u\n", map->points[j].value);
+    }
 
 
     return 0;

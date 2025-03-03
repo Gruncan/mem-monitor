@@ -1,10 +1,12 @@
 #ifndef PROCESS_READER_H
 #define PROCESS_READER_H
 
+#include <stdint.h>
 #include <sys/types.h>
 
 
 typedef struct mem_proc_info_s {
+    uint16_t pid;
     long oom_adj;
     long oom_score;
     long oom_score_adj;
@@ -37,7 +39,7 @@ void init_process_ids(ProcessIds* process_id, const pid_t* pids, size_t size, ch
 
 void check_processes_exists(const ProcessIds* process_id);
 
-int init_process_info(MemProcInfo* mem_proc_info);
+int init_process_info(MemProcInfo* mem_proc_info, pid_t pid);
 
 void read_process_mem_info(MemProcInfo* mem_proc_info, pid_t pid);
 
