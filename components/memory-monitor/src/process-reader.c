@@ -65,7 +65,7 @@ ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override) {
         goto cleanUpFunc;
     }else if (size == 0) {
         free(pids);
-        process_ids->pids = NULL;
+        process_ids->proc_info = NULL;
         process_ids->size = 0;
         process_ids->name = name;
         process_ids->is_proc_override = is_proc_override;
@@ -75,12 +75,18 @@ ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override) {
     pid_t* shrunk_pids = realloc(pids, sizeof(pid_t) * i);
     if (shrunk_pids == NULL) {
         perror("Failed failed to allocate memory for pids");
+        free(process_ids);
         goto cleanUpFunc;
     }
 
     pclose(pipe);
     process_ids->size = i;
-    process_ids->pids = shrunk_pids;
+    process_ids->proc_info = malloc(sizeof(ProcInfo) * process_ids->size);
+    for (int j = 0; j < process_ids->size; ++j) {
+        process_ids->proc_info[j].pid = shrunk_pids[j];
+        process_ids->proc_info[j].mem_info = malloc(sizeof(MemProcInfo));
+        init_process_info(process_ids->proc_info[j].mem_info);
+    }
     process_ids->name = name;
     process_ids->is_proc_override = is_proc_override;
     return process_ids;
@@ -104,11 +110,24 @@ int check_process_exists(pid_t pid) {
     return -1;
 }
 
-int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
-    if (check_process_exists(pid) == 0) {
-        perror("Process does not exist");
-        return -1;
-    }
+void init_mem_proc_info(MemProcInfo* mem_proc_info, pid_t pid){
+    mem_proc_info->oom_adj = -1;
+    mem_proc_info->oom_score = -1;
+    mem_proc_info->oom_score_adj = -1;
+    mem_proc_info->data = 0;
+    mem_proc_info->size = 0;
+    mem_proc_info->resident = 0;
+    mem_proc_info->shared = 0;
+    mem_proc_info->text = 0;
+    mem_proc_info->data = 0;
+    mem_proc_info->dirty = 0;
+}
+
+int init_processes(ProcessIds* processIds, pid_t* pids){
+
+}
+
+int init_process_info(MemProcInfo* mem_proc_info) {
 
     mem_proc_info->oom_adj = -1;
     mem_proc_info->oom_score = -1;

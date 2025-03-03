@@ -16,9 +16,13 @@ typedef struct mem_proc_info_s {
     unsigned long dirty;
 } MemProcInfo;
 
+typedef struct proc_info {
+    pid_t pid;
+    MemProcInfo* mem_info;
+} ProcInfo;
 
 typedef struct process_ids_s {
-    pid_t* pids;
+    ProcInfo* proc_info;
     size_t size;
     char* name;
     unsigned char is_proc_override;
@@ -30,7 +34,7 @@ ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override);
 
 int check_process_exists(pid_t pid);
 
-int init_process_info(MemProcInfo* mem_proc_info, pid_t pid);
+int init_process_info(MemProcInfo* mem_proc_info);
 
 void read_process_mem_info(MemProcInfo* mem_proc_info, pid_t pid);
 
