@@ -4,6 +4,8 @@
 
 #include <errno.h>
 #include <mem-info.h>
+#include <mem-monitor-config.h>
+#include <mem-writer.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,37 +61,29 @@ ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override) {
     }
 
 
-    ProcessIds* process_ids = malloc(sizeof(ProcessIds));
-    if (process_ids == NULL) {
+    ProcessIds* process_id = malloc(sizeof(ProcessIds));
+    if (process_id == NULL) {
         perror("Failed failed to allocate memory for process ids");
         goto cleanUpFunc;
-    }else if (size == 0) {
+    } else if (size == 0) {
         free(pids);
-        process_ids->proc_info = NULL;
-        process_ids->size = 0;
-        process_ids->name = name;
-        process_ids->is_proc_override = is_proc_override;
-        return process_ids;
+        process_id->proc_info = NULL;
+        process_id->size = 0;
+        process_id->name = name;
+        process_id->is_proc_override = is_proc_override;
+        return process_id;
     }
 
-    pid_t* shrunk_pids = realloc(pids, sizeof(pid_t) * i);
+    const pid_t* shrunk_pids = realloc(pids, sizeof(pid_t) * i);
     if (shrunk_pids == NULL) {
         perror("Failed failed to allocate memory for pids");
-        free(process_ids);
+        free(process_id);
         goto cleanUpFunc;
     }
 
     pclose(pipe);
-    process_ids->size = i;
-    process_ids->proc_info = malloc(sizeof(ProcInfo) * process_ids->size);
-    for (int j = 0; j < process_ids->size; ++j) {
-        process_ids->proc_info[j].pid = shrunk_pids[j];
-        process_ids->proc_info[j].mem_info = malloc(sizeof(MemProcInfo));
-        init_process_info(process_ids->proc_info[j].mem_info);
-    }
-    process_ids->name = name;
-    process_ids->is_proc_override = is_proc_override;
-    return process_ids;
+    init_process_ids(process_id, shrunk_pids, i, name, is_proc_override);
+    return process_id;
 
 cleanUpFunc:
     free(pids);
@@ -97,8 +91,24 @@ cleanUpFunc:
     return NULL;
 }
 
+void init_process_ids(ProcessIds* process_id, const pid_t* pids, const size_t size, char* name,
+                                        const byte_t is_proc_override) {
+    process_id->name = name;
+    process_id->is_proc_override = is_proc_override;
+    process_id->size = size;
+    process_id->proc_info = malloc(sizeof(ProcInfo) * process_id->size);
+    if (process_id->proc_info == NULL) {
+        return;
+    }
+    for (int j = 0; j < process_id->size; ++j) {
+        process_id->proc_info[j].pid = pids[j];
+        process_id->proc_info[j].mem_info = malloc(sizeof(MemProcInfo));
+        process_id->proc_info[j].is_alive = 1;
+        init_process_info(process_id->proc_info[j].mem_info);
+    }
+}
 
-int check_process_exists(pid_t pid) {
+inline char check_process_exists(const pid_t pid) {
     if (kill(pid, 0) == 0)
         return 1;
 
@@ -110,25 +120,16 @@ int check_process_exists(pid_t pid) {
     return -1;
 }
 
-void init_mem_proc_info(MemProcInfo* mem_proc_info, pid_t pid){
-    mem_proc_info->oom_adj = -1;
-    mem_proc_info->oom_score = -1;
-    mem_proc_info->oom_score_adj = -1;
-    mem_proc_info->data = 0;
-    mem_proc_info->size = 0;
-    mem_proc_info->resident = 0;
-    mem_proc_info->shared = 0;
-    mem_proc_info->text = 0;
-    mem_proc_info->data = 0;
-    mem_proc_info->dirty = 0;
+
+void check_processes_exists(const ProcessIds* pids) {
+    for (size_t i =0; i < pids->size; ++i) {
+        pids->proc_info[i].is_alive = check_process_exists(pids->proc_info[i].pid);
+    }
 }
 
-int init_processes(ProcessIds* processIds, pid_t* pids){
 
-}
 
 int init_process_info(MemProcInfo* mem_proc_info) {
-
     mem_proc_info->oom_adj = -1;
     mem_proc_info->oom_score = -1;
     mem_proc_info->oom_score_adj = -1;
@@ -141,6 +142,22 @@ int init_process_info(MemProcInfo* mem_proc_info) {
     mem_proc_info->dirty = 0;
 
     return 0;
+}
+
+
+unsigned char read_processes(ProcessIds* processes) {
+    unsigned char inactive = 0;
+    for (int i=0; i < processes->size; ++i) {
+        if (processes->proc_info[i].is_alive == 0) {
+            inactive++;
+            continue;
+        }
+        const char result = read_single_process_info(processes->proc_info[i].mem_info, processes->proc_info[i].pid);
+        if (result < 0) {
+            processes->proc_info[i].is_alive = 0;
+        }
+    }
+    return inactive == processes->size;
 }
 
 
@@ -183,7 +200,7 @@ void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     free(content);
 }
 
-char read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+char read_single_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     if (mem_proc_info == NULL)
         return -1;
 

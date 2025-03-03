@@ -16,7 +16,7 @@
 #define FLUSH_INTERVAL 1
 
 
-#define VERSION 5
+#define VERSION 7
 #define MTC_VALUE_MASK MASK_32
 
 #ifdef VERSION_3
@@ -207,7 +207,58 @@ uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length,
     return mem_offset + writeOffset;
 }
 
-void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* mem_vm_info, MemProcInfo* mem_proc_info) {
+void write_proc_mem(MemWriter* mem_writer, const ProcessIds* process_ids) {
+    if (mem_writer->has_written_header == 0) {
+        mem_writer->prev_timestamp = get_current_time();
+
+        void* header = write_mtc_header(mem_writer->prev_timestamp, VERSION << 4 | (process_ids->size & MASK_4));
+        add_to_mem_queue(mem_writer->writer_queue, header, 5);
+        mem_writer->has_written_header = 1;
+        return;
+    }
+
+    void* buffer = malloc(2048);
+
+    if (buffer == NULL) {
+        perror("Error allocating memory");
+        exit(EXIT_FAILURE);
+    }
+
+    struct timeval* tv = get_current_time();
+
+    const ushort milliseconds = timeval_diff_ms(mem_writer->prev_timestamp, tv) & MASK_16;
+
+    byte_t* miliBuf = buffer;
+
+    miliBuf[0] = (byte_t) (milliseconds >> 8 & MASK_8);
+    miliBuf[1] = (byte_t) (milliseconds & MASK_8);
+
+    free(mem_writer->prev_timestamp);
+    mem_writer->prev_timestamp = tv;
+
+    if (process_ids->size >= 16) {
+        return;
+    }
+
+    static const int starting_offset = 4;
+
+    uint offset = starting_offset;
+    mk_size_t value_length = 0;
+    for (int i = 0; i < process_ids->size; i++) {
+        offset = write_struct_data(buffer, process_ids->proc_info[i].mem_info, sizeof(MemProcInfo), offset, value_length);
+        value_length += sizeof(MemProcInfo) / SIZE_UL;
+    }
+
+    byte_t* countBuf = buffer + 2;
+    const ushort value = offset - starting_offset;
+    countBuf[0] = (byte_t) (value >> 8 & MASK_8);
+    countBuf[1] = (byte_t) (value & MASK_8);
+
+    add_to_mem_queue(mem_writer->writer_queue, buffer, offset);
+}
+
+
+void write_mem(MemWriter* mem_writer, MemInfo* mem_info, MemVmInfo* mem_vm_info, MemProcInfo* mem_proc_info) {
     if (mem_writer->has_written_header == 0) {
         mem_writer->prev_timestamp = get_current_time();
 
@@ -217,7 +268,7 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
         return;
     }
 
-    void* buffer = malloc(2048); // We really only need 769, apparently not..?
+    void* buffer = malloc(2048);
 
     if (buffer == NULL) {
         perror("Error allocating memory");
@@ -226,7 +277,7 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     struct timeval* tv = get_current_time();
 
-    ushort milliseconds = timeval_diff_ms(mem_writer->prev_timestamp, tv) & MASK_16;
+    const ushort milliseconds = timeval_diff_ms(mem_writer->prev_timestamp, tv) & MASK_16;
 
     byte_t* miliBuf = buffer;
 
@@ -244,7 +295,6 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     mk_size_t value_length = sizeof(MemVmInfo) / SIZE_UL;
     offset = write_struct_data(buffer, mem_info, sizeof(MemInfo), offset, value_length);
-
 
 
     if (mem_proc_info != NULL) {

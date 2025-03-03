@@ -181,22 +181,14 @@ inline int _launch_process(struct arguments* args) {
     }
 }
 
-inline ProcessIds* init_process_ids(pid_t pid, unsigned char is_proc_override) {
+static ProcessIds* construct_process_ids(const pid_t pid, const unsigned char is_proc_override) {
     ProcessIds* process_ids = malloc(sizeof(ProcessIds));
     if (process_ids == NULL) {
         perror("Error: Memory allocation failed.\n");
         return NULL;
     }
-    process_ids->name = NULL;
-    process_ids->size = 1;
-    process_ids->pids = malloc(sizeof(pid_t));
-    process_ids->is_proc_override;
-    if (process_ids->pids == NULL) {
-        perror("Error: Memory allocation failed.\n");
-        free(process_ids);
-        return NULL;
-    }
-    process_ids->pids[0] = (pid_t) pid;
+    init_process_ids(process_ids, &pid, 1, NULL, is_proc_override);
+
     return process_ids;
 }
 
@@ -206,7 +198,7 @@ inline ProcessIds* launch_process(struct arguments* args) {
         return NULL;
     }
 
-    return init_process_ids(id, args->is_collecting_args);
+    return construct_process_ids(id, args->is_collecting_args);
 }
 
 
@@ -227,17 +219,13 @@ int main(int argc, char* argv[]) {
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-    int is_child_proc = 0;
 
-    ProcessIds* pids;
+    ProcessIds* pids = NULL;
     if (arguments.command != NULL) {
-        pids = launch_process(&arguments);
-        if (pids == NULL) {
-            return -1;
-        }
-        is_child_proc = 1;
+        fprintf(stderr, "Forking of commands have been removed in latest version TBC!");
+        return -1;
     } else if (arguments.process_id != -1) {
-        pids = init_process_ids(arguments.process_id);
+        pids = construct_process_ids(arguments.process_id, arguments.is_proc_only);
         if (pids == NULL) {
             return -1;
         }
@@ -246,32 +234,7 @@ int main(int argc, char* argv[]) {
         if (pids == NULL) {
             return -1;
         }
-    }else {
-        return -1;
     }
-
-    MemInfo* mem_info = malloc(sizeof(MemInfo));
-    MemVmInfo* mem_vm_info = malloc(sizeof(MemVmInfo));
-    MemProcInfo* mem_proc_info = NULL;
-
-    if (pids != NULL) {
-        if(arguments.is_proc_only == 1) {
-            mem_proc_info = malloc(sizeof(MemProcInfo) * pids->size);
-        } else {
-            mem_proc_info = malloc(sizeof(MemProcInfo));
-        }
-        if (init_process_info(mem_proc_info, pids) == -1) {
-            return -1;
-        }
-    }
-
-    read_mem_info(mem_info);
-
-
-    printf("Memory info:\n");
-    printf(" - Total: %lu\n", mem_info->total);
-    printf(" - Free: %lu\n", mem_info->free);
-    printf(" - Available: %lu\n", mem_info->available);
 
     mw = new_mem_writer();
 
@@ -279,70 +242,18 @@ int main(int argc, char* argv[]) {
 
     printf("Writing memory info to file...\n");
 
-    int process_terminated = 0;
-    int counter = 0;
-
     while (1) {
-        read_mem_info(mem_info);
-        read_mem_vm_info(mem_vm_info);
-        if (pids != NULL) {
-            const char result = read_process_info(mem_proc_info, pids);
-            if (result < 0)
-                free(pids);
-                pids = NULL;
+        const unsigned char result = read_processes(pids);
+        if (result == 0) {
+            break; // All processes are dead
         }
-        write_mem(mw, mem_info, mem_vm_info, mem_proc_info);
-
+        write_proc_mem(mw, pids);
         usleep(arguments.time);
-
-        if (counter >= READS_BEFORE) {
-            break;
-        } else if (process_terminated == 1) {
-            counter++;
-        } else if (pids != NULL) {
-            int result;
-            int status;
-            if (is_child_proc == 1) {
-                result = waitpid(pids, &status, WNOHANG);
-            } else {
-                result = check_process_exists(pids);
-                if (result == 1) {
-                    result = 0;
-                } else if (result == 0) {
-                    result = 1;
-                }
-                status = 0;
-            }
-
-            if (result == -1) {
-                perror("failed to check process status");
-                break;
-            }
-
-            if (result != 0) {
-                if (is_child_proc != 1) {
-                    printf("Unsure exit status! %d\n", result);
-                } else if (WIFEXITED(status)) {
-                    printf("Child exited with status %d\n", WEXITSTATUS(status));
-                } else if (WIFSTOPPED(status)) {
-                    printf("Child stopped by signal %d\n", WSTOPSIG(status));
-                } else {
-                    printf("Process exited with unknown status: %d\n", status);
-                }
-                printf("Collecting %d more data points..\n", READS_BEFORE);
-                pids = NULL;
-                reset_process_info(mem_proc_info);
-                process_terminated = 1;
-            }
-        }
     }
 
     free(pids);
-    free(mem_info);
-    free(mem_vm_info);
-    if (mem_proc_info != NULL) {
-        free(mem_proc_info);
-    }
+    // free(mem_info);
+    // free(mem_vm_info);
 
     return 0;
 }

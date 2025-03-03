@@ -19,6 +19,7 @@ typedef struct mem_proc_info_s {
 typedef struct proc_info {
     pid_t pid;
     MemProcInfo* mem_info;
+    char is_alive;
 } ProcInfo;
 
 typedef struct process_ids_s {
@@ -32,15 +33,18 @@ typedef struct process_ids_s {
 
 ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override);
 
-int check_process_exists(pid_t pid);
+void init_process_ids(ProcessIds* process_id, const pid_t* pids, size_t size, char* name, unsigned char is_proc_override);
+
+void check_processes_exists(const ProcessIds* process_id);
 
 int init_process_info(MemProcInfo* mem_proc_info);
 
 void read_process_mem_info(MemProcInfo* mem_proc_info, pid_t pid);
 
-char read_process_info(MemProcInfo* mem_proc_info, pid_t pid);
+char read_single_process_info(MemProcInfo* mem_proc_info, pid_t pid);
 
 void reset_process_info(MemProcInfo* mem_proc_info);
 
+unsigned char read_processes(ProcessIds* processes);
 
 #endif // PROCESS_READER_H
