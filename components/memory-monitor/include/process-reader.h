@@ -6,7 +6,7 @@
 
 
 typedef struct mem_proc_info_s {
-    uint16_t pid;
+    unsigned long pid;
     long oom_adj;
     long oom_score;
     long oom_score_adj;
