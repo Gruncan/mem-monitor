@@ -7,12 +7,14 @@
 
 class QTreeMemoryWidgetItem : public QTreeWidgetItem {
   public:
-    explicit QTreeMemoryWidgetItem(mk_size_t key);
+    explicit QTreeMemoryWidgetItem(mk_size_t key, const std::string& name);
 
     mk_size_t get_key() const;
+    std::string get_name() const;
 
   private:
     mk_size_t _key;
+    std::string _name;
 };
 
 

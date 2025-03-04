@@ -239,7 +239,7 @@ static const std::map<std::string, mk_size_t> MTC_KEY_MAPPING = {
     {"p_dirty", 0xe0},
 };
 
-static const std::map<mk_size_t, std::string> MTC_INDEX_MAPPING{
+static std::map<mk_size_t, std::string> MTC_INDEX_MAPPING{
     {0x0, "nr_free_pages"},
     {0x1, "nr_zone_inactive_anon"},
     {0x2, "nr_zone_active_anon"},
@@ -466,6 +466,20 @@ static const std::map<mk_size_t, std::string> MTC_INDEX_MAPPING{
     {0xdf, "p_data"},
     {0xe0, "p_dirty"},
 };
+
+static const std::map<mk_size_t, std::string> MTC_BASE7_INDEX_MAPPING {
+    {0x0, "pid"},
+    {0x1, "oomAdj"},
+    {0x2, "oomScore"},
+    {0x3, "oomScoreAdj"},
+    {0x4, "p_size"},
+    {0x5, "p_resident"},
+    {0x6, "p_shared"},
+    {0x7, "p_text"},
+    {0x8, "p_data"},
+    {0x9, "p_dirty"},
+};
+
 
 struct MtcCategories {
     std::string name;

@@ -8,7 +8,13 @@
 #include <QThread>
 
 
-QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent) {
+#define IDS(size) \
+{static_cast<unsigned char>(size + 1), static_cast<unsigned char>(0x2 + size), static_cast<unsigned char>(0x3 + size),\
+                    static_cast<unsigned char>(0x4 + size), static_cast<unsigned char>(0x5 + size),\
+                    static_cast<unsigned char>(0x6 + size), static_cast<unsigned char>(0x7 + size), static_cast<unsigned char>(0x8 + size),\
+                    static_cast<unsigned char>(0x9 + size)}\
+
+QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent), sidebar(sidebar) {
     setObjectName(name);
 
     mainLayout = new QVBoxLayout(this);
@@ -107,15 +113,35 @@ void QMtcLoader::loaded(const std::string& filePath) {
                        .arg(object->version)
                        .arg(object->size));
     label->setStyleSheet("");
+
     std::map<mk_size_t, bool>* nonDefaultFields = new std::map<mk_size_t, bool>();
 
-    for (mk_size_t i = 0; i < object->_key_size; i++) {
-        (*nonDefaultFields)[i] = object->point_map[i].points[0].value == 0 && object->point_map[i].length == 1;
-    }
-    if (object->version % 2 != 0) {
-        for (int arr[] = {0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf, 0xe0}; const auto v : arr) {
-            (*nonDefaultFields)[v] = false;
+    if (object->version != 7) {
+        for (mk_size_t i = 0; i < object->_key_size; i++) {
+            (*nonDefaultFields)[i] = object->point_map[i].points[0].value == 0 && object->point_map[i].length == 1;
         }
+        if (object->version % 2 != 0) {
+            for (int arr[] = {0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf, 0xe0}; const auto v : arr) {
+                (*nonDefaultFields)[v] = false;
+            }
+        }
+    } else {
+        auto nameMapping = new std::map<mk_size_t, std::string>();
+        for (unsigned char size = 0; size < object->_proc_size * 10; size += 10) {
+            unsigned int pid = object->point_map[size].points->value;
+            for (auto [key, value] : mtc::MTC_BASE7_INDEX_MAPPING) {
+                (*nameMapping)[key + size] = std::format("{} ({})", value, pid);
+            }
+        }
+        sidebar->setNameMapping(nameMapping);
+
+        std::vector<mtc::MtcCategories> MTC_PROC_CATEGORIES = std::vector<mtc::MtcCategories>();
+        for (unsigned char size = 0; size < object->_proc_size * 10; size += 10) {
+            MTC_PROC_CATEGORIES.push_back({std::format("Process {}", object->point_map[size].points->value),
+               IDS(size)});
+        }
+        sidebar->setCategories(MTC_PROC_CATEGORIES);
+
     }
 
     emit enableNonDefaultFields(nonDefaultFields);

@@ -21,31 +21,24 @@ QPlotRender::~QPlotRender() {
 
 void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& times, const uint64_t length,
                                  QCPGraph* graph) {
-    const uint64_t sampleRate = 50;
 
     values.clear();
 
-    values.reserve(length / sampleRate);
+    values.reserve(length);
 
 
-    uint64_t c = 0;
     for (uint64_t i = 0; i < point_map->length; i++) {
         if (point_map->points[i].value > valueMax) {
             valueMax = point_map->points[i].value;
         }
         for (uint64_t j = 0; j < point_map->points[i].repeated + 1; j++) {
-            if (c == sampleRate) {
-                values.push_back(point_map->points[i].value);
-                c = 0;
-                continue;
-            }
-            c++;
+            values.push_back(point_map->points[i].value);
         }
     }
 
 
     graph->setData(times, values);
-    plot->xAxis->setRange(0, times.last() / sampleRate, Qt::AlignLeft);
+    plot->xAxis->setRange(0, times.last(), Qt::AlignLeft);
     plot->yAxis->setRange(0, valueMax * 1.1);
     plot->replot(QCustomPlot::rpQueuedReplot);
 }
