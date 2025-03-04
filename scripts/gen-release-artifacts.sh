@@ -1,7 +1,7 @@
 cd ../components
 
 cd memory-tracker
-make
+make FPATH=/home/instrument/fw/memory_tracker1.tmtc INDEX=34
 cd -
 
 cd memory-simulator
