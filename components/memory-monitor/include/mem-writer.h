@@ -48,7 +48,7 @@ uint write_struct_data(void* buffer, void* struct_ptr, uint struct_length, uint 
 
 void write_data_content(void* buffer, uint offset, mk_size_t key, mtc_point_size_t value);
 
-void write_proc_mem(MemWriter* mem_writer, const ProcessIds* process_ids);
+void write_proc_mem(MemWriter* mem_writer, ProcessIds* process_ids);
 
 
 #endif // MEM_WRITER_H

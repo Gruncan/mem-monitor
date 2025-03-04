@@ -207,7 +207,10 @@ uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length,
     return mem_offset + writeOffset;
 }
 
-void write_proc_mem(MemWriter* mem_writer, const ProcessIds* process_ids) {
+void write_proc_mem(MemWriter* mem_writer, ProcessIds* process_ids) {
+    if (process_ids->size >= 16) {
+        process_ids->size = 15;
+    }
     if (mem_writer->has_written_header == 0) {
         mem_writer->prev_timestamp = get_current_time();
 
@@ -236,9 +239,7 @@ void write_proc_mem(MemWriter* mem_writer, const ProcessIds* process_ids) {
     free(mem_writer->prev_timestamp);
     mem_writer->prev_timestamp = tv;
 
-    if (process_ids->size >= 16) {
-        return;
-    }
+
 
     static const int starting_offset = 4;
 
@@ -251,8 +252,6 @@ void write_proc_mem(MemWriter* mem_writer, const ProcessIds* process_ids) {
 
     byte_t* countBuf = buffer + 2;
     const ushort value = offset - starting_offset;
-    printf("offset: %d\n", offset);
-    fflush(stdout);
     countBuf[0] = (byte_t) (value >> 8 & MASK_8);
     countBuf[1] = (byte_t) (value & MASK_8);
 
