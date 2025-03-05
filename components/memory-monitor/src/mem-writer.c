@@ -218,7 +218,7 @@ void write_proc_mem(MemWriter* mem_writer, ProcessIds* process_ids) {
     if (mem_writer->has_written_header == 0) {
         mem_writer->prev_timestamp = get_current_time();
 
-        void* header = write_mtc_header(mem_writer->prev_timestamp, VERSION << 4 | (process_ids->size & MASK_4));
+        void* header = write_mtc_header(mem_writer->prev_timestamp, VERSION << 3 | (process_ids->size & MASK_3));
         add_to_mem_queue(mem_writer->writer_queue, header, 5);
         mem_writer->has_written_header = 1;
         return;

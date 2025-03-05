@@ -54,7 +54,7 @@ typedef struct mem_proc_info_s {
 #define MemProcFields 23
 #define read_proc_info(...) read_process_mem_smap_rollup_info(##__VA_ARGS__)
 #define reset_proc_info(...) reset_process_smap_info(##__VA_ARGS__)
-#define MAX_PROCESS 12
+#define MAX_PROCESS 7
 #else
 #define MemProc MemProcInfo
 #define MemProcFields 10

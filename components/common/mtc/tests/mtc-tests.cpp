@@ -32,7 +32,8 @@ int main(int argc, char* argv[]) {
     printf("Size: %lu\n", object.size);
     std::cout << duration.count() / 1'000'000.0 << " seconds\n";
 
-    struct MtcPointMap* map = &object.point_map[0];
+    struct MtcPointMap* map = &object.point_map[20];
+    // struct MtcPointMap* map = &object.point_map[10];
     for (int j=0; j < map->length; j++) {
         printf("%u\n", map->points[j].value);
     }

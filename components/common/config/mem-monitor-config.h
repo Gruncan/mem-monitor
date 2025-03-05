@@ -13,6 +13,7 @@
 #define MASK_6 0x3F
 #define MASK_5 0x1F
 #define MASK_4 0x0F
+#define MASK_3 0x07
 
 
 #define MALLOC 0x0

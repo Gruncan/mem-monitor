@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
     arguments.command = NULL;
     arguments.args = NULL;
     arguments.process_id = -1;
-    arguments.process_name = NULL;
+    arguments.process_name = "chrome";
     arguments.is_proc_only = 0;
     arguments.is_collecting_args = 0;
 
