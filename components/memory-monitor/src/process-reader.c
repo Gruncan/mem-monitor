@@ -2,6 +2,7 @@
 
 #include "process-reader.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <mem-info.h>
 #include <mem-monitor-config.h>
@@ -17,6 +18,17 @@
 
 #define STATM_FIELDS 6
 
+#define CHECK_PROC_EXISTS(pid, ptr) \
+    char directory[20]; \
+    sprintf(directory, "/proc/%d", pid); \
+ \
+    struct stat stats; \
+    if (stat(directory, &stats) == 0) { \
+        if (!S_ISDIR(stats.st_mode)) { \
+            reset_process_smap_info(ptr); \
+            return -1; \
+        } \
+    } \
 
 
 ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override) {
@@ -102,7 +114,7 @@ void init_process_ids(ProcessIds* process_id, const pid_t* pids, const size_t si
     }
     for (int j = 0; j < process_id->size; ++j) {
         process_id->proc_info[j].pid = pids[j];
-        process_id->proc_info[j].mem_info = malloc(sizeof(MemProcInfo));
+        process_id->proc_info[j].mem_info = malloc(sizeof(MemProc));
         process_id->proc_info[j].is_alive = 1;
         init_process_info(process_id->proc_info[j].mem_info, pids[j]);
     }
@@ -129,7 +141,31 @@ void check_processes_exists(const ProcessIds* pids) {
 
 
 
-int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
+int init_process_info(MemProc* mem_proc_info, pid_t pid) {
+#ifdef SMAP_VERSION
+    mem_proc_info->rss = 0;
+    mem_proc_info->pss = 0;
+    mem_proc_info->pss_dirty = 0;
+    mem_proc_info->pss_anon = 0;
+    mem_proc_info->pss_file = 0;
+    mem_proc_info->pss_shmem = 0;
+    mem_proc_info->shared_clean = 0;
+    mem_proc_info->shared_dirty = 0;
+    mem_proc_info->private_clean = 0;
+    mem_proc_info->private_dirty = 0;
+    mem_proc_info->referenced = 0;
+    mem_proc_info->anonymous = 0;
+    mem_proc_info->ksm = 0;
+    mem_proc_info->lazy_free = 0;
+    mem_proc_info->anon_huge_pages = 0;
+    mem_proc_info->shmem_pmd_mapped = 0;
+    mem_proc_info->file_pmd_mapped = 0;
+    mem_proc_info->shared_hugetld = 0;
+    mem_proc_info->private_hugetlb = 0;
+    mem_proc_info->swap = 0;
+    mem_proc_info->swap_pss = 0;
+    mem_proc_info->locked = 0;
+#else
     mem_proc_info->oom_adj = -1;
     mem_proc_info->oom_score = -1;
     mem_proc_info->oom_score_adj = -1;
@@ -140,8 +176,9 @@ int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
     mem_proc_info->text = 0;
     mem_proc_info->data = 0;
     mem_proc_info->dirty = 0;
-    mem_proc_info->pid = pid;
 
+#endif
+    mem_proc_info->pid = pid;
     return 0;
 }
 
@@ -153,7 +190,7 @@ unsigned char read_processes(ProcessIds* processes) {
             inactive++;
             continue;
         }
-        const char result = read_single_process_info(processes->proc_info[i].mem_info, processes->proc_info[i].pid);
+        const char result = read_process_mem_smap_rollup_info(processes->proc_info[i].mem_info, processes->proc_info[i].pid);
         if (result < 0) {
             processes->proc_info[i].is_alive = 0;
         }
@@ -161,6 +198,45 @@ unsigned char read_processes(ProcessIds* processes) {
     return inactive == processes->size;
 }
 
+char read_process_mem_smap_rollup_info(MemProcSmapRollup* mem_smap, const pid_t pid) {
+    char file[256];
+    snprintf(file, sizeof(file), "/proc/%d/smaps_rollup", pid);
+
+    char* content = mem_parse_file(file, 2048, READ_RAW);
+    if (content == NULL) {
+        printf("read_process_mem_smap_rollup_info failed\n");
+        return -1;
+    }
+
+
+    CHECK_PROC_EXISTS(pid, mem_smap);
+
+    char* line;
+    char* rest = content;
+
+    strsep(&rest, "\n");
+
+    unsigned long* fields = ((unsigned long*) mem_smap) + 1;
+    const int field_count = sizeof(MemProcSmapRollup) / sizeof(unsigned long);
+
+    int line_index = 0;
+    while ((line = strsep(&rest, "\n")) != NULL && line_index < field_count) {
+        if (strlen(line) == 0) continue;
+
+        char* colon = strchr(line, ':');
+        if (!colon)
+            continue;
+
+        const char* value = colon + 1;
+        while (isspace(*value)) value++;
+
+        fields[line_index] = strtoull(value, NULL, 10);
+
+        line_index++;
+    }
+    free(content);
+    return 0;
+}
 
 void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     char file[256];
@@ -211,16 +287,7 @@ char read_single_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
 
     char filenames[length][30];
 
-    char directory[20];
-    sprintf(directory, "/proc/%d", pid);
-
-    struct stat stats;
-    if (stat(directory, &stats) == 0) {
-        if (!S_ISDIR(stats.st_mode)) {
-            reset_process_info(mem_proc_info);
-            return -1;
-        }
-    }
+    CHECK_PROC_EXISTS(pid, mem_proc_info)
 
     for (int i = 0; i < length; i++) {
         sprintf(filenames[i], files[i], pid);
@@ -247,10 +314,11 @@ char read_single_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     return 0;
 }
 
-void reset_process_info(MemProcInfo* mem_proc_info) {
+void reset_process_mem_info(MemProcInfo* mem_proc_info) {
     if (mem_proc_info == NULL)
         return;
 
+    //TODO fix this -1 is impossible instant overflow????
     mem_proc_info->size = -1;
     mem_proc_info->resident = -1;
     mem_proc_info->shared = -1;
@@ -258,3 +326,31 @@ void reset_process_info(MemProcInfo* mem_proc_info) {
     mem_proc_info->data = -1;
     mem_proc_info->dirty = -1;
 }
+
+void reset_process_smap_info(MemProcSmapRollup* mem_smap) {
+    if (mem_smap == NULL) return;
+
+    mem_smap->rss = 0;
+    mem_smap->pss = 0;
+    mem_smap->pss_dirty = 0;
+    mem_smap->pss_anon = 0;
+    mem_smap->pss_file = 0;
+    mem_smap->pss_shmem = 0;
+    mem_smap->shared_clean = 0;
+    mem_smap->shared_dirty = 0;
+    mem_smap->private_clean = 0;
+    mem_smap->private_dirty = 0;
+    mem_smap->referenced = 0;
+    mem_smap->anonymous = 0;
+    mem_smap->ksm = 0;
+    mem_smap->lazy_free = 0;
+    mem_smap->anon_huge_pages = 0;
+    mem_smap->shmem_pmd_mapped = 0;
+    mem_smap->file_pmd_mapped = 0;
+    mem_smap->shared_hugetld = 0;
+    mem_smap->private_hugetlb = 0;
+    mem_smap->swap = 0;
+    mem_smap->swap_pss = 0;
+    mem_smap->locked = 0;
+}
+

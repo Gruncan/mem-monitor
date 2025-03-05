@@ -15,8 +15,12 @@
 
 #define FLUSH_INTERVAL 1
 
-
+#ifdef SMAP_VERSION
+#define VERSION 8
+#else
 #define VERSION 7
+#endif
+
 #define MTC_VALUE_MASK MASK_32
 
 #ifdef VERSION_3
@@ -208,8 +212,8 @@ uint write_struct_data(void* buffer, void* struct_ptr, const uint struct_length,
 }
 
 void write_proc_mem(MemWriter* mem_writer, ProcessIds* process_ids) {
-    if (process_ids->size >= 16) {
-        process_ids->size = 15;
+    if (process_ids->size >= MAX_PROCESS) {
+        process_ids->size = MAX_PROCESS - 1;
     }
     if (mem_writer->has_written_header == 0) {
         mem_writer->prev_timestamp = get_current_time();
