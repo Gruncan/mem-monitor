@@ -25,7 +25,7 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
     values.clear();
 
     values.reserve(length);
-
+    valueMax = 0;
 
     for (uint64_t i = 0; i < point_map->length; i++) {
         if (point_map->points[i].value > valueMax) {
