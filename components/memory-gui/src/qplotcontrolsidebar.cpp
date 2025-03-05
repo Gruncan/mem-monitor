@@ -40,10 +40,11 @@ QPlotControlSidebar::QPlotControlSidebar(QWidget* parent, std::map<mk_size_t, st
 
 void QPlotControlSidebar::setCategories(const std::vector<mtc::MtcCategories>& categories) {
     treeWidget->clear();
-    for (auto& category : categories) {
+    for (int i=0; i<categories.size(); i++) {
+        const auto& category = categories[i];
         const auto item = createCategoryItem(category);
         treeWidget->addTopLevelItem(item);
-        if (category.name == "General") {
+        if (i == 0) {
             item->setExpanded(true);
         } else {
             item->setExpanded(false);
