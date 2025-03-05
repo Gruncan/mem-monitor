@@ -79,7 +79,8 @@ QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* l
     updateInputsFromPlot();
 }
 
-void QMemoryPlotter::addPlot(mk_size_t key) {
+void QMemoryPlotter::addPlot(const QTreeMemoryWidgetItem* item) {
+    const mk_size_t key = item->get_key();
     QCPGraph* graph = _plot->addGraph();
     plotsEnabled[key] = graph;
     if (_plot->graphCount() == 1) {
@@ -89,21 +90,15 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     }
 
     const MtcObject* object = _loader->getMtcObject();
-    uint64_t sampleRate = 50;
+    // uint64_t sampleRate = 50;
 
     QVector<double> times;
     uint64_t timeSum = 0;
-    times.reserve(object->size / sampleRate);
-    uint64_t c = 0;
+    times.reserve(object->size);
     for (uint64_t i = 0; i < object->_times_length; i++) {
         for (uint64_t j = 0; j < object->times[i].repeated + 1; j++) {
             timeSum += *object->times[i].time_offset;
-            if (c == sampleRate) {
-                times.push_back(timeSum);
-                c = 0;
-                continue;
-            }
-            c++;
+            times.push_back(timeSum);
         }
     }
     // _plot->xAxis->setRange(0, times.last());
@@ -111,7 +106,7 @@ void QMemoryPlotter::addPlot(mk_size_t key) {
     // Move to another thread
     // std::shared_ptr<mtc::MtcObject> object = _loader->getMtcData();
     graph->setPen(QPen(generateRandomColor()));
-    graph->setName(QString::fromStdString(mtc::MTC_INDEX_MAPPING.at(key)));
+    graph->setName(QString::fromStdString(item->get_name()));
 
     emit queueRendering(&object->point_map[key], times, object->size, graph);
 }
@@ -130,17 +125,11 @@ void QMemoryPlotter::removePlot(mk_size_t key) {
 }
 
 
-void QMemoryPlotter::plotToggleChange(const QString& category, const QString& plotString, const bool enabled) {
-    const auto value = mtc::MTC_KEY_MAPPING.find(plotString.toStdString());
-    if (value == mtc::MTC_KEY_MAPPING.end()) {
-        qDebug() << "Unable to find plot name: " << plotString;
-        return;
-    }
-
-    const mk_size_t key = value->second;
+void QMemoryPlotter::plotToggleChange(const QTreeMemoryWidgetItem* item, const bool enabled) {
+    const mk_size_t key = item->get_key();
 
     if (enabled) {
-        addPlot(key);
+        addPlot(item);
     } else {
         removePlot(key);
     }

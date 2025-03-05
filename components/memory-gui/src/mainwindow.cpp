@@ -10,7 +10,8 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this); // Move this first
     ui->plot->setDisabled(true);
 
-    sidebar = new QPlotControlSidebar(this);
+
+    sidebar = new QPlotControlSidebar(this, nullptr);
     sidebar->setGeometry(QRect(10, 10, 175, 710));
     sidebar->setCategories(mtc::MTC_CATEGORIES);
 

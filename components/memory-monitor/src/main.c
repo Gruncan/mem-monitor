@@ -18,11 +18,11 @@
 #ifndef MEM_DEBUG
 #define GET_MEM_VERSION(v) #v
 #else
-#define GET_MEM_VERSION(v) #v "d"
+#define GET_MEM_VERSION(v) #v "_d"
 #endif
 
 
-const char* argp_program_version = GET_MEM_VERSION(4.2);
+const char* argp_program_version = GET_MEM_VERSION(5.3p);
 
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
@@ -34,6 +34,7 @@ static struct argp_option options[] = {{"time", 't', "VALUE", 0, "The time delay
                                        {"process", 'p', "COMMAND", 0, "The command to execute and pull proc data for"},
                                        {"processid", 'i', "ID", 0, "The existing process ID to monitor"},
                                        {"processname", 'n', "NAME", 0, "The existing process name to monitor"},
+                                       {"proconly", 'o', "BOOL", 0, "Collect multiple process information override other keys"},
                                        {0}};
 
 struct arguments {
@@ -42,12 +43,12 @@ struct arguments {
     char* command;
     long int process_id;
     char* process_name;
+    unsigned char is_proc_only;
     char** args;
     int is_collecting_args;
 };
 
 static MemWriter* mw;
-
 
 static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
     struct arguments* arguments = state->input;
@@ -70,7 +71,6 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
             arguments->command = arg;
             arguments->is_collecting_args = 1;
             break;
-
         case 'i': {
             char* p_end_ptr;
             long int p_value = strtol(arg, &p_end_ptr, 10);
@@ -83,6 +83,9 @@ static error_t parse_opt(const int key, char* arg, struct argp_state* state) {
         }
         case 'n':
             arguments->process_name = arg;
+            break;
+        case 'o':
+            arguments->is_proc_only = 1;
             break;
         case ARGP_KEY_ARG:
             if (arguments->args == NULL) {
@@ -147,57 +150,19 @@ void handle_signal(const int sig) {
     }
 }
 
-pid_t get_pid_by_name(const char* name) {
-    char command[256];
-    // pgrep is probably more efficient that what i would do.. and quicker for me :)
-    snprintf(command, sizeof(command), "pgrep %s", name);
 
-    FILE* fp = popen(command, "r");
-    if (fp == NULL) {
-        perror("popen");
-        return -1;
+
+static ProcessIds* construct_process_ids(const pid_t pid, const unsigned char is_proc_override) {
+    ProcessIds* process_ids = malloc(sizeof(ProcessIds));
+    if (process_ids == NULL) {
+        perror("Error: Memory allocation failed.\n");
+        return NULL;
     }
+    init_process_ids(process_ids, &pid, 1, NULL, is_proc_override);
 
-    pid_t pid = -1;
-    if (fscanf(fp, "%d", &pid) != 1) {
-        printf("No process found with name: %s\n", name);
-        fclose(fp);
-        return -2;
-    }
-
-    fclose(fp);
-    return pid;
+    return process_ids;
 }
 
-int launch_process(struct arguments* args) {
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        perror("fork");
-        return -1;
-    }
-
-    if (pid == 0) {
-        char* exec_args[1024];
-        exec_args[0] = args->command;
-
-        int i = 0;
-        while (args->args[i] != NULL) {
-            exec_args[i + 1] = args->args[i];
-            i++;
-        }
-        exec_args[i + 1] = NULL;
-
-        execvp(exec_args[0], exec_args);
-
-        perror("execvp");
-        return -1;
-    } else {
-        printf("Executing %s (%d)..\n", args->command, pid);
-
-        return pid;
-    }
-}
 
 int main(int argc, char* argv[]) {
     signal(SIGTERM, handle_signal);
@@ -211,47 +176,27 @@ int main(int argc, char* argv[]) {
     arguments.args = NULL;
     arguments.process_id = -1;
     arguments.process_name = NULL;
+    arguments.is_proc_only = 0;
     arguments.is_collecting_args = 0;
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-    int is_child_proc = 0;
 
-    pid_t pid = -1;
+    ProcessIds* pids = NULL;
     if (arguments.command != NULL) {
-        pid = launch_process(&arguments);
-        if (pid <= 0) {
-            return -1;
-        }
-        is_child_proc = 1;
-    } else if (arguments.process_id != -1) {
-        pid = (pid_t) arguments.process_id;
-    } else if (arguments.process_name != NULL) {
-        pid = get_pid_by_name(arguments.process_name);
-    }
-
-
-    MemInfo* mem_info = malloc(sizeof(MemInfo));
-    MemVmInfo* mem_vm_info = malloc(sizeof(MemVmInfo));
-    MemProcInfo* mem_proc_info = NULL;
-
-    if (pid == -2) {
+        fprintf(stderr, "Forking of commands have been removed in latest version TBC!");
         return -1;
-    }
-    if (pid != -1) {
-        mem_proc_info = malloc(sizeof(MemProcInfo));
-        if (init_process_info(mem_proc_info, pid) == -1) {
+    } else if (arguments.process_id != -1) {
+        pids = construct_process_ids(arguments.process_id, arguments.is_proc_only);
+        if (pids == NULL) {
+            return -1;
+        }
+    } else if (arguments.process_name != NULL) {
+        pids = get_pids_by_name(arguments.process_name, arguments.is_collecting_args);
+        if (pids == NULL) {
             return -1;
         }
     }
-
-    read_mem_info(mem_info);
-
-
-    printf("Memory info:\n");
-    printf(" - Total: %lu\n", mem_info->total);
-    printf(" - Free: %lu\n", mem_info->free);
-    printf(" - Available: %lu\n", mem_info->available);
 
     mw = new_mem_writer();
 
@@ -259,68 +204,19 @@ int main(int argc, char* argv[]) {
 
     printf("Writing memory info to file...\n");
 
-    int process_terminated = 0;
-    int counter = 0;
-
     while (1) {
-        read_mem_info(mem_info);
-        read_mem_vm_info(mem_vm_info);
-        if (pid != -1) {
-            const char result = read_process_info(mem_proc_info, pid);
-            if (result < 0)
-                pid = -1;
+        const unsigned char result = read_processes(pids);
+        if (result == 1) {
+            break; // All processes are dead
         }
-        write_mem(mw, mem_info, mem_vm_info, mem_proc_info);
 
+        write_proc_mem(mw, pids);
         usleep(arguments.time);
-
-        if (counter >= READS_BEFORE) {
-            break;
-        } else if (process_terminated == 1) {
-            counter++;
-        } else if (pid != -1) {
-            int result;
-            int status;
-            if (is_child_proc == 1) {
-                result = waitpid(pid, &status, WNOHANG);
-            } else {
-                result = check_process_exists(pid);
-                if (result == 1) {
-                    result = 0;
-                } else if (result == 0) {
-                    result = 1;
-                }
-                status = 0;
-            }
-
-            if (result == -1) {
-                perror("failed to check process status");
-                break;
-            }
-
-            if (result != 0) {
-                if (is_child_proc != 1) {
-                    printf("Unsure exit status! %d\n", result);
-                } else if (WIFEXITED(status)) {
-                    printf("Child exited with status %d\n", WEXITSTATUS(status));
-                } else if (WIFSTOPPED(status)) {
-                    printf("Child stopped by signal %d\n", WSTOPSIG(status));
-                } else {
-                    printf("Process exited with unknown status: %d\n", status);
-                }
-                printf("Collecting %d more data points..\n", READS_BEFORE);
-                pid = -1;
-                reset_process_info(mem_proc_info);
-                process_terminated = 1;
-            }
-        }
     }
 
-    free(mem_info);
-    free(mem_vm_info);
-    if (mem_proc_info != NULL) {
-        free(mem_proc_info);
-    }
+    free(pids);
+    // free(mem_info);
+    // free(mem_vm_info);
 
     return 0;
 }

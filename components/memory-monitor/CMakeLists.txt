@@ -11,6 +11,9 @@ add_executable(mem_monitor
         src/process-reader.c
 )
 
+message(WARNING "Monitor has debug symbols")
+set(CMAKE_BUILD_TYPE Debug)
+
 target_link_libraries(mem_monitor PRIVATE pthread)
 
 

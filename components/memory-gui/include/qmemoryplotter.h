@@ -16,7 +16,7 @@ class QMemoryPlotter : public QWidget {
     explicit QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
                             QMemoryAnimateControls* animateControls);
 
-    void addPlot(mk_size_t key);
+    void addPlot(const QTreeMemoryWidgetItem* item);
 
     void removePlot(mk_size_t key);
 
@@ -30,7 +30,7 @@ class QMemoryPlotter : public QWidget {
 
   public Q_SLOTS:
 
-    void plotToggleChange(const QString& category, const QString& plotString, bool enabled);
+    void plotToggleChange(const QTreeMemoryWidgetItem* item, bool enabled);
 
     void updateXRange();
 

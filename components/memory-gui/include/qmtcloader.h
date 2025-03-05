@@ -42,6 +42,7 @@ class QMtcLoader : public QWidget {
     QLabel* label;
     QProgressBar* progressBar;
     QPushButton* button;
+    QPlotControlSidebar* sidebar;
 
     DecoderWorker* worker;
     DecodeMonitor* monitor;

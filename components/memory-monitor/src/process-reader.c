@@ -4,6 +4,8 @@
 
 #include <errno.h>
 #include <mem-info.h>
+#include <mem-monitor-config.h>
+#include <mem-writer.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +18,97 @@
 #define STATM_FIELDS 6
 
 
-int check_process_exists(pid_t pid) {
+
+ProcessIds* get_pids_by_name(char* name, unsigned char is_proc_override) {
+    char command[256];
+    // pgrep is probably more efficient that what i would do.. and quicker for me :)
+    snprintf(command, sizeof(command), "pgrep %s", name);
+
+    FILE* pipe = popen(command, "r");
+    if (pipe == NULL) {
+        perror("popen");
+        return NULL;
+    }
+
+    size_t size = 0;
+    pid_t* pids = malloc(sizeof(pid_t));
+    if (pids == NULL) {
+        perror("Failed failed to allocate memory for process ids");
+        return NULL;
+    }
+
+    char line[32];
+    int i = 0;
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        const size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') {
+            line[len-1] = '\0';
+        }
+        if (size != 0 && i == size) {
+            size *= 2;
+            pid_t* new_pids = realloc(pids, sizeof(pid_t) * size);
+            if (new_pids == NULL) {
+                perror("Failed failed to allocate memory for pids");
+                goto cleanUpFunc;
+            }
+            pids = new_pids;
+        }
+
+        pids[i] = atoi(line);
+        if (size == 0) size = 1;
+
+        i++;
+    }
+
+
+    ProcessIds* process_id = malloc(sizeof(ProcessIds));
+    if (process_id == NULL) {
+        perror("Failed failed to allocate memory for process ids");
+        goto cleanUpFunc;
+    } else if (size == 0) {
+        free(pids);
+        process_id->proc_info = NULL;
+        process_id->size = 0;
+        process_id->name = name;
+        process_id->is_proc_override = is_proc_override;
+        return process_id;
+    }
+
+    const pid_t* shrunk_pids = realloc(pids, sizeof(pid_t) * i);
+    if (shrunk_pids == NULL) {
+        perror("Failed failed to allocate memory for pids");
+        free(process_id);
+        goto cleanUpFunc;
+    }
+
+    pclose(pipe);
+    init_process_ids(process_id, shrunk_pids, i, name, is_proc_override);
+    return process_id;
+
+cleanUpFunc:
+    free(pids);
+    pclose(pipe);
+    return NULL;
+}
+
+void init_process_ids(ProcessIds* process_id, const pid_t* pids, const size_t size, char* name,
+                                        const byte_t is_proc_override) {
+    process_id->name = name;
+    process_id->is_proc_override = is_proc_override;
+    process_id->size = size;
+    process_id->proc_info = malloc(sizeof(ProcInfo) * process_id->size);
+    if (process_id->proc_info == NULL) {
+        return;
+    }
+    for (int j = 0; j < process_id->size; ++j) {
+        process_id->proc_info[j].pid = pids[j];
+        process_id->proc_info[j].mem_info = malloc(sizeof(MemProcInfo));
+        process_id->proc_info[j].is_alive = 1;
+        init_process_info(process_id->proc_info[j].mem_info, pids[j]);
+    }
+}
+
+static char check_process_exists(const pid_t pid) {
     if (kill(pid, 0) == 0)
         return 1;
 
@@ -28,12 +120,16 @@ int check_process_exists(pid_t pid) {
     return -1;
 }
 
-int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
-    if (check_process_exists(pid) == 0) {
-        perror("Process does not exist");
-        return -1;
-    }
 
+void check_processes_exists(const ProcessIds* pids) {
+    for (size_t i =0; i < pids->size; ++i) {
+        pids->proc_info[i].is_alive = check_process_exists(pids->proc_info[i].pid);
+    }
+}
+
+
+
+int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
     mem_proc_info->oom_adj = -1;
     mem_proc_info->oom_score = -1;
     mem_proc_info->oom_score_adj = -1;
@@ -44,8 +140,25 @@ int init_process_info(MemProcInfo* mem_proc_info, pid_t pid) {
     mem_proc_info->text = 0;
     mem_proc_info->data = 0;
     mem_proc_info->dirty = 0;
+    mem_proc_info->pid = pid;
 
     return 0;
+}
+
+
+unsigned char read_processes(ProcessIds* processes) {
+    unsigned char inactive = 0;
+    for (int i=0; i < processes->size; ++i) {
+        if (processes->proc_info[i].is_alive == 0) {
+            inactive++;
+            continue;
+        }
+        const char result = read_single_process_info(processes->proc_info[i].mem_info, processes->proc_info[i].pid);
+        if (result < 0) {
+            processes->proc_info[i].is_alive = 0;
+        }
+    }
+    return inactive == processes->size;
 }
 
 
@@ -75,7 +188,7 @@ void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
             return;
         }
 
-        const long page_size_kb = sysconf(_SC_PAGESIZE) / 1024;
+        const long page_size_kb = sysconf(_SC_PAGESIZE);
 
         mem_proc_info->size *= page_size_kb;
         mem_proc_info->resident *= page_size_kb;
@@ -88,7 +201,7 @@ void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     free(content);
 }
 
-char read_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
+char read_single_process_info(MemProcInfo* mem_proc_info, const pid_t pid) {
     if (mem_proc_info == NULL)
         return -1;
 
