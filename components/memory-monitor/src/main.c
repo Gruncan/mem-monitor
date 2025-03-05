@@ -22,7 +22,7 @@
 #endif
 
 
-const char* argp_program_version = GET_MEM_VERSION(5.2p);
+const char* argp_program_version = GET_MEM_VERSION(5.3p);
 
 const char* argp_program_bug_address = "duncan.da.jones@gmail.com";
 
