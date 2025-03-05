@@ -188,7 +188,7 @@ void read_process_mem_info(MemProcInfo* mem_proc_info, const pid_t pid) {
             return;
         }
 
-        const long page_size_kb = sysconf(_SC_PAGESIZE) / 1024;
+        const long page_size_kb = sysconf(_SC_PAGESIZE);
 
         mem_proc_info->size *= page_size_kb;
         mem_proc_info->resident *= page_size_kb;
