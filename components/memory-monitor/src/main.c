@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
     arguments.command = NULL;
     arguments.args = NULL;
     arguments.process_id = -1;
-    arguments.process_name = "chrome";
+    arguments.process_name = NULL;
     arguments.is_proc_only = 0;
     arguments.is_collecting_args = 0;
 
@@ -196,6 +196,11 @@ int main(int argc, char* argv[]) {
         if (pids == NULL) {
             return -1;
         }
+    }
+
+    if (pids == NULL) {
+        printf("This version of monitor requires a process to monitor!");
+        return -1;
     }
 
     mw = new_mem_writer();

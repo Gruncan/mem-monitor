@@ -202,25 +202,44 @@ char read_process_mem_smap_rollup_info(MemProcSmapRollup* mem_smap, const pid_t 
     char file[256];
     snprintf(file, sizeof(file), "/proc/%d/smaps_rollup", pid);
 
-    char* content = mem_parse_file(file, 2048, READ_RAW);
+    char* content = mem_parse_file(file, 4048, READ_RAW);
     if (content == NULL) {
         printf("read_process_mem_smap_rollup_info failed\n");
         return -1;
     }
 
-
     CHECK_PROC_EXISTS(pid, mem_smap);
 
-    char* line;
     char* rest = content;
 
-    strsep(&rest, "\n");
+    char* newline = strchr(rest, '\n');
+    if (newline == NULL) {
+        return -1;
+    }
+    rest = newline + 1;
 
     unsigned long* fields = ((unsigned long*) mem_smap) + 1;
     const int field_count = sizeof(MemProcSmapRollup) / sizeof(unsigned long);
 
     int line_index = 0;
-    while ((line = strsep(&rest, "\n")) != NULL && line_index < field_count) {
+    while (line_index < field_count) {
+        newline = strchr(rest, '\n');
+        if (newline == NULL) {
+            break;
+        }
+
+        char line[256];
+
+        size_t line_len = newline - rest;
+        if (line_len >= sizeof(line)) {
+            line_len = sizeof(line) - 1;
+        }
+        memcpy(line, rest, line_len);
+        line[line_len] = '\0';
+
+        rest = newline + 1;
+
+
         if (strlen(line) == 0) continue;
 
         char* colon = strchr(line, ':');
