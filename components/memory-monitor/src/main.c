@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (pids == NULL) {
-        printf("This version of monitor requires a process to monitor!");
+        printf("This version of monitor requires a process to monitor!\n");
         return -1;
     }
 

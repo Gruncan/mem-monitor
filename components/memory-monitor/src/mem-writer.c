@@ -217,8 +217,8 @@ void write_proc_mem(MemWriter* mem_writer, ProcessIds* process_ids) {
     }
     if (mem_writer->has_written_header == 0) {
         mem_writer->prev_timestamp = get_current_time();
-
-        void* header = write_mtc_header(mem_writer->prev_timestamp, VERSION << 3 | (process_ids->size & MASK_3));
+        const uint8_t process_size = process_ids->size & ((1 << 3) - 1);
+        void* header = write_mtc_header(mem_writer->prev_timestamp, VERSION << 3 | process_size);
         add_to_mem_queue(mem_writer->writer_queue, header, 5);
         mem_writer->has_written_header = 1;
         return;
@@ -250,8 +250,8 @@ void write_proc_mem(MemWriter* mem_writer, ProcessIds* process_ids) {
     uint offset = starting_offset;
     mk_size_t value_length = 0;
     for (int i = 0; i < process_ids->size; i++) {
-        offset = write_struct_data(buffer, process_ids->proc_info[i].mem_info, sizeof(MemProcInfo), offset, value_length);
-        value_length += sizeof(MemProcInfo) / SIZE_UL;
+        offset = write_struct_data(buffer, process_ids->proc_info[i].mem_info, sizeof(MemProc), offset, value_length);
+        value_length += sizeof(MemProc) / SIZE_UL;
     }
 
     byte_t* countBuf = buffer + 2;
