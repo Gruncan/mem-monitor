@@ -480,6 +480,37 @@ static const std::map<mk_size_t, std::string> MTC_BASE7_INDEX_MAPPING {
     {0x9, "p_dirty"},
 };
 
+static const std::map<mk_size_t, std::string> MTC_BASE8_INDEX_MAPPING {
+    {0x0, "pid"},
+    {0x1, "rss"},
+    {0x2, "pss"},
+    {0x3, "pss_dirty"},
+    {0x4, "pss_anon"},
+    {0x5, "pss_file"},
+    {0x6, "pss_shmem"},
+    {0x7, "shared_clean"},
+    {0x8, "shared_dirty"},
+    {0x9, "private_clean"},
+    {0xa, "private_dirty"},
+    {0xb, "referenced"},
+    {0xc, "anonymous"},
+    {0xd, "ksm"},
+    {0xe, "lazy_free"},
+    {0xf, "anon_huge_pages"},
+    {0x10, "shmem_pmd_mapped"},
+    {0x11, "file_pmd_mapped"},
+    {0x12, "shared_hugetld"},
+    {0x13, "private_hugetlb"},
+    {0x14, "swap"},
+    {0x15, "swap_pss"},
+    {0x16, "locked"},
+};
+
+static const std::map<uint8_t, mk_size_t> MTC_BASE_KEY_MAPPING {
+    {0x7, MTC_BASE7_INDEX_MAPPING.size()},
+    {0x8, MTC_BASE8_INDEX_MAPPING.size()}
+};
+
 
 struct MtcCategories {
     std::string name;

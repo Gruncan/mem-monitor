@@ -8,11 +8,6 @@
 #include <QThread>
 
 
-#define IDS(size) \
-{static_cast<unsigned char>(size + 1), static_cast<unsigned char>(0x2 + size), static_cast<unsigned char>(0x3 + size),\
-                    static_cast<unsigned char>(0x4 + size), static_cast<unsigned char>(0x5 + size),\
-                    static_cast<unsigned char>(0x6 + size), static_cast<unsigned char>(0x7 + size), static_cast<unsigned char>(0x8 + size),\
-                    static_cast<unsigned char>(0x9 + size)}\
 
 QMtcLoader::QMtcLoader(QWidget* parent, const char* name, QPlotControlSidebar* sidebar) : QWidget(parent), sidebar(sidebar) {
     setObjectName(name);
@@ -116,7 +111,7 @@ void QMtcLoader::loaded(const std::string& filePath) {
 
     std::map<mk_size_t, bool>* nonDefaultFields = new std::map<mk_size_t, bool>();
 
-    if (object->version != 7) {
+    if (object->version < 7) {
         for (mk_size_t i = 0; i < object->_key_size; i++) {
             (*nonDefaultFields)[i] = object->point_map[i].points[0].value == 0 && object->point_map[i].length == 1;
         }
@@ -127,21 +122,37 @@ void QMtcLoader::loaded(const std::string& filePath) {
         }
     } else {
         auto nameMapping = new std::map<mk_size_t, std::string>();
-        for (unsigned char size = 0; size < object->_proc_size * 10; size += 10) {
+        if (!mtc::MTC_BASE_KEY_MAPPING.contains(object->version)) {
+            qDebug() << "GUi does not know how to process this version";
+            return;
+        }
+
+        mk_size_t count = mtc::MTC_BASE_KEY_MAPPING.at(object->version);
+        std::map<mk_size_t, std::string> key_map;
+        if (object->version == 7) {
+            key_map = mtc::MTC_BASE7_INDEX_MAPPING;
+        }else {
+            key_map = mtc::MTC_BASE8_INDEX_MAPPING;
+        }
+
+        for (unsigned char size = 0; size < object->_proc_size * count; size += count) {
             unsigned int pid = object->point_map[size].points->value;
-            for (auto [key, value] : mtc::MTC_BASE7_INDEX_MAPPING) {
+            for (auto [key, value] : key_map) {
                 (*nameMapping)[key + size] = std::format("{} ({})", value, pid);
             }
         }
         sidebar->setNameMapping(nameMapping);
 
         std::vector<mtc::MtcCategories> MTC_PROC_CATEGORIES = std::vector<mtc::MtcCategories>();
-        for (unsigned char size = 0; size < object->_proc_size * 10; size += 10) {
+        for (unsigned char size = 0; size < object->_proc_size * count; size += count) {
+            std::vector<mk_size_t> keys;
+            for (auto [key, _] : key_map) {
+                keys.push_back(key + size);
+            }
             MTC_PROC_CATEGORIES.push_back({std::format("Process {}", object->point_map[size].points->value),
-               IDS(size)});
+               keys});
         }
         sidebar->setCategories(MTC_PROC_CATEGORIES);
-
     }
 
     emit enableNonDefaultFields(nonDefaultFields);
