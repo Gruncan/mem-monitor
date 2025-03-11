@@ -1,8 +1,6 @@
 import ctypes
 import sys
-import time
 import platform
-from datetime import datetime
 
 
 class TMtcMeta(type):
@@ -130,6 +128,9 @@ class TMtcDecoder(metaclass=TMtcMeta):
 
 if __name__ == "__main__":
     decoder = TMtcDecoder()
-    points = decoder.decode("/home/duncan/Desktop/memory_tracker.tmtc")
-    for p in points:
-        print(p)
+    print("Decoding...")
+    points = decoder.decode("/home/duncan/Development/Uni/Thesis/Logs/chrometrackingrepro/memory_tracker.tmtc")
+    print("Decoded...\n")
+    address_map = {}
+
+
