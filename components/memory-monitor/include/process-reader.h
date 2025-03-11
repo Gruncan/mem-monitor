@@ -11,6 +11,7 @@
 
 typedef struct mem_proc_smap_rollup_s {
     unsigned long pid;
+    unsigned long size;
     unsigned long rss;
     unsigned long pss;
     unsigned long pss_dirty;

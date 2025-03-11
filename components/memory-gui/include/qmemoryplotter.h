@@ -9,6 +9,9 @@
 #include "qplotrender.h"
 
 
+#define SAMPLE_RATE 50
+
+
 class QMemoryPlotter : public QWidget {
     Q_OBJECT
 

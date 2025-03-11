@@ -23,9 +23,11 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
                                  QCPGraph* graph) {
 
     values.clear();
-
-    values.reserve(length);
     valueMax = 0;
+
+
+#ifndef SAMPLE_RATE
+    values.reserve(length);
 
     for (uint64_t i = 0; i < point_map->length; i++) {
         if (point_map->points[i].value > valueMax) {
@@ -35,10 +37,29 @@ void QPlotRender::queueRendering(MtcPointMap* point_map, const QVector<double>& 
             values.push_back(point_map->points[i].value);
         }
     }
+    // values.resize(values.size() - 400);
+#else
+    static constexpr uint64_t sampleRate = SAMPLE_RATE;
+    values.reserve(length / sampleRate);
 
+    uint64_t c = 0;
+    for (uint64_t i = 0; i < point_map->length; i++) {
+        if (point_map->points[i].value > valueMax) {
+            valueMax = point_map->points[i].value;
+        }
+        for (uint64_t j = 0; j < point_map->points[i].repeated + 1; j++) {
+            if (c == sampleRate) {
+                values.push_back(point_map->points[i].value);
+                c = 0;
+                continue;
+            }
+            c++;
+        }
+    }
+#endif
 
     graph->setData(times, values);
-    plot->xAxis->setRange(0, times.last(), Qt::AlignLeft);
+    plot->xAxis->setRange(0, times.last() / 8, Qt::AlignLeft);
     plot->yAxis->setRange(0, valueMax * 1.1);
     plot->replot(QCustomPlot::rpQueuedReplot);
 }

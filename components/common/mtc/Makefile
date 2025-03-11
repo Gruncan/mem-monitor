@@ -4,7 +4,7 @@ CCPP = g++
 CFLAGS = -Wall -Wextra -O3
 AR = ar
 
-LIB_NAME = libmtc_decoder.a
+LIB_NAME = libmtc_decoder.so
 TEST_EXEC = mtc_tests
 TEST_STREAM_EXEC = tmtc_stream_exec
 

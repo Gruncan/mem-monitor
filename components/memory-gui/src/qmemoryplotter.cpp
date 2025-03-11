@@ -11,6 +11,7 @@
 #include <random>
 
 
+
 static constexpr int QUALITY = 1000;
 
 QMemoryPlotter::QMemoryPlotter(QWidget* parent, QCustomPlot* plot, QMtcLoader* loader,
@@ -90,10 +91,9 @@ void QMemoryPlotter::addPlot(const QTreeMemoryWidgetItem* item) {
     }
 
     const MtcObject* object = _loader->getMtcObject();
-    // uint64_t sampleRate = 50;
-
     QVector<double> times;
     uint64_t timeSum = 0;
+#ifndef SAMPLE_RATE
     times.reserve(object->size);
     for (uint64_t i = 0; i < object->_times_length; i++) {
         for (uint64_t j = 0; j < object->times[i].repeated + 1; j++) {
@@ -101,6 +101,28 @@ void QMemoryPlotter::addPlot(const QTreeMemoryWidgetItem* item) {
             times.push_back(timeSum);
         }
     }
+
+    // times.resize(times.size() - 400);
+#else
+    static constexpr uint64_t sampleRate = SAMPLE_RATE;
+
+    times.reserve(object->size / sampleRate);
+    uint64_t c = 0;
+    for (uint64_t i = 0; i < object->_times_length; i++) {
+        for (uint64_t j = 0; j < object->times[i].repeated + 1; j++) {
+            timeSum += *object->times[i].time_offset;
+            if (c == sampleRate) {
+                times.push_back(timeSum);
+                c = 0;
+                continue;
+            }
+            c++;
+        }
+    }
+#endif
+
+
+
     // _plot->xAxis->setRange(0, times.last());
     // _plot->yAxis->setRange(0, valueMax * 1.1);
     // Move to another thread

@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
     const enum SimulationSpeed speed = parseSpeed(speedStr);
     const enum SimulationMode mode = parseMode(modeStr);
 
-    if (mode == REPEAT) {
+    if (mode == SINGLE) {
         createTMtcStream(&stream);
         stream_decode_tmtc(filename, &stream, 1);
         if (stream.fp == NULL) {
