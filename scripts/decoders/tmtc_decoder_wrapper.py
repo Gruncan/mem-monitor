@@ -71,6 +71,7 @@ class TMtcPoint:
         self.length = length
         self.time_offset = time_offset
         self.values = values
+        self.end_time_offset = None
 
 
 class TMtcDecoder(metaclass=TMtcMeta):

@@ -14,6 +14,7 @@ class AllocationPoint:
 
     def __init__(self, timestamp):
         self.timestamp = timestamp
+        self.timestamp_end = None
         self.allocation_index_start = 0
         self.allocation_index_end = 0
 
@@ -21,11 +22,13 @@ class AllocationPoint:
         return f"{self.__class__.__name__}: {getattr(self, 'ptr')}"
 
     def _format_timestamp(self):
-        return ""
-        # return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')}] "
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')}] "
 
     def __json__(self):
-        return self.__dict__
+        values = dict(self.__dict__)
+        del values["allocation_index_start"]
+        del values["allocation_index_end"]
+        return values
 
 class Malloc(AllocationPoint):
     def __init__(self, timestamp, ptr, size):
