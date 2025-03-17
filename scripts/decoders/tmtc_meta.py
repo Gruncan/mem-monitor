@@ -1,3 +1,5 @@
+import re
+from datetime import datetime, timedelta
 
 from tmtc_decoder_wrapper import TMtcPoint
 
@@ -13,7 +15,7 @@ def format_timestamp(func):
 class AllocationPoint:
 
     def __init__(self, timestamp):
-        self.timestamp = timestamp
+        self.timestamp = int(timestamp)
         self.timestamp_end = None
         self.allocation_index_start = 0
         self.allocation_index_end = 0
@@ -208,3 +210,111 @@ def load_from_point(point: TMtcPoint, time: int):
         return clz(point.time_offset + time, *point.values), point.time_offset
     except Exception as e:
         print(str(e))
+
+def parse_memory_logs(log_data):
+    pattern = r'\[(\d+)\] ([\w\[\]\_]+)\((.*?)\)(?: = (0x[0-9a-f]+|\(nil\)))?'
+
+    count = 0
+
+    for line in log_data.strip().split('\n'):
+        if count == -1:
+            break
+        match = re.match(pattern, line)
+        if not match:
+            print(line)
+            continue
+
+        timestamp, operation, params, result = match.groups()
+
+        param_list = [p.strip() for p in params.split(',')]
+
+        ptr = int(result, 16) if result and result != '(nil)' else 0
+
+        obj = None
+
+        if operation == 'malloc':
+            size = int(param_list[0])
+            obj = Malloc(timestamp, ptr, size)
+
+        elif operation == 'calloc':
+            nmemb = int(param_list[0])
+            size = int(param_list[1])
+            obj = Calloc(timestamp, nmemb, size, ptr)
+
+        elif operation == 'realloc':
+            orig_ptr = int(param_list[0], 16) if param_list[0] != '(nil)' else 0
+            size = int(param_list[1])
+            obj = ReAlloc(timestamp, orig_ptr, size, ptr)
+
+        elif operation == 'reallocarray':
+            orig_ptr = int(param_list[0], 16) if param_list[0] != '(nil)' else 0
+            nmemb = int(param_list[1])
+            size = int(param_list[2])
+            obj = ReAllocArray(timestamp, orig_ptr, nmemb, size, ptr)
+
+        elif operation == 'free':
+            ptr_value = int(param_list[0], 16) if not param_list[0].__contains__('nil') else 0
+            obj = Free(timestamp, ptr_value)
+
+        elif operation == 'new':
+            size = int(param_list[0])
+            obj = New(timestamp, ptr, size)
+
+        elif operation == 'new_nothrow':
+            size = int(param_list[0])
+            obj = NewNoThrow(timestamp, ptr, size)
+
+        elif operation == 'new[]':
+            size = int(param_list[0])
+            obj = NewArray(timestamp, ptr, size)
+
+        elif operation == 'new[]_nothrow':
+            size = int(param_list[0])
+            obj = NewArrayNoThrow(timestamp, ptr, size)
+
+        elif operation == 'delete':
+            obj = Delete(timestamp, ptr)
+
+        elif operation == 'delete_sized':
+            size = int(param_list[1])
+            ptr_value = int(param_list[0], 16) if param_list[0] != '(nil)' else 0
+            obj = DeleteSized(timestamp, ptr_value, size)
+
+        elif operation == 'delete_nothrow':
+            obj = DeleteNoThrow(timestamp, ptr)
+
+        elif operation == 'delete[]':
+            obj = DeleteArray(timestamp, ptr)
+
+        elif operation == 'delete[]_sized':
+            size = int(param_list[1])
+            ptr_value = int(param_list[0], 16) if param_list[0] != '(nil)' else 0
+            obj = DeleteArraySized(timestamp, ptr_value, size)
+
+        elif operation == 'delete[]_nothrow':
+            obj = DeleteArrayNoThrow(timestamp, ptr)
+
+        elif operation == 'new_align':
+            size = int(param_list[0])
+            align = int(param_list[1])
+            obj = NewAligned(timestamp, ptr, size, align)
+
+        elif operation == 'new[]_align':
+            size = int(param_list[0])
+            align = int(param_list[1])
+            obj = NewArrayAlign(timestamp, ptr, size, align)
+
+        elif operation == 'delete_align':
+            align = int(param_list[1])
+            ptr_value = int(param_list[0], 16) if param_list[0] != '(nil)' else 0
+            obj = DeleteAlign(timestamp, ptr_value, align)
+
+        elif operation == 'delete[]_align':
+            align = int(param_list[1])
+            ptr_value = int(param_list[0], 16) if param_list[0] != '(nil)' else 0
+            obj = DeleteArrayAlign(timestamp, ptr_value, align)
+
+        if obj:
+            count += 1
+            yield obj
+

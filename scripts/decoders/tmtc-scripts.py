@@ -7,29 +7,12 @@ from tmtc_decoder_wrapper import TMtcDecoder
 import matplotlib.pyplot as plt
 import json
 
+ALLOCATION_CLASSES = (Malloc, Calloc, ReAlloc, ReAllocArray, New, NewNoThrow, NewArray, NewArrayNoThrow, NewAligned, NewArrayAlign)
 
-MALLOC = 0x0
-CALLOC = 0x1
-REALLOC = 0x2
-REALLOC_ARRAY = 0x3
-FREE = 0x4
-NEW = 0x5
-NEW_NOTHROW = 0x6
-NEW_ARRAY = 0x7
-NEW_ARRAY_NOTHROW = 0x8
-DELETE = 0x9
-DELETE_SIZED = 0xa
-DELETE_NOTHROW = 0xb
-DELETE_ARRAY = 0xc
-DELETE_ARRAY_SIZED = 0xd
-DELETE_ARRAY_NOTHROW = 0xe
-NEW_ALIGN = 0xf
-NEW_ARRAY_ALIGN = 0x10
-DELETE_ALIGN = 0x11
-DELETE_ARRAY_ALIGN = 0x12
+to_json = lambda obj: obj.__json__() if hasattr(obj, "__json__") else str(obj)
 
 
-def load_data():
+def load_data(filename=None):
     decoder = TMtcDecoder()
     print("Decoding...")
     points = decoder.decode("/home/duncan/Development/Uni/Thesis/Data/uwb_test_debug_onerun_cropped.tmtc")
@@ -38,28 +21,48 @@ def load_data():
 
     print("Generating address map")
     time = 0
-    for point in points:
+    size = 0
+    max_size = 0
+    sizes = []
+    times = []
+    for point in list(points):
         p, t = load_from_point(point, time)
         if p is None:
             continue
         time += t
+
         match point.key:
             case 0x0 | 0x1 | 0x2 | 0x3 | 0x5 | 0x6 | 0x7 | 0x8 | 0xf | 0x10:
                 if p.ptr not in addresses_lifetime:
+                    if p.size >= 2 * 1024 * 1024 * 1024:
+                        print(f"Huge allocation | ptr: {p.ptr}, size: {p.size} {p.timestamp} ({p.__class__.__name__})", )
+                        continue
                     addresses_lifetime[p.ptr] = p
+                    if p.size > max_size:
+                        # print(f"New max | ptr: {p.ptr}, size: {p.size} ({p.__class__.__name__})", )
+                        max_size = p.size
+                    size += p.size
+                    sizes.append(size)
+                    times.append(time)
             case _:
                 if p.ptr in addresses_lifetime:
-                    del addresses_lifetime[p.ptr] #.timestamp_end = p.timestamp
+                    p = addresses_lifetime[p.ptr] #.timestamp_end = p.timestamp
+                    size -= p.size
+                    del addresses_lifetime[p.ptr]
+                    sizes.append(size)
+                    times.append(time)
 
 
+    if filename is not None:
+        with open("address.json", "w") as f:
+            json.dump(addresses_lifetime, f, default=to_json)
 
-    with open("address.json", "w") as f:
-        json.dump(addresses_lifetime, f, default=lambda obj: obj.__json__() if hasattr(obj, "__json__") else str(obj))
 
+    # json_data = json.dumps(addresses_lifetime, default=to_json)
+    # return json.loads(json_data)
+    return times, sizes
 
-def plot_size_vs_lifetime(filename):
-    with open(filename, 'r') as file:
-        data = json.load(file)
+def plot_size_vs_lifetime(data):
 
     sizes = []
     lifetimes = []
@@ -84,51 +87,79 @@ def plot_size_vs_lifetime(filename):
 
     plt.savefig('size_vs_lifetime.png')
 
-    # Show the plot
     plt.show()
 
-plot_size_vs_lifetime("address_lifetime.json")
+def plot_unfreed_vs_lifetime(data):
 
-#
-# import matplotlib.pyplot as plt
-# import json
-# import numpy as np
-#
-# # Load data
-# # data = json.load(open("address.json"))
-#
-# data = addresses_lifetime
-#
-#
-#
-# timestamps = []
-# sizes = []
-#
-# # Process your data
-# for ptr, entry in data.items():
-#     timestamps.append(entry.timestamp)
-#     sizes.append(entry.size)
-#
-# # Convert timestamps to seconds (from microseconds) for better readability
-# timestamps_sec = [t / 1_000_000 for t in timestamps]
-#
-# # Create the log scale plot
-# plt.figure(figsize=(12, 8))
-#
-# # Plot with log scale on y-axis
-# plt.scatter(timestamps_sec, sizes, color='blue', alpha=0.7, s=20)
-# plt.yscale('log')  # Set y-axis to logarithmic scale
-#
-# # Add labels and grid
-# plt.title('Memory Allocation Size vs Time (Log Scale)')
-# plt.xlabel('Time (seconds from start)')
-# plt.ylabel('Memory Size (bytes) - Log Scale')
-# plt.grid(True, which="both", ls="-")
-#
-# # Add some basic statistics as text
-# plt.text(0.02, 0.95, f"Total Allocations: {len(sizes)}",
-#          transform=plt.gca().transAxes, fontsize=10,
-#          verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-#
-# plt.tight_layout()
-# plt.savefig("uwbsinglerun_cropped.png")
+    timestamps = []
+    sizes = []
+
+    for ptr, entry in data.items():
+        timestamps.append(entry["timestamp"])
+        sizes.append(entry["size"])
+
+    timestamps_sec = [t / 1_000_000 for t in timestamps]
+
+    plt.figure(figsize=(12, 8))
+
+    plt.scatter(timestamps_sec, sizes, color='blue', alpha=0.7, s=20)
+    plt.yscale('log')
+
+    plt.title('Memory Allocation Size vs Time (Log Scale)')
+    plt.xlabel('Time (seconds from start)')
+    plt.ylabel('Memory Size (bytes) - Log Scale')
+    plt.grid(True, which="both", ls="-")
+
+    # Add some basic statistics as text
+    plt.text(0.02, 0.95, f"Total Allocations: {len(sizes)}",
+             transform=plt.gca().transAxes, fontsize=10,
+             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_process_allocations_lifetime(times, sizes):
+    timestamps_sec = [t / 1_000_000 for t in times]
+
+    plt.figure(figsize=(12, 8))
+
+    plt.plot(timestamps_sec, sizes, color='blue', alpha=0.7)
+    plt.show()
+
+
+def load_from_raw_log(filename):
+    with open(filename, "r") as f:
+        points = parse_memory_logs(f.read())
+
+    size = 0
+    # sizes = []
+    # times = []
+    address_map = {}
+    for p in points:
+        if isinstance(p, ALLOCATION_CLASSES):
+            if p.ptr not in address_map:
+                address_map[p.ptr] = p
+                size += p.size
+                # sizes.append(size)
+                # times.append(p.timestamp)
+        else:
+            if p.ptr in address_map:
+                address_map[p.ptr].timestamp_end = p.timestamp
+                del address_map[p.ptr]
+                # size -= point.size
+                # sizes.append(size)
+                # times.append(p.timestamp)
+    with open("addresses_from_raw.json", "w") as f:
+        json.dump(address_map, f, default=to_json)
+
+    print(len(address_map))
+
+# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_test_raw.txt")
+# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_complete_chrome_raw.txt")
+
+# plot_process_allocations_lifetime(*data)
+
+with open("addresses_from_raw.json", "r") as f:
+    data = json.load(f)
+
+plot_unfreed_vs_lifetime(data)
