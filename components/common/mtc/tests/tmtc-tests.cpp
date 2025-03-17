@@ -10,7 +10,45 @@
 #include <cinttypes>
 #include <tmtcdecoder.h>
 
-void print_point(const struct TMtcPoint* point) {
+
+
+
+void printPointSize(const struct TMtcPoint* point) {
+    switch (point->key) {
+        case MALLOC:
+        case NEW:
+        case NEW_NOTHROW:
+        case NEW_ARRAY:
+        case NEW_ARRAY_NOTHROW:
+        case NEW_ALIGN:
+        case NEW_ARRAY_ALIGN:
+            if (point->values[1] > 419430400) {
+                printf("Size: %lu\n", point->values[1]);
+            }
+            // point->values[0];
+            break;
+        case REALLOC:
+        case REALLOC_ARRAY:
+        case FREE:
+        case DELETE:
+        case DELETE_SIZED:
+        case DELETE_NOTHROW:
+        case DELETE_ARRAY:
+        case DELETE_ARRAY_SIZED:
+        case DELETE_ARRAY_NOTHROW:
+        case DELETE_ALIGN:
+        case DELETE_ARRAY_ALIGN:
+        case CALLOC:
+        default:
+            break;
+    }
+}
+
+
+
+
+void print_point(const struct TMtcPoint* point, uint64_t timeoffset) {
+    printf("[%lu] ", timeoffset);
     switch (point->key) {
         case MALLOC:
             printf(MALLOC_FORMAT_STR, point->values[1], point->values[0]);
@@ -87,18 +125,13 @@ int main(int argc, char* argv[]) {
     createTMtcObject(&object);
     object.is_collapsable = 0;
 
-    auto start_time = std::chrono::high_resolution_clock::now();
     decode_tmtc(argv[1], &object);
-
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-
-    for (uint64_t i = 0; i < object.size; i++) {
-        print_point(&object.points[i]);
-    }
-
-    // printf("Size: %lu\n", object.size);
-    // std::cout << duration.count() / 1'000'000.0  << " seconds\n";
+    printf("%lu\n", object.size);
+    // uint64_t timestamp = 0;
+    // for (uint64_t i = 0; i < object.size; i++) {
+    //     timestamp += object.points[i].time_offset;
+    //     print_point(&object.points[i], timestamp);
+    // }
 
 
     return 0;
