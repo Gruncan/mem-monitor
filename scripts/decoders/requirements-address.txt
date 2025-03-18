@@ -1,0 +1,7 @@
+numpy
+pandas
+matplotlib
+datashader
+holoviews
+colorcet
+tqdm

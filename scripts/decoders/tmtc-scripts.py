@@ -129,37 +129,40 @@ def plot_process_allocations_lifetime(times, sizes):
 
 def load_from_raw_log(filename):
     with open(filename, "r") as f:
-        points = parse_memory_logs(f.read())
+        points = parse_memory_logs(f.read(671088640 // 8))
 
+    times = []
+    sizes = []
     size = 0
-    # sizes = []
-    # times = []
+
     address_map = {}
     for p in points:
         if isinstance(p, ALLOCATION_CLASSES):
-            if p.ptr not in address_map:
-                address_map[p.ptr] = p
-                size += p.size
-                # sizes.append(size)
-                # times.append(p.timestamp)
-        else:
+            # If we call malloc that returns the same pointer.
             if p.ptr in address_map:
-                address_map[p.ptr].timestamp_end = p.timestamp
-                del address_map[p.ptr]
-                # size -= point.size
-                # sizes.append(size)
-                # times.append(p.timestamp)
-    with open("addresses_from_raw.json", "w") as f:
-        json.dump(address_map, f, default=to_json)
+                continue
+            address_map[p.ptr] = p
+            size += p.size
+        else:
+            # If we call free on a non-allocated pointer
+            if p.ptr not in address_map:
+                continue
 
-    print(len(address_map))
+            size -= address_map[p.ptr].size
+            address_map[p.ptr].timestamp_end = p.timestamp
+            del address_map[p.ptr]
+
+        times.append(p.timestamp)
+        sizes.append(size)
+
+    return times, sizes
 
 # data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_test_raw.txt")
-# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_complete_chrome_raw.txt")
+data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/collapsed_tmtc_uwb_full.tct")
 
-# plot_process_allocations_lifetime(*data)
+plot_process_allocations_lifetime(*data)
 
-with open("addresses_from_raw.json", "r") as f:
-    data = json.load(f)
-
-plot_unfreed_vs_lifetime(data)
+# with open("addresses_from_raw.json", "r") as f:
+#     data = json.load(f)
+#
+# plot_unfreed_vs_lifetime(data)

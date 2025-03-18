@@ -123,15 +123,15 @@ int main(int argc, char* argv[]) {
     TMtcObject object;
 
     createTMtcObject(&object);
-    object.is_collapsable = 0;
+    object.is_collapsable = 1;
 
     decode_tmtc(argv[1], &object);
     printf("%lu\n", object.size);
-    // uint64_t timestamp = 0;
-    // for (uint64_t i = 0; i < object.size; i++) {
-    //     timestamp += object.points[i].time_offset;
-    //     print_point(&object.points[i], timestamp);
-    // }
+    uint64_t timestamp = 0;
+    for (uint64_t i = 0; i < object.size; i++) {
+        timestamp += object.points[i].time_offset;
+        print_point(&object.points[i], timestamp);
+    }
 
 
     return 0;
