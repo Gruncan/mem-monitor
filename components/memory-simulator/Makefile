@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -std=c++17 -I./include -I../common/mtc/include -I../common/config
-LDFLAGS = -L../common/mtc/
-LIBS = -lmtc_decoder
+#LDFLAGS = -L../common/mtc/
+LIBS = ../common/mtc/libmtc_decoder.a
 
 
 TARGET = memorysimulator
@@ -16,7 +16,7 @@ OBJS = $(SRCS:.cpp=.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
 #test: $(TEST_TARGET)
 #test: CFLAGS += -I../common -g -fprofile-arcsmake -ftest-coverage -DMEM_TEST
