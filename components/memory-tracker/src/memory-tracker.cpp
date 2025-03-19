@@ -76,6 +76,7 @@ static void* (*real_calloc)(size_t nmemb, size_t size) = NONE;
 static void* (*real_realloc)(void* ptr, size_t size) = NONE;
 static void* (*real_reallocarray)(void* ptr, size_t nmemb, size_t size) = NONE;
 static void (*real_free)(void* ptr) = NONE;
+static int (*real_malloc_trim)(size_t pad) = NONE;
 
 #ifdef __cplusplus
 using NewFuncType = void* (*) (std::size_t);
@@ -254,6 +255,15 @@ void free(void* ptr) {
     real_free(ptr);
     uint64_t args[1] = {(uint64_t) ptr};
     LOG_MEMORY(FREE, args);
+}
+
+int malloc_trim(size_t size) {
+    LOAD_SYMBOL(malloc_trim, int (*)(size_t))
+    int suc = real_malloc_trim(size);
+    DEBUG(MALLOC_TRIM_FORMAT_STR, size, suc);
+    uint64_t args[2] = {size, (uint64_t) suc};
+    LOG_MEMORY(MALLOC_TRIM, args);
+    return suc;
 }
 
 #ifdef __cplusplus

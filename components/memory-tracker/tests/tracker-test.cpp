@@ -1,6 +1,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <malloc.h>
 #include <string>
 #include <test.h>
 #include <unistd.h>
@@ -23,6 +24,7 @@ int new_aligned_test();
 int delete_aligned_test();
 int new_array_aligned_test();
 int delete_array_aligned_test();
+int malloc_trim_test();
 
 int main() {
     INIT_TEST("Memory tracker")
@@ -49,6 +51,7 @@ int main() {
     TEST(delete_aligned_test)
     TEST(new_array_aligned_test)
     TEST(delete_array_aligned_test)
+    TEST(malloc_trim_test)
 
     PRINT_RESULTS
 
@@ -169,5 +172,11 @@ int new_array_aligned_test() {
 }
 
 int delete_array_aligned_test() {
+    return PASS;
+}
+
+int malloc_trim_test() {
+    int suc = malloc_trim(10);
+    printf("malloc_trim returned %d\n", suc);
     return PASS;
 }

@@ -34,6 +34,7 @@
 #define NEW_ARRAY_ALIGN 0x10
 #define DELETE_ALIGN 0x11
 #define DELETE_ARRAY_ALIGN 0x12
+#define MALLOC_TRIM 0x13
 
 #define MALLOC_FORMAT_STR "malloc(%zd) = %p\n"
 #define CALLOC_FORMAT_STR "calloc(%zd, %zd) = %p\n"
@@ -54,6 +55,7 @@
 #define NEW_ARRAY_ALIGN_FORMAT_STR "new[]_align(%zd, %zd) = %p\n"
 #define DELETE_ALIGN_FORMAT_STR "delete_align(%p, %zd)\n"
 #define DELETE_ARRAY_ALIGN_FORMAT_STR "delete_align[](%p, %zd)\n"
+#define MALLOC_TRIM_FORMAT_STR "malloc_trim(%zd) = %d\n"
 
 #define MTC_V1_VALUE_WRITE_OFFSET 3
 #define MTC_V3_VALUE_WRITE_OFFSET 4

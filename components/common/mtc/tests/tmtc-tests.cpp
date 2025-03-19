@@ -69,6 +69,9 @@ void print_point(const struct TMtcPoint* point) {
         case DELETE_ARRAY_ALIGN:
             printf(DELETE_ARRAY_ALIGN_FORMAT_STR, point->values[0], point->values[1]);
             break;
+        case MALLOC_TRIM:
+            printf(MALLOC_TRIM_FORMAT_STR, point->values[0], point->values[1]);
+            break;
         default:
             break;
     }
