@@ -11,7 +11,7 @@
 #include <mem-monitor-config.h>
 #include <unistd.h>
 
-#include <iostream>
+#include <malloc.h>
 
 #define DEBUG_PRINT_OFFSET 10
 
@@ -23,15 +23,9 @@
         print_point(&tmtc_object.points[j]);                                                                           \
     }
 
-
 #define DOUBLE_FREE_CHECK(ptr)                                                                                         \
     if (addressMapping.count(ptr) == 0)                                                                                \
         break;                                                                                                         \
-    //     // fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed at index %lu.", i); \
-    //     // DEBUG_PRINT(i) \
-    //     // _exit(-1); \
-    //     break; \
-    // }\
 
 #define DOUBLE_ALLOCATION_CHECK(ptr)                                                                                   \
     if (addressMapping.count(ptr) == 1)                                                                                \
@@ -67,18 +61,26 @@ static TMtcStream stream;
 static TMtcObject tmtc_object;
 
 enum SimulationSpeed parseSpeed(const char* speedStr) {
-    if (strcmp(speedStr, "nodelay") == 0)
+    printf("Simulation speed: ");
+    if (strcmp(speedStr, "nodelay") == 0) {
+        printf("Nodelay\n");
         return NO_DELAY;
-    else if (strcmp(speedStr, "real") == 0)
+    }else if (strcmp(speedStr, "real") == 0) {
+        printf("Real\n");
         return REAL;
+    }
 
+    printf("NoDelay (default)\n");
     return NO_DELAY;
 }
 
 enum SimulationMode parseMode(const char* modeStr) {
+    printf("Parse mode: ");
     if (strcmp(modeStr, "single") == 0) {
+        printf("Single\n");
         return SINGLE;
     } else if (strcmp(modeStr, "repeat") == 0) {
+        printf("Repeat\n");
         return REPEAT;
     }
     return SINGLE;
@@ -115,6 +117,7 @@ void simulatePoint(struct TMtcPoint* point) {
         case NEW_ALIGN:
             PTR_NULL_CHECK(point->values[0]);
             DOUBLE_ALLOCATION_CHECK(point->values[0])
+            if (point->values[2] > 128) break;
             addressMapping[point->values[0]] =
                 CAST_FROM_PTR(operator new(point->values[1], CAST_ALIGN(point->values[2])));
             break;
@@ -189,6 +192,12 @@ void simulatePoint(struct TMtcPoint* point) {
         case CALLOC:
             addressMapping[point->values[2]] = CAST_FROM_PTR(calloc(point->values[0], point->values[1]));
             break;
+        case MALLOC_TRIM:
+            const int suc = malloc_trim(point->values[0]);
+            if (suc != point->values[1]) {
+                fprintf(stderr, "malloc_trim returned \"%d\" which did not match the return value logged of %lu\n", suc, point->values[1]);
+            }
+            break;
         default:
             fprintf(stderr, "Unknown allocation key: %d at log index %lu\n", point->key, iteration);
             break;
@@ -197,7 +206,7 @@ void simulatePoint(struct TMtcPoint* point) {
 
 
 int main(int argc, char* argv[]) {
-    if (argc != 4) {
+    if (argc < 4) {
         printf("Usage: ./simulator <filename>.tmtc <nodelay|real> <single|repeat>\n");
         return -1;
     }
@@ -205,6 +214,15 @@ int main(int argc, char* argv[]) {
     char* filename = argv[1];
     const char* speedStr = argv[2];
     const char* modeStr = argv[3];
+    uint64_t allocationStart = 0;
+    if (argc == 5) {
+        const char* startAllocation = argv[4];
+        allocationStart = std::stol(startAllocation);
+    }
+
+    if (allocationStart != 0) {
+        malloc(allocationStart);
+    }
     const enum SimulationSpeed speed = parseSpeed(speedStr);
     const enum SimulationMode mode = parseMode(modeStr);
 

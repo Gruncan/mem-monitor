@@ -2,7 +2,7 @@
 
 
 
-SET(memorysimulator_sources src/main.cpp)
+SET(memorysimulator_sources src/memory-simulator.cpp)
 
 message(WARNING "Simulation has debug symbols")
 set(CMAKE_BUILD_TYPE Debug)
