@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
     decode_tmtc(argv[1], &object);
     printf("%lu\n", object.size);
     uint64_t timestamp = 0;
-    for (uint64_t i = 0; i < object.size; i++) {
+    for (uint64_t i = 0; i < 10000; i++) {
         timestamp += object.points[i].time_offset;
         print_point(&object.points[i], timestamp);
     }

@@ -211,6 +211,54 @@ def load_from_point(point: TMtcPoint, time: int):
     except Exception as e:
         print(str(e))
 
+
+def get_peak_memory_raw_log(log_data):
+    pattern = r'\[(\d+)\] ([\w\[\]\_]+)\((.*?)\)(?: = (0x[0-9a-f]+|\(nil\)))?'
+
+    size = 0
+    size_max = 0
+    address_map = {}
+
+    for line in log_data.strip().split('\n'):
+        match = re.match(pattern, line)
+        if not match:
+            print(line)
+            continue
+
+        timestamp, operation, params, ptr = match.groups()
+        param_list = [p.strip() for p in params.split(',')]
+
+        if operation in ('malloc', 'new', 'new_nothrow', 'new[]', 'new[]_nothrow', 'new_align', 'new[]_align'):
+            if ptr in address_map:
+                continue
+            alloc_size = int(param_list[0])
+            address_map[ptr] = alloc_size
+            size += alloc_size
+            if size > size_max:
+                print(address_map)
+                size_max = size
+        elif operation in ('free', 'delete', 'delete_sized', 'delete_nothrow', 'delete[]', 'delete[]_sized', 'delete[]_nothrow', 'delete_align', 'delete[]_align'):
+            ptr = params[0]
+            if ptr not in address_map:
+                continue
+            alloc_size = address_map[ptr]
+            del address_map[ptr]
+            size -= alloc_size
+        elif operation == 'calloc':
+            if ptr not in address_map:
+                continue
+            nmemb = int(param_list[0])
+            alloc_size = int(param_list[1])
+            size += alloc_size
+            if size > size_max:
+                size_max = size
+        elif operation in ('realloc', 'reallocarray'):
+            print("Realloc is used!")
+        else:
+            print("Unknown opeation!", operation)
+
+    return size_max
+
 def parse_memory_logs(log_data):
     pattern = r'\[(\d+)\] ([\w\[\]\_]+)\((.*?)\)(?: = (0x[0-9a-f]+|\(nil\)))?'
 

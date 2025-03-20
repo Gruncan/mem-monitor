@@ -1,6 +1,8 @@
 import json
 from pprint import pprint
 
+from matplotlib.ticker import MaxNLocator
+
 from tmtc_meta import *
 
 from tmtc_decoder_wrapper import TMtcDecoder
@@ -120,21 +122,33 @@ def plot_unfreed_vs_lifetime(data):
 
 def plot_process_allocations_lifetime(times, sizes):
     timestamps_sec = [t / 1_000_000 for t in times]
+    sizes_mb = [s / 1024 ** 3 for s in sizes]
 
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(16, 8))
 
-    plt.plot(timestamps_sec, sizes, color='blue', alpha=0.7)
+    plt.plot(timestamps_sec, sizes_mb, color='blue', alpha=0.7)
+    plt.title("BBMPP library allocation size vs Time")
+    plt.ylabel('Size (Gb)')
+    plt.xlabel('Time (seconds)')
+    plt.gca().xaxis.set_major_locator(MaxNLocator(15))
     plt.show()
+    plt.savefig('bbmpp_library_allocation_start.pdf')
 
 
 def load_from_raw_log(filename):
+    bytes_to_read = 671088640 // 20
     with open(filename, "r") as f:
-        points = parse_memory_logs(f.read(671088640 // 8))
+        # f.seek(0, 2)
+        # file_size = f.tell()
+        # print(file_size)
+        #
+        # start_pos = max(file_size - bytes_to_read, 0)
+        # f.seek(25000)
+        points = parse_memory_logs(f.read())
 
     times = []
     sizes = []
     size = 0
-
     address_map = {}
     for p in points:
         if isinstance(p, ALLOCATION_CLASSES):
@@ -158,9 +172,17 @@ def load_from_raw_log(filename):
     return times, sizes
 
 # data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_test_raw.txt")
-data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/collapsed_tmtc_uwb_full.tct")
+# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/collapsed_tmtc_uwb_full.tct")
+data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt")
 
-plot_process_allocations_lifetime(*data)
+with open("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt", "r") as f:
+    max_size = get_peak_memory_raw_log(f.read())
+
+print(max_size / 1024 ** 3)
+
+# plot_process_allocations_lifetime(*data)
+
+
 
 # with open("addresses_from_raw.json", "r") as f:
 #     data = json.load(f)
