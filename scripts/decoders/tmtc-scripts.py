@@ -96,9 +96,12 @@ def plot_unfreed_vs_lifetime(data):
     timestamps = []
     sizes = []
 
-    for ptr, entry in data.items():
-        timestamps.append(entry["timestamp"])
-        sizes.append(entry["size"])
+    for entry in data:
+        timestamps.append(entry.timestamp)
+        sizes.append(entry.size)
+    # for ptr, entry in data.items():
+    #     timestamps.append(entry.timestamp)
+    #     sizes.append(entry.size)
 
     timestamps_sec = [t / 1_000_000 for t in timestamps]
 
@@ -107,9 +110,9 @@ def plot_unfreed_vs_lifetime(data):
     plt.scatter(timestamps_sec, sizes, color='blue', alpha=0.7, s=20)
     plt.yscale('log')
 
-    plt.title('Memory Allocation Size vs Time (Log Scale)')
-    plt.xlabel('Time (seconds from start)')
-    plt.ylabel('Memory Size (bytes) - Log Scale')
+    plt.title('Memory Allocation Size vs Time')
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Memory Size (bytes)')
     plt.grid(True, which="both", ls="-")
 
     # Add some basic statistics as text
@@ -149,36 +152,21 @@ def load_from_raw_log(filename):
     times = []
     sizes = []
     size = 0
-    address_map = {}
-    for p in points:
-        if isinstance(p, ALLOCATION_CLASSES):
-            # If we call malloc that returns the same pointer.
-            if p.ptr in address_map:
-                continue
-            address_map[p.ptr] = p
-            size += p.size
-        else:
-            # If we call free on a non-allocated pointer
-            if p.ptr not in address_map:
-                continue
+    return points
 
-            size -= address_map[p.ptr].size
-            address_map[p.ptr].timestamp_end = p.timestamp
-            del address_map[p.ptr]
-
-        times.append(p.timestamp)
-        sizes.append(size)
-
-    return times, sizes
+    # return address_map
 
 # data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_test_raw.txt")
-# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/collapsed_tmtc_uwb_full.tct")
-data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt")
+# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/raw_lifetime.txt")
+data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/raw_lifetime_single.txt")
+# with open("full_collapsed.json", "w") as f:
+#     json.dump(data, f, default=to_json)
+# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt")
 
-with open("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt", "r") as f:
-    max_size = get_peak_memory_raw_log(f.read())
+# with open("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt", "r") as f:
+#     max_size = get_peak_memory_raw_log(f.read())
 
-print(max_size / 1024 ** 3)
+# print(max_size / 1024 ** 3)
 
 # plot_process_allocations_lifetime(*data)
 
@@ -187,4 +175,4 @@ print(max_size / 1024 ** 3)
 # with open("addresses_from_raw.json", "r") as f:
 #     data = json.load(f)
 #
-# plot_unfreed_vs_lifetime(data)
+plot_unfreed_vs_lifetime(data)

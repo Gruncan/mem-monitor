@@ -8,12 +8,13 @@
 #include <iostream>
 
 #include <cinttypes>
+#include <map>
 #include <tmtcdecoder.h>
 
 
 
 
-void printPointSize(const struct TMtcPoint* point) {
+static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
         case NEW:
@@ -22,11 +23,7 @@ void printPointSize(const struct TMtcPoint* point) {
         case NEW_ARRAY_NOTHROW:
         case NEW_ALIGN:
         case NEW_ARRAY_ALIGN:
-            if (point->values[1] > 419430400) {
-                printf("Size: %lu\n", point->values[1]);
-            }
-            // point->values[0];
-            break;
+            return point->values[1];
         case REALLOC:
         case REALLOC_ARRAY:
         case FREE:
@@ -38,9 +35,11 @@ void printPointSize(const struct TMtcPoint* point) {
         case DELETE_ARRAY_NOTHROW:
         case DELETE_ALIGN:
         case DELETE_ARRAY_ALIGN:
+            return point->values[0];
         case CALLOC:
+            return point->values[2];
         default:
-            break;
+            return 0;
     }
 }
 
@@ -128,11 +127,50 @@ int main(int argc, char* argv[]) {
     decode_tmtc(argv[1], &object);
     printf("%lu\n", object.size);
     uint64_t timestamp = 0;
-    for (uint64_t i = 0; i < 10000; i++) {
+    std::map<uint64_t, struct TMtcPoint*> address_map;
+    std::map<uint64_t, uint64_t> address_timestamp;
+    for (uint64_t i = 0; i < object.size; i++) {
         timestamp += object.points[i].time_offset;
-        print_point(&object.points[i], timestamp);
+        uint64_t address = getTMtcPointAddress(&object.points[i]);
+        switch (object.points[i].key) {
+            case MALLOC:
+            case NEW:
+            case NEW_NOTHROW:
+            case NEW_ARRAY:
+            case NEW_ARRAY_NOTHROW:
+            case NEW_ALIGN:
+            case NEW_ARRAY_ALIGN:
+            case REALLOC:
+            case REALLOC_ARRAY:
+            case CALLOC:
+                if (address_map.count(address) != 0) {
+                    break;
+                }
+                address_map[address] = &object.points[i];
+                address_timestamp[address] = timestamp;
+                break;
+            case FREE:
+            case DELETE:
+            case DELETE_SIZED:
+            case DELETE_NOTHROW:
+            case DELETE_ARRAY:
+            case DELETE_ARRAY_SIZED:
+            case DELETE_ARRAY_NOTHROW:
+            case DELETE_ALIGN:
+            case DELETE_ARRAY_ALIGN:
+                if (address_map.count(address) == 0) {
+                    break;
+                }
+                address_map.erase(address);
+                address_timestamp.erase(address);
+                //address_timestamp[address] = timestamp - address_timestamp[address];
+                break;
+        }
     }
 
+    for (const auto& pair : address_map) {
+        print_point(pair.second, address_timestamp[pair.first]);
+    }
 
     return 0;
 }

@@ -23,6 +23,8 @@ class MemoryOperation:
     def __init__(self, timestamp):
         self.timestamp = int(timestamp)
 
+    def __getitem__(self, item):
+        return getattr(self, item)
 
 class AllocationOperation(MemoryOperation):
     """Base class for operations that allocate memory"""
