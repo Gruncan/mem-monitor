@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief The animation data container
+ *
+ * @file animation-data-container.h
+ *
+************************************/
 
 #ifndef ANIMATION_DATA_CONTAINER_H
 #define ANIMATION_DATA_CONTAINER_H

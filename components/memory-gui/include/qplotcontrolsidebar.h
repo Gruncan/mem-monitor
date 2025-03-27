@@ -1,4 +1,11 @@
-
+/***********************************
+ *
+ * @brief Plot control sidebar
+ * @details Handles the UI interacts in the categories and propagates interactions into memory plotter
+ *
+ * @file qplotcontrolsidebar.h
+ *
+************************************/
 #ifndef QPLOTCONTROLSIDEBAR_H
 #define QPLOTCONTROLSIDEBAR_H
 

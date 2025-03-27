@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief Process specific reading struct and signatures
+ *
+ * @file process-reader.h
+ *
+************************************/
 #ifndef PROCESS_READER_H
 #define PROCESS_READER_H
 

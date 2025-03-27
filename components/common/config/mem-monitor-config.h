@@ -1,6 +1,14 @@
+/***********************************
+ *
+ * @brief Contains the pre-processor directives and type definitions config used by all components
+ *
+ * @file mem-monitor-config.h
+ *
+************************************/
 
 #ifndef MEM_MONITOR_CONFIG_H
 #define MEM_MONITOR_CONFIG_H
+
 #include <stdint.h>
 
 #define MASK_40 0xFFFFFFFFFF

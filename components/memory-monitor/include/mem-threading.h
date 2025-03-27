@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief Read/Write queue structs and signatures
+ *
+ * @file mem-threading.h
+ *
+************************************/
 #ifndef MEM_THREADING_H
 #define MEM_THREADING_H
 

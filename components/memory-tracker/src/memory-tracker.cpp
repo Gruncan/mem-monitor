@@ -1,8 +1,9 @@
-/*********************************
+/***********************************
  *
+ * @brief The tracking instrumentation library implementation
+ * @details supports both C and C++ compilation targets
  *
- *
- *********************************/
+************************************/
 #define _GNU_SOURCE
 
 #ifdef __cplusplus
@@ -171,6 +172,7 @@ static int log_fd = -1;
 void __attribute__((constructor)) lib_init() {
     char FILE_NAME[] = FILE_PATH;
     int i = 1;
+    // Increment the file number if already exists
     while (access(FILE_NAME, F_OK) == 0) {
         FILE_NAME[FILE_INDEX] = (char) (i + '0');
         i++;

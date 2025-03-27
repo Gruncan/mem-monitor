@@ -19,9 +19,7 @@ void set_mem_struct_value(void* struct_ptr, const size_t struct_length, const ch
                 perror("Failed to write to struct!");
                 return;
             }
-            // This looks disgusting.. I thought I understood C but pointer arithmetic needs casting to 1 byte char?
             *(unsigned long*) ((char*) struct_ptr + valueOffset) = value;
-
             break;
         }
     }

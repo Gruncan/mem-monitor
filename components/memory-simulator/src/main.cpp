@@ -1,4 +1,8 @@
-
+/***********************************
+ *
+ * @brief The simulator of allocation tracking (TMTC)
+ *
+************************************/
 
 
 #include "tmtcdecoder.h"
@@ -13,25 +17,10 @@
 
 #include <iostream>
 
-#define DEBUG_PRINT_OFFSET 10
-
-
-#define DEBUG_PRINT(index)                                                                                             \
-    for (uint64_t j = (index) - DEBUG_PRINT_OFFSET; j < (index) + DEBUG_PRINT_OFFSET; j++) {                           \
-        if (j == (index))                                                                                              \
-            printf(">  ");                                                                                             \
-        print_point(&tmtc_object.points[j]);                                                                           \
-    }
-
-
 #define DOUBLE_FREE_CHECK(ptr)                                                                                         \
     if (addressMapping.count(ptr) == 0)                                                                                \
         break;                                                                                                         \
-    //     // fprintf(stderr, "Double free caught internally, this should not happen, allocation log has failed at index %lu.", i); \
-    //     // DEBUG_PRINT(i) \
-    //     // _exit(-1); \
-    //     break; \
-    // }\
+
 
 #define DOUBLE_ALLOCATION_CHECK(ptr)                                                                                   \
     if (addressMapping.count(ptr) == 1)                                                                                \
@@ -198,7 +187,7 @@ void simulatePoint(struct TMtcPoint* point) {
 
 int main(int argc, char* argv[]) {
     if (argc != 4) {
-        printf("Usage: ./simulator <filename>.tmtc <nodelay|real> <single|repeat>\n");
+        printf("Usage: ./%s <filename>.tmtc <nodelay|real> <single|repeat>\n", argv[0]);
         return -1;
     }
 

@@ -9,6 +9,8 @@
 
 
 #define HEADER_SIZE 5
+
+// The initial size of data arrays, will expand exponentially
 #define INIT_SIZE 5120
 
 #define KEY_SIZE_PROC 225
@@ -36,6 +38,12 @@ GEN_MTC_LOAD_FUNC_IMP(3, 3)
 
 GEN_MTC_LOAD_FUNC_IMP(5, 4)
 
+/**
+ * Handler for forwarding MTC value load requests into the correct version
+ * @param version the mtc version to determine byte offset
+ * @param buffer the buffer to load the MTC value from
+ * @param index the offset into the buffer to load the value from
+ */
 static mtc_point_size_t load_mtc_data(const uint8_t version, const byte_t* buffer, const uint16_t index) {
     switch (version) {
         case 1:
@@ -52,7 +60,9 @@ static mtc_point_size_t load_mtc_data(const uint8_t version, const byte_t* buffe
     }
 }
 
-
+/**
+ * Refer to mtccdecoder.h
+ */
 inline void createMtcObject(struct MtcObject* object) {
     object->point_map = malloc(sizeof(struct MtcPointMap) * KEY_SIZE);
     object->_alloc_size_points = INIT_SIZE;
@@ -75,11 +85,19 @@ inline void createMtcObject(struct MtcObject* object) {
 
 // TODO implement a destroy function
 
+/**
+ * Decodes the header of a MTC file
+ * @param buffer the buffer to read from
+ * @param object the object to set the decoded data into
+ */
 static void decode_header(const byte_t* buffer, struct MtcObject* object) {
     object->version = buffer[0];
     // todo add time decoding here
 }
 
+/**
+ * Refer to mtccdecoder.h
+ */
 inline uint8_t queryDecodeProgress(struct MtcObject* object) {
     if (object->file_length == 0 || object->size == 0) {
         return 0;
@@ -88,6 +106,13 @@ inline uint8_t queryDecodeProgress(struct MtcObject* object) {
     return value;
 }
 
+/**
+ * Decodes a chunk of a MTC file
+ * @details This handles the optimisations on memory performance and will auto increase array bounds
+ *
+ * @param buffer the buffer to read from
+ * @param object the object to set the decoded data into
+ */
 static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     if (object == NULL) {
         return;
@@ -161,12 +186,20 @@ static void decode_chunk(const byte_t* buffer, struct MtcObject* object) {
     }
 }
 
+/**
+ * Helper function to check a files extension matches
+ * @param filename the file to check
+ * @param extension the extension to check
+ * @return True if match, false otherwise
+ */
 static int has_extension(const char* filename, const char* extension) {
     const char* dot = strrchr(filename, '.');
     return (dot && strcmp(dot + 1, extension) == 0);
 }
 
-
+/**
+ * Refer to mtccdecoder.h
+ */
 void decode(const char* filename, struct MtcObject* object) {
     if (!has_extension(filename, "mtc")) {
         fprintf(stderr, "This decoder only supports mtc extensions!\n");
@@ -239,7 +272,7 @@ void decode(const char* filename, struct MtcObject* object) {
         object->point_map[i].points = new_points_ptr;
     }
 
-cleanUpFunction:
     free(buffer);
+cleanUpFunction:
     fclose(fp);
 }

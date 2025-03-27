@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief The system and process writer struct and signatures
+ *
+ * @file mem-writer.h
+ *
+************************************/
 #ifndef MEM_WRITER_H
 #define MEM_WRITER_H
 
@@ -16,9 +23,7 @@ typedef struct mem_writer_s {
     int has_written_header;
     struct timeval* prev_timestamp;
 
-
     MemQueue* writer_queue;
-
 
     pthread_t pthread;
 } MemWriter;

@@ -1,4 +1,11 @@
-
+/***********************************
+ *
+ * @brief Memory plotter
+ * @details Handles the logic to control the qcustomplot interactions and the rendering
+ *
+ * @file qmemoryplotter.h
+ *
+************************************/
 #ifndef QMEMORYPLOTTER_H
 #define QMEMORYPLOTTER_H
 

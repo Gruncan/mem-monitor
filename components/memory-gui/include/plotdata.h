@@ -1,4 +1,10 @@
-
+/***********************************
+ *
+ * @brief Plot data structs
+ *
+ * @file plotdata.h
+ *
+************************************/
 #ifndef PLOTDATA_H
 #define PLOTDATA_H
 #include <QList>

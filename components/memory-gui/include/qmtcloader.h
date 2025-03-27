@@ -1,4 +1,11 @@
-
+/***********************************
+ *
+ * @brief Mtc loader
+ * @details Handle the loading of data files within the UI
+ *
+ * @file qmtcloader.h
+ *
+************************************/
 #ifndef QMTCLOADER_H
 #define QMTCLOADER_H
 

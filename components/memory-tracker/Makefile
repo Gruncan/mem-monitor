@@ -1,4 +1,3 @@
-
 CC = g++
 CFLAGS = -std=c++17 -fPIC -O3 -I../common/config/
 

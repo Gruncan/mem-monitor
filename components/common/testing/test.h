@@ -1,4 +1,10 @@
-
+/***********************************
+ *
+ * @brief Contains the pre-processor directives for all testing components
+ *
+ * @file test.h
+ *
+************************************/
 #ifndef MEM_MONITOR_TEST_H
 #define MEM_MONITOR_TEST_H
 

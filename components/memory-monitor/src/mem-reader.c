@@ -186,7 +186,7 @@ void mem_parse_page_line(const char* line, MemVmInfo* mp) {
     unsigned long value;
     int items = sscanf(line, "%255s %lu", key, &value);
     if (items != 2) {
-        // Something has gone wrong..
+        // Something has gone wrong in kernel..
         return;
     }
 
@@ -210,7 +210,6 @@ void mem_parse_line(const char* line, MemInfo* mem_info) {
     }
 
     if (items < 2) {
-        // We should always have a unit?
         return;
     }
 

@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief The decode worker, wraps the decoder execution
+ *
+ * @file decoder-worker.h
+ *
+************************************/
 
 #ifndef DECODER_WORKER_H
 #define DECODER_WORKER_H

@@ -1,4 +1,12 @@
-
+/***********************************
+ *
+ * @brief Memory animations controls class
+ * @details responsible for handling the UI interactions with
+ * buttons that control the data being played on a sliding window
+ *
+ * @file qmemoryanimatecontrols.h
+ *
+************************************/
 
 #ifndef QMEMORYANIMATECONTROLS_H
 #define QMEMORYANIMATECONTROLS_H

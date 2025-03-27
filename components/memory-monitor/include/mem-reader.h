@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief The system wide profiling structs and reading function signatures
+ *
+ * @file mem-reader.h
+ *
+************************************/
 #ifndef MEM_READER_H
 #define MEM_READER_H
 

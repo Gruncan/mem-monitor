@@ -7,7 +7,7 @@
 
 #include <QDoubleSpinBox>
 #include <QLabel>
-#include <mtc-config.h>
+#include "mtc-config.h"
 #include <random>
 
 

@@ -1,3 +1,10 @@
+/***********************************
+ *
+ * @brief The entry point into the profiler
+ *
+ *
+************************************/
+
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -274,6 +281,7 @@ int main(int argc, char* argv[]) {
 
         usleep(arguments.time);
 
+        // Handle tracking process termination situations
         if (counter >= READS_BEFORE) {
             break;
         } else if (process_terminated == 1) {

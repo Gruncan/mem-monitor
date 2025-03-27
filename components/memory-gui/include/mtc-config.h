@@ -1,9 +1,17 @@
+/***********************************
+ *
+ * @brief The GUI MTC decoder UI configurations
+ *
+ * @file mtc-config.h
+ *
+************************************/
+
 #ifndef MTC_CONFIG_H
 #define MTC_CONFIG_H
 
 
 #ifdef __cplusplus
-#include "../../config/mem-monitor-config.h"
+#include "mem-monitor-config.h"
 #include <cstdint>
 #include <map>
 #include <string>

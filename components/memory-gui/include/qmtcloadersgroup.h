@@ -1,4 +1,11 @@
-
+/***********************************
+ *
+ * @brief Mtc loaders group
+ * @details Collects the individual mtc loaders
+ *
+ * @file qmtcloadersgroup.h
+ *
+************************************/
 #ifndef QMTCLOADERS_H
 #define QMTCLOADERS_H
 

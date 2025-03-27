@@ -1,4 +1,11 @@
-
+/***********************************
+ *
+ * @brief Tree Memory widget
+ * @details A wrapping class from the QTreeWidgetItem used in sidebar control
+ *
+ * @file qtreememorywidgetitem.h
+ *
+************************************/
 #ifndef QTREEMEMORYWIDGETITEM_H
 #define QTREEMEMORYWIDGETITEM_H
 #include <qtreewidget.h>

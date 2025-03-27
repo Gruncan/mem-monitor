@@ -1,3 +1,11 @@
+/***********************************
+ *
+ * @brief The decode monitor, wraps around the decoder and sends progress to UI
+ *
+ * @file decoder-monitor.h
+ *
+************************************/
+
 #ifndef DECODE_MONITOR_H
 #define DECODE_MONITOR_H
 

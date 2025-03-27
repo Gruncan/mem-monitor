@@ -1,4 +1,11 @@
-
+/***********************************
+ *
+ * @brief Plotter renderer
+ * @details Handles the logic for rendering the data within the graph
+ *
+ * @file qmemoryplotter.h
+ *
+************************************/
 #ifndef QPLOTRENDER_H
 #define QPLOTRENDER_H
 #include "animation-data-container.h"

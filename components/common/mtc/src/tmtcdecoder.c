@@ -27,6 +27,9 @@ static uint64_t prev_address = 0;
     (((array)[index] << 24) | ((array)[(index) + 1] << 16) | ((array)[(index) + 2] << 8) | ((array)[(index) + 3]))
 
 
+/**
+ * Refer to tmtccdecoder.h
+ */
 inline void createTMtcObject(struct TMtcObject* object) {
     object->_allocation_size = INIT_SIZE;
     object->points = malloc(sizeof(struct TMtcPoint) * object->_allocation_size);
@@ -35,6 +38,9 @@ inline void createTMtcObject(struct TMtcObject* object) {
     object->is_collapsable = 1;
 }
 
+/**
+ * Refer to tmtccdecoder.h
+ */
 inline void destroyTMtcObject(struct TMtcObject* object) {
     if (object == NULL) {
         return;
@@ -46,6 +52,9 @@ inline void destroyTMtcObject(struct TMtcObject* object) {
     free(object->points);
 }
 
+/**
+ * Helper function to return the address value of a TMtcPoint, 0 if key is invalid
+ */
 static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     switch (point->key) {
         case MALLOC:
@@ -75,6 +84,10 @@ static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
     }
 }
 
+/**
+ * Helper function to check if a key is encapsulated
+ * @details malloc is encapsulated by new
+ */
 static unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t old_key) {
     switch (old_key) {
         case MALLOC:
@@ -90,7 +103,11 @@ static unsigned char isTMtcKeyEncapsulated(const uint8_t new_key, const uint8_t 
     }
 }
 
-
+/**
+ * Helper function to determine if a point should be override
+ * @details if a point is encapsulated and the addresses match therefore the logged point was logged
+ * as a result of new calling malloc internally
+ */
 static unsigned char shouldTMtcPointOverride(const struct TMtcPoint* point) {
     const uint64_t address = getTMtcPointAddress(point);
 
@@ -110,7 +127,9 @@ setPrevKeyAddress:
     return 0;
 }
 
-
+/**
+ * Refer to tmtccdecoder.h
+ */
 inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
     if (object == NULL || object->_file_length == 0 || object->size == 0) {
         return 0;
@@ -118,11 +137,12 @@ inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
     return (uint8_t) (((double) (object->size * LOG_SIZE) / (double) object->_file_length) * 100) & MASK_8;
 }
 
+/**
+ * Decodes a chunk of a tmtc file, assume correct alignment of buffer
+ */
 static uint8_t decode_tchunk(const byte_t* buffer, struct TMtcObject* object) {
     uint64_t seconds = ARRAY_COMBINE4(buffer, 0);
-    // if (object->size == 0) {
-    //     printf("Starting timestamp: %llu seconds\n", seconds);
-    // }
+
     uint64_t micro_seconds = ARRAY_COMBINE4(buffer, 4);
     micro_seconds += seconds * 1000000;
 
@@ -182,12 +202,21 @@ exitFunction:
     return (MAX_LOG_VARS - length) * sizeof(uint64_t);
 }
 
+/**
+ * Helper function to check a files extension matches
+ * @param filename the file to check
+ * @param extension the extension to check
+ * @return True if match, false otherwise
+ */
 int has_extension(const char* filename, const char* extension) {
     const char* dot = strrchr(filename, '.');
     return (dot && strcmp(dot + 1, extension) == 0);
 }
 
 
+/**
+ * Helper function for decode handling of a TMtcStream
+ */
 static char parse_tmtc_file(byte_t* buffer, const uint16_t internalChunk, FILE* fp, struct TMtcObject* object) {
     size_t bytesRead = 0;
 
@@ -211,7 +240,9 @@ static char parse_tmtc_file(byte_t* buffer, const uint16_t internalChunk, FILE* 
     return 0;
 }
 
-
+/**
+ * Refer to tmtccdecoder.h
+ */
 void decode_tmtc(const char* filename, struct TMtcObject* object) {
     if (!has_extension(filename, "tmtc")) {
         fprintf(stderr, "This decoder only supports tmtc extensions!\n");
@@ -268,13 +299,14 @@ void decode_tmtc(const char* filename, struct TMtcObject* object) {
     }
     object->points = new_points_ptr;
 
-    // printf("Last timestamp: %llu\n", prev_micro_seconds / 1000000);
 cleanUpFunction:
     free(buffer);
     fclose(fp);
 }
 
-
+/**
+ * Refer to tmtccdecoder.h
+ */
 void createTMtcStream(struct TMtcStream* stream) {
     stream->object = malloc(sizeof(struct TMtcObject) * 2); // More efficient than 1 mallocs
     stream->_next = stream->object + 1;
@@ -295,7 +327,9 @@ void createTMtcStream(struct TMtcStream* stream) {
     stream->flipper = 0;
 }
 
-
+/**
+ * Refer to tmtccdecoder.h
+ */
 void stream_decode_tmtc(const char* filename, struct TMtcStream* stream, const char is_collapsable) {
     if (stream->fp != NULL) {
         fprintf(stderr, "Stream of the file has already been opened!\n");
@@ -324,7 +358,9 @@ void stream_decode_tmtc(const char* filename, struct TMtcStream* stream, const c
     stream->_next->_file_length = stream->object->_file_length;
 }
 
-
+/**
+ * Refer to tmtccdecoder.h
+ */
 struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream) {
     stream->object->size = 0;
     if (parse_tmtc_file(stream->_read_buffer, stream->_chunk_size, stream->fp, stream->object) != 0) {
@@ -334,5 +370,9 @@ struct TMtcObject* stream_tmtc_next(const struct TMtcStream* stream) {
     return stream->object;
 }
 
+/**
+ * Refer to tmtccdecoder.h
+ */
 void stream_tmtc_destroy(struct TMtcStream* stream) {
+
 }

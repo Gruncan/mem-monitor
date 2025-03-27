@@ -1,3 +1,11 @@
+/***********************************
+ *
+ * @brief The main window of the graphical interface
+ *
+ * @file mainwindow.h
+ *
+************************************/
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
