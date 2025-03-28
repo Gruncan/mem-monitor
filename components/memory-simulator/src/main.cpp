@@ -187,7 +187,7 @@ void simulatePoint(struct TMtcPoint* point) {
 
 int main(int argc, char* argv[]) {
     if (argc != 4) {
-        printf("Usage: ./%s <filename>.tmtc <nodelay|real> <single|repeat>\n", argv[0]);
+        printf("Usage: %s <filename>.tmtc <nodelay|real> <single|repeat>\n", argv[0]);
         return -1;
     }
 

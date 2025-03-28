@@ -1,5 +1,9 @@
 cd ../components
 
+cd common/mtc
+make
+cd -
+
 cd memory-tracker
 make
 cd -
@@ -9,10 +13,6 @@ make
 cd -
 
 cd memory-monitor
-make
-cd -
-
-cd common/mtc
 make
 cd -
 
