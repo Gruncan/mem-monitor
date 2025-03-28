@@ -8,9 +8,46 @@
 #include <iostream>
 
 #include <cinttypes>
+#include <map>
 #include <tmtcdecoder.h>
 
-void print_point(const struct TMtcPoint* point) {
+
+
+
+static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
+    switch (point->key) {
+        case MALLOC:
+        case NEW:
+        case NEW_NOTHROW:
+        case NEW_ARRAY:
+        case NEW_ARRAY_NOTHROW:
+        case NEW_ALIGN:
+        case NEW_ARRAY_ALIGN:
+            return point->values[1];
+        case REALLOC:
+        case REALLOC_ARRAY:
+        case FREE:
+        case DELETE:
+        case DELETE_SIZED:
+        case DELETE_NOTHROW:
+        case DELETE_ARRAY:
+        case DELETE_ARRAY_SIZED:
+        case DELETE_ARRAY_NOTHROW:
+        case DELETE_ALIGN:
+        case DELETE_ARRAY_ALIGN:
+            return point->values[0];
+        case CALLOC:
+            return point->values[2];
+        default:
+            return 0;
+    }
+}
+
+
+
+
+void print_point(const struct TMtcPoint* point, uint64_t timeoffset) {
+    printf("[%lu] ", timeoffset);
     switch (point->key) {
         case MALLOC:
             printf(MALLOC_FORMAT_STR, point->values[1], point->values[0]);
@@ -85,21 +122,55 @@ int main(int argc, char* argv[]) {
     TMtcObject object;
 
     createTMtcObject(&object);
-    object.is_collapsable = 0;
+    object.is_collapsable = 1;
 
-    auto start_time = std::chrono::high_resolution_clock::now();
     decode_tmtc(argv[1], &object);
-
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-
+    printf("%lu\n", object.size);
+    uint64_t timestamp = 0;
+    std::map<uint64_t, struct TMtcPoint*> address_map;
+    std::map<uint64_t, uint64_t> address_timestamp;
     for (uint64_t i = 0; i < object.size; i++) {
-        print_point(&object.points[i]);
+        timestamp += object.points[i].time_offset;
+        uint64_t address = getTMtcPointAddress(&object.points[i]);
+        switch (object.points[i].key) {
+            case MALLOC:
+            case NEW:
+            case NEW_NOTHROW:
+            case NEW_ARRAY:
+            case NEW_ARRAY_NOTHROW:
+            case NEW_ALIGN:
+            case NEW_ARRAY_ALIGN:
+            case REALLOC:
+            case REALLOC_ARRAY:
+            case CALLOC:
+                if (address_map.count(address) != 0) {
+                    break;
+                }
+                address_map[address] = &object.points[i];
+                address_timestamp[address] = timestamp;
+                break;
+            case FREE:
+            case DELETE:
+            case DELETE_SIZED:
+            case DELETE_NOTHROW:
+            case DELETE_ARRAY:
+            case DELETE_ARRAY_SIZED:
+            case DELETE_ARRAY_NOTHROW:
+            case DELETE_ALIGN:
+            case DELETE_ARRAY_ALIGN:
+                if (address_map.count(address) == 0) {
+                    break;
+                }
+                address_map.erase(address);
+                address_timestamp.erase(address);
+                //address_timestamp[address] = timestamp - address_timestamp[address];
+                break;
+        }
     }
 
-    // printf("Size: %lu\n", object.size);
-    // std::cout << duration.count() / 1'000'000.0  << " seconds\n";
-
+    for (const auto& pair : address_map) {
+        print_point(pair.second, address_timestamp[pair.first]);
+    }
 
     return 0;
 }
