@@ -1,4 +1,5 @@
 mod mtcrustdecoder;
+mod tmtcrustdecoder;
 
 use std::os::raw::{c_char, c_uchar};
 use libc::FILE;
@@ -82,5 +83,22 @@ extern "C" {
     pub fn c_destroyMtcObject(object: *mut CMtcObject);
 
     pub fn c_queryDecodeProgress(object: *mut CMtcObject) -> u8;
+
+
+    pub fn c_createTMtcObject(object: *mut CTMtcObject);
+
+    pub fn c_destroyTMtcObject(object: *mut CTMtcObject);
+
+    pub fn c_queryTDecodeProgress(object: *mut CTMtcObject) -> u8;
+
+    pub fn c_decode_tmtc(filename: *const c_char, object: *mut CTMtcObject);
+
+    pub fn c_createTMtcStream(object: *mut CTMtcStream);
+
+    pub fn c_stream_decode_tmtc(filename: *const c_char, stream: *mut CTMtcStream, is_collapsable: c_char);
+
+    pub fn c_stream_tmtc_next(stream: *mut CTMtcStream) -> *mut CTMtcObject;
+
+    pub fn c_stream_tmtc_destroy(stream: *mut CTMtcStream);
 
 }
