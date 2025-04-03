@@ -1,17 +1,17 @@
 use std::ffi::CString;
-use crate::{c_createMtcObject, c_decode, c_destroyMtcObject, CMtcObject};
+use crate::bindings::*;
 use std::os::raw::{c_char};
 
-pub struct MtcObject {
-    raw: CMtcObject,
+pub struct MtcObjectFfi {
+    raw: MtcObject,
     owns_memory: bool,
 }
 
 
-impl MtcObject {
+impl MtcObjectFfi {
 
     pub fn new() -> Self {
-        let mut raw = CMtcObject{
+        let mut raw = MtcObject{
             point_map: std::ptr::null_mut(),
             times: std::ptr::null_mut(),
             size: 0,
@@ -19,15 +19,15 @@ impl MtcObject {
             _times_length: 0,
             _alloc_size_points: 0,
             _alloc_size_times: 0,
-            _file_length: 0,
+            file_length: 0,
             _key_size: 0,
         };
 
         unsafe {
-            c_createMtcObject(&mut raw);
+            createMtcObject(&mut raw);
         }
 
-        MtcObject {
+        MtcObjectFfi {
             raw,
             owns_memory: true,
         }
@@ -36,7 +36,7 @@ impl MtcObject {
     pub fn decode(&mut self, filename: &str) {
         let c_ptr: *const c_char = CString::new(filename).expect("CString::new failed").into_raw();
         unsafe {
-            c_decode(c_ptr, &mut self.raw);
+            decode(c_ptr, &mut self.raw);
         }
     }
 
@@ -45,11 +45,11 @@ impl MtcObject {
     }
 }
 
-impl Drop for MtcObject {
+impl Drop for MtcObjectFfi {
     fn drop(&mut self) {
         if self.owns_memory {
             unsafe {
-                c_destroyMtcObject(&mut self.raw);
+                destroyMtcObject(&mut self.raw);
             }
         }
     }

@@ -1,23 +1,22 @@
-use crate::{c_createTMtcObject, c_destroyTMtcObject, mtc_point_size_t, CMtcObject, CTMtcObject, CTMtcPoint};
-use crate::mtcrustdecoder::TMtcObject;
+use crate::bindings::*;
 
 
 
-pub struct TMtcObject {
-    raw: CTMtcObject,
-    values: Vec<TMtcPoint>,
+pub struct TMtcObjectFfi {
+    raw: TMtcObject,
+    values: Vec<TMtcPointFfi>,
     owns_memory: bool,
 }
 
-pub struct TMtcPoint {
-    raw: CTMtcPoint,
+pub struct TMtcPointFfi {
+    raw: TMtcPoint,
 }
 
 
-impl TMtcObject {
+impl TMtcObjectFfi {
 
     pub fn new() -> Self {
-        let mut raw = CTMtcObject{
+        let mut raw = TMtcObject{
             points: std::ptr::null_mut(),
             size: 0,
             _file_length: 0,
@@ -26,16 +25,16 @@ impl TMtcObject {
         };
 
         unsafe {
-            c_createTMtcObject(&mut raw);
+            createTMtcObject(&mut raw);
         }
 
-        TMtcObject{
+        TMtcObjectFfi{
             raw,
             owns_memory: true,
-            values: {
+            values: unsafe {
                 let mut vec = Vec::with_capacity(raw.size as usize);
                 for i in 0..raw.size {
-                    vec.push(TMtcPoint {raw: &mut raw.points[i as usize]});
+                    vec.push(TMtcPointFfi {raw: *raw.points.wrapping_add(i as usize) });
                 }
                 vec
             }
@@ -47,26 +46,24 @@ impl TMtcObject {
     }
 
     pub fn get_is_collapsable(&self) -> bool {
-        if self.raw.is_collapsable {
+        if self.raw.is_collapsable == 1 {
             true
         } else {
             false
         }
     }
 
-    pub fn get_points(&self) -> Vec<CTMtcPoint> {
-        for i in 0..self.get_size() {
-            TMtcPoint {raw: self.raw.points[i as usize]}
-        }
+    pub fn get_points(&self) -> &Vec<TMtcPointFfi> {
+        &self.values
     }
 
 }
 
-impl Drop for TMtcObject {
+impl Drop for TMtcObjectFfi {
     fn drop(&mut self) {
         if self.owns_memory {
             unsafe {
-                c_destroyTMtcObject(&mut self.raw);
+                destroyTMtcObject(&mut self.raw);
             }
         }
     }
