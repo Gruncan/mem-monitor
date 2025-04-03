@@ -2,6 +2,7 @@ use std::ffi::CString;
 use crate::bindings::*;
 use std::os::raw::{c_char};
 use std::panic;
+use std::panic::AssertUnwindSafe;
 use crate::MtcError;
 use crate::handle_mtc_result;
 
@@ -265,10 +266,10 @@ impl MtcObjectFfi {
             _key_size: 0,
         };
 
-        let result = panic::catch_unwind(|| unsafe {
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             createMtcObject(&mut raw);
             ()
-        });
+        }));
 
         handle_mtc_result!(result, MtcObjectFfi {raw, values: Vec::new(), owns_memory: true,},
                             initialisation_failure)
@@ -276,10 +277,10 @@ impl MtcObjectFfi {
 
     pub fn decode(&mut self, filename: &str) -> MtcResult<()> {
         let c_ptr: *const c_char = CString::new(filename).expect("CString::new failed").into_raw();
-        let result = panic::catch_unwind(|| unsafe {
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             decode(c_ptr, &mut self.raw);
             ()
-        });
+        }));
 
         handle_mtc_result!(result, (), decode_failure)
     }
@@ -298,7 +299,7 @@ impl MtcObjectFfi {
         }
         let mut times = Vec::with_capacity(self.get_size() as usize);
 
-        let result = panic::catch_unwind(|| unsafe {
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             let mut time_summation: u64 = 0;
             for i in 0..self.get_times_length() {
                 let mtc_time_point = (*self.raw.times.wrapping_add(i as usize));
@@ -310,7 +311,7 @@ impl MtcObjectFfi {
                     times.push(time_summation);
                 }
             }
-        });
+        }));
 
         handle_mtc_result!(result, times, data_read_failure)
     }
@@ -334,7 +335,6 @@ impl MtcObjectFfi {
     fn get_key_size(&self) -> mk_size_t {
         self.raw._key_size
     }
-
 }
 
 impl Drop for MtcObjectFfi {

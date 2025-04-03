@@ -1,6 +1,7 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::panic;
+use std::panic::AssertUnwindSafe;
 use crate::bindings::*;
 use crate::{handle_mtc_result, MtcError, MtcResult};
 
@@ -49,10 +50,10 @@ impl TMtcObjectFfi {
             is_collapsable: 0
         };
 
-        let result = panic::catch_unwind(|| unsafe {
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             createTMtcObject(&mut raw);
             ()
-        });
+        }));
 
         handle_mtc_result!(result, TMtcObjectFfi{raw, owns_memory: true, values: Vec::new()},
                             initialisation_failure)
@@ -72,13 +73,13 @@ impl TMtcObjectFfi {
 
     pub fn decode(&mut self, filename: &str) -> MtcResult<()> {
         let c_ptr: *const c_char = CString::new(filename).expect("CString::new failed").into_raw();
-        let result = panic::catch_unwind(|| unsafe {
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             decode_tmtc(c_ptr, &mut self.raw);
             self.values = Vec::with_capacity(self.raw.size as usize);
             for i in 0..self.raw.size {
                 self.values.push(TMtcPointFfi {raw: *self.raw.points.wrapping_add(i as usize)});
             }
-        });
+        }));
 
         handle_mtc_result!(result, (), decode_failure)
     }
@@ -143,11 +144,11 @@ impl TMtcPointFfi {
 
     pub fn get_values(&self) -> MtcResult<Vec<u64>> {
         let mut values = Vec::with_capacity(self.get_length() as usize);
-        let result = panic::catch_unwind(|| unsafe {
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             for i in 0..self.get_length() {
                 values.push(*self.raw.values.wrapping_add(i as usize))
             }
-        });
+        }));
         handle_mtc_result!(result, values, decode_failure)
     }
 
