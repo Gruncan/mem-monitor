@@ -116,7 +116,7 @@ def plot_unfreed_vs_lifetime(data):
     plt.grid(True, which="both", ls="-")
 
     # Add some basic statistics as text
-    plt.text(0.02, 0.95, f"Total Allocations: {len(sizes)}",
+    plt.text(0.02, 0.95, f"Total Remaining Allocations: {len(sizes)}",
              transform=plt.gca().transAxes, fontsize=10,
              verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 
@@ -157,8 +157,8 @@ def load_from_raw_log(filename):
     # return address_map
 
 # data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/uwb_test_raw.txt")
-# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/raw_lifetime.txt")
-data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/raw_lifetime_single.txt")
+data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/raw_lifetime.txt")
+# data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/raw_lifetime_single.txt")
 # with open("full_collapsed.json", "w") as f:
 #     json.dump(data, f, default=to_json)
 # data = load_from_raw_log("/home/duncan/Development/C/mem-monitor/components/common/mtc/singlerun.txt")

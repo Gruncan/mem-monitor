@@ -16,7 +16,8 @@ class TMtcMeta(type):
         try:
             cls.__lib = ctypes.cdll.LoadLibrary(lib_path)
         except OSError as e:
-            raise ImportError(f"Failed to load TMtc decoder: {e}")
+            pass
+#            raise ImportError(f"Failed to load TMtc decoder: {e}")
 
         init_lib = getattr(cls, f"_{cls.__name__}__init_lib", None)
         if init_lib is not None:
@@ -78,6 +79,8 @@ class TMtcDecoder(metaclass=TMtcMeta):
 
     @classmethod
     def __init_lib(cls):
+        if not hasattr(cls, "_TMtcMeta__lib"):
+            return
         cls.__lib = cls._TMtcMeta__lib
         cls.__lib.createTMtcObject.argtypes = [ctypes.POINTER(_TMtcObject)]
         cls.__lib.createTMtcObject.restype = None
