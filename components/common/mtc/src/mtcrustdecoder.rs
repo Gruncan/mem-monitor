@@ -2,9 +2,21 @@ use std::ffi::CString;
 use crate::bindings::*;
 use std::os::raw::{c_char};
 
+
+
+
 pub struct MtcObjectFfi {
     raw: MtcObject,
+    values: Vec<MtcPointFfi>,
     owns_memory: bool,
+}
+
+pub struct MtcPointFfi {
+    raw: MtcPoint,
+}
+
+pub struct MtcTimeFfi {
+    raw: MtcTime,
 }
 
 
@@ -29,6 +41,7 @@ impl MtcObjectFfi {
 
         MtcObjectFfi {
             raw,
+            values: Vec::new(),
             owns_memory: true,
         }
     }
@@ -43,6 +56,10 @@ impl MtcObjectFfi {
     pub fn get_version(&self) -> u8 {
         self.raw.version
     }
+
+    pub fn get_size(&self) -> u64 {
+        self.raw.size
+    }
 }
 
 impl Drop for MtcObjectFfi {
@@ -51,7 +68,49 @@ impl Drop for MtcObjectFfi {
             unsafe {
                 destroyMtcObject(&mut self.raw);
             }
+            self.owns_memory = false;
         }
     }
 }
+
+trait MtcPointVariant {
+
+    unsafe fn get_time_offset(&self) -> u16;
+
+    fn get_repeated(&self) -> u64;
+
+}
+
+
+impl MtcPointVariant for MtcPointFfi {
+
+
+    unsafe fn get_time_offset(&self) -> u16 {
+        *self.raw.time_offset
+    }
+
+    fn get_repeated(&self) -> u64 {
+        self.raw.repeated
+    }
+}
+
+impl MtcPointFfi {
+    pub fn get_value(&self) -> mtc_point_size_t {
+        self.raw.value
+    }
+}
+
+impl MtcPointVariant for MtcTimeFfi {
+
+
+    unsafe fn get_time_offset(&self) -> u16 {
+        *self.raw.time_offset
+    }
+
+    fn get_repeated(&self) -> u64 {
+        self.raw.repeated
+    }
+
+}
+
 

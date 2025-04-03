@@ -1,5 +1,28 @@
+use std::ffi::CString;
+use std::os::raw::c_char;
 use crate::bindings::*;
 
+pub enum MtcKey {
+    Malloc = 0x0,
+    Calloc = 0x1,
+    Realloc = 0x2,
+    ReallocArray = 0x3,
+    Free = 0x4,
+    New = 0x5,
+    NewNothrow = 0x6,
+    NewArray = 0x7,
+    NewArrayNothrow = 0x8,
+    Delete = 0x9,
+    DeleteSized = 0xa,
+    DeleteNothrow = 0xb,
+    DeleteArray = 0xc,
+    DeleteArraySized = 0xd,
+    DeleteArrayNothrow = 0xe,
+    NewAlign = 0xf,
+    NewArrayAlign = 0x10,
+    DeleteAlign = 0x11,
+    DeleteArrayAlign = 0x12,
+}
 
 
 pub struct TMtcObjectFfi {
@@ -31,13 +54,7 @@ impl TMtcObjectFfi {
         TMtcObjectFfi{
             raw,
             owns_memory: true,
-            values: unsafe {
-                let mut vec = Vec::with_capacity(raw.size as usize);
-                for i in 0..raw.size {
-                    vec.push(TMtcPointFfi {raw: *raw.points.wrapping_add(i as usize) });
-                }
-                vec
-            }
+            values: Vec::new(),
         }
     }
 
@@ -53,7 +70,18 @@ impl TMtcObjectFfi {
         }
     }
 
-    pub fn get_points(&self) -> &Vec<TMtcPointFfi> {
+    pub fn decode(&mut self, filename: &str){
+        let c_ptr: *const c_char = CString::new(filename).expect("CString::new failed").into_raw();
+        unsafe {
+            decode_tmtc(c_ptr, &mut self.raw);
+            self.values = Vec::with_capacity(self.raw.size as usize);
+            for i in 0..self.raw.size {
+                self.values.push(TMtcPointFfi {raw: *self.raw.points.wrapping_add(i as usize)});
+            }
+        };
+    }
+
+    pub fn get_points(&mut self) -> &Vec<TMtcPointFfi> {
         &self.values
     }
 
@@ -65,6 +93,60 @@ impl Drop for TMtcObjectFfi {
             unsafe {
                 destroyTMtcObject(&mut self.raw);
             }
+            self.owns_memory = false;
         }
     }
+}
+
+impl MtcKey {
+    pub fn from_int(value: mk_size_t) -> Option<Self> {
+        match value {
+            0x0 => Some(Self::Malloc),
+            0x1 => Some(Self::Calloc),
+            0x2 => Some(Self::Realloc),
+            0x3 => Some(Self::ReallocArray),
+            0x4 => Some(Self::Free),
+            0x5 => Some(Self::New),
+            0x6 => Some(Self::NewNothrow),
+            0x7 => Some(Self::NewArray),
+            0x8 => Some(Self::NewArrayNothrow),
+            0x9 => Some(Self::Delete),
+            0xa => Some(Self::DeleteSized),
+            0xb => Some(Self::DeleteNothrow),
+            0xc => Some(Self::DeleteArray),
+            0xd => Some(Self::DeleteArraySized),
+            0xe => Some(Self::DeleteArrayNothrow),
+            0xf => Some(Self::NewAlign),
+            0x10 => Some(Self::NewArrayAlign),
+            0x11 => Some(Self::DeleteAlign),
+            0x12 => Some(Self::DeleteArrayAlign),
+            _ => None,
+        }
+    }
+}
+
+impl TMtcPointFfi {
+
+    pub fn get_key(&self) -> Option<MtcKey> {
+        MtcKey::from_int(self.raw.key)
+    }
+
+    pub fn get_length(&self) -> u8 {
+        self.raw.length
+    }
+
+    pub fn get_time_offset(&self) -> u32 {
+        self.raw.time_offset
+    }
+
+    pub fn get_values(&self) -> Vec<u64> {
+        let mut values = Vec::with_capacity(self.get_length() as usize);
+        unsafe {
+            for i in 0..self.get_length() {
+                values.push(*self.raw.values.wrapping_add(i as usize))
+            }
+        }
+        values
+    }
+
 }
