@@ -306,7 +306,7 @@ impl MtcObjectFfi {
                 if mtc_time_point.time_offset.is_null() {
                     panic!("Time offset {} is null", i);
                 }
-                for _ in i..(*self.raw.times.wrapping_add(i as usize)).repeated {
+                for _ in 0..(*self.raw.times.wrapping_add(i as usize)).repeated {
                     time_summation += (*mtc_time_point.time_offset) as u64;
                     times.push(time_summation);
                 }
