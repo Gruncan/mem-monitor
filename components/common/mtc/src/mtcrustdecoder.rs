@@ -75,7 +75,7 @@ impl Drop for MtcObjectFfi {
 
 trait MtcPointVariant {
 
-    unsafe fn get_time_offset(&self) -> u16;
+    fn get_time_offset(&self) -> u16;
 
     fn get_repeated(&self) -> u64;
 
@@ -85,8 +85,10 @@ trait MtcPointVariant {
 impl MtcPointVariant for MtcPointFfi {
 
 
-    unsafe fn get_time_offset(&self) -> u16 {
-        *self.raw.time_offset
+    fn get_time_offset(&self) -> u16 {
+        unsafe {
+            *self.raw.time_offset
+        }
     }
 
     fn get_repeated(&self) -> u64 {
@@ -103,8 +105,10 @@ impl MtcPointFfi {
 impl MtcPointVariant for MtcTimeFfi {
 
 
-    unsafe fn get_time_offset(&self) -> u16 {
-        *self.raw.time_offset
+    fn get_time_offset(&self) -> u16 {
+        unsafe {
+            *self.raw.time_offset
+        }
     }
 
     fn get_repeated(&self) -> u64 {
