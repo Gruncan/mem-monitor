@@ -1,8 +1,10 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
+use std::panic;
 use crate::bindings::*;
+use crate::{handle_mtc_result, MtcError, MtcResult};
 
-pub enum MtcKey {
+pub enum TMtcKey {
     Malloc = 0x0,
     Calloc = 0x1,
     Realloc = 0x2,
@@ -38,7 +40,7 @@ pub struct TMtcPointFfi {
 
 impl TMtcObjectFfi {
 
-    pub fn new() -> Self {
+    pub fn new() -> MtcResult<Self> {
         let mut raw = TMtcObject{
             points: std::ptr::null_mut(),
             size: 0,
@@ -47,15 +49,13 @@ impl TMtcObjectFfi {
             is_collapsable: 0
         };
 
-        unsafe {
+        let result = panic::catch_unwind(|| unsafe {
             createTMtcObject(&mut raw);
-        }
+            ()
+        });
 
-        TMtcObjectFfi{
-            raw,
-            owns_memory: true,
-            values: Vec::new(),
-        }
+        handle_mtc_result!(result, TMtcObjectFfi{raw, owns_memory: true, values: Vec::new()},
+                            initialisation_failure)
     }
 
     pub fn get_size(&self) -> usize {
@@ -70,15 +70,17 @@ impl TMtcObjectFfi {
         }
     }
 
-    pub fn decode(&mut self, filename: &str){
+    pub fn decode(&mut self, filename: &str) -> MtcResult<()> {
         let c_ptr: *const c_char = CString::new(filename).expect("CString::new failed").into_raw();
-        unsafe {
+        let result = panic::catch_unwind(|| unsafe {
             decode_tmtc(c_ptr, &mut self.raw);
             self.values = Vec::with_capacity(self.raw.size as usize);
             for i in 0..self.raw.size {
                 self.values.push(TMtcPointFfi {raw: *self.raw.points.wrapping_add(i as usize)});
             }
-        };
+        });
+
+        handle_mtc_result!(result, (), decode_failure)
     }
 
     pub fn get_points(&mut self) -> &Vec<TMtcPointFfi> {
@@ -98,8 +100,8 @@ impl Drop for TMtcObjectFfi {
     }
 }
 
-impl MtcKey {
-    pub fn from_int(value: mk_size_t) -> Option<Self> {
+impl TMtcKey {
+    pub fn from_int(value: u8) -> Option<Self> {
         match value {
             0x0 => Some(Self::Malloc),
             0x1 => Some(Self::Calloc),
@@ -127,8 +129,8 @@ impl MtcKey {
 
 impl TMtcPointFfi {
 
-    pub fn get_key(&self) -> Option<MtcKey> {
-        MtcKey::from_int(self.raw.key)
+    pub fn get_key(&self) -> Option<TMtcKey> {
+        TMtcKey::from_int(self.raw.key)
     }
 
     pub fn get_length(&self) -> u8 {
@@ -139,14 +141,14 @@ impl TMtcPointFfi {
         self.raw.time_offset
     }
 
-    pub fn get_values(&self) -> Vec<u64> {
+    pub fn get_values(&self) -> MtcResult<Vec<u64>> {
         let mut values = Vec::with_capacity(self.get_length() as usize);
-        unsafe {
+        let result = panic::catch_unwind(|| unsafe {
             for i in 0..self.get_length() {
                 values.push(*self.raw.values.wrapping_add(i as usize))
             }
-        }
-        values
+        });
+        handle_mtc_result!(result, values, decode_failure)
     }
 
 }
