@@ -4,8 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 
-[dependencies]
-libc = "0.2.171"
-
 [build-dependencies]
-bindgen = "0.71.1"
+bindgen = "0.70.0"
