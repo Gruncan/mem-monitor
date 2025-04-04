@@ -21,26 +21,26 @@ impl fmt::Display for MtcError {
             MtcError::DecodeFailure(ref message) =>
                 write!(f, "Failed to decode MTC! Reason: {}", message),
             MtcError::NonConstructed(ref message) => write!(f, "{}", message),
-            MtcError::InitialisationFailure(ref message) => write!(f, "Failed to initialise (T)MTC object! Reason: {}", message),
-            MtcError::DataReadFailure(ref message) => write!(f, "Failed to read (T)MTC object data! Reason: {}", message),
+            MtcError::InitialisationFailure(ref message) => write!(f, "Failed to initialise MTC object! Reason: {}", message),
+            MtcError::DataReadFailure(ref message) => write!(f, "Failed to read MTC object data! Reason: {}", message),
         }
     }
 }
 
 impl MtcError {
-    pub fn initialisation_failure(message: String) -> MtcError {
+    pub fn initialisation_failure(message: String) -> Self {
         Self::InitialisationFailure(message)
     }
 
-    pub fn non_constructed(message: String) -> MtcError {
+    pub fn non_constructed(message: String) -> Self {
         Self::NonConstructed(message)
     }
 
-    pub fn decode_failure(message: String) -> MtcError {
+    pub fn decode_failure(message: String) -> Self {
         Self::DecodeFailure(message)
     }
 
-    pub fn data_read_failure(message: String) -> MtcError {
+    pub fn data_read_failure(message: String) -> Self {
         Self::DataReadFailure(message)
     }
 }
@@ -62,5 +62,23 @@ macro_rules! handle_mtc_result {
                 }
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! get_mtc_struct_from_ptr {
+    ($ptr:expr, $msg:expr) => {{
+        fn __enforce_ptr<T>(ptr: *const T) -> *const T {
+            ptr
+        }
+        let raw_ptr = __enforce_ptr($ptr);
+        if raw_ptr.is_null() {
+            panic!($msg);
+        }
+        *raw_ptr
+    }};
+
+    ($ptr:expr) => {
+        get_mtc_struct_from_ptr!($ptr, "Ptr is null.")
     };
 }

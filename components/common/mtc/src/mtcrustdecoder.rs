@@ -3,8 +3,7 @@ use crate::bindings::*;
 use std::os::raw::{c_char};
 use std::panic;
 use std::panic::AssertUnwindSafe;
-use crate::MtcError;
-use crate::handle_mtc_result;
+use crate::*;
 
 pub type MtcResult<T> = Result<T, MtcError>;
 
@@ -238,19 +237,11 @@ pub enum MtcKey {
 
 pub struct MtcObjectFfi {
     raw: MtcObject,
-    values: Vec<MtcPointFfi>,
     owns_memory: bool,
 }
 
-pub struct MtcPointFfi {
-    raw: MtcPoint,
-}
 
-pub struct MtcTimeFfi {
-    raw: MtcTime,
-}
-
-
+#[allow(dead_code)]
 impl MtcObjectFfi {
 
     pub fn new() -> MtcResult<Self> {
@@ -271,7 +262,7 @@ impl MtcObjectFfi {
             ()
         }));
 
-        handle_mtc_result!(result, MtcObjectFfi {raw, values: Vec::new(), owns_memory: true,},
+        handle_mtc_result!(result, MtcObjectFfi {raw, owns_memory: true,},
                             initialisation_failure)
     }
 
@@ -302,18 +293,31 @@ impl MtcObjectFfi {
         let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             let mut time_summation: u64 = 0;
             for i in 0..self.get_times_length() {
-                let mtc_time_point = (*self.raw.times.wrapping_add(i as usize));
-                if mtc_time_point.time_offset.is_null() {
-                    panic!("Time offset {} is null", i);
-                }
-                for _ in 0..(*self.raw.times.wrapping_add(i as usize)).repeated {
-                    time_summation += (*mtc_time_point.time_offset) as u64;
+                let mtc_time_point: MtcTime = get_mtc_struct_from_ptr!(self.raw.times.wrapping_add(i as usize));
+                let time_offset: u16 = get_mtc_struct_from_ptr!(mtc_time_point.time_offset);
+                for _ in 0..mtc_time_point.repeated + 1 {
+                    time_summation += time_offset as u64;
                     times.push(time_summation);
                 }
             }
         }));
 
         handle_mtc_result!(result, times, data_read_failure)
+    }
+
+    pub fn get_data_value(&self, key: MtcKey) -> MtcResult<Vec<mtc_point_size_t>> {
+        let mut vec = Vec::with_capacity(self.get_size() as usize);
+        let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
+            let point_map: MtcPointMap = get_mtc_struct_from_ptr!(self.raw.point_map.wrapping_add(key as usize));
+            for i in 0..point_map.length {
+                let point: MtcPoint = get_mtc_struct_from_ptr!(point_map.points.wrapping_add(i as usize));
+                for _ in 0..point.repeated + 1 {
+                    vec.push(point.value);
+                }
+            }
+        }));
+
+        handle_mtc_result!(result, vec, data_read_failure)
     }
 
     fn get_times_length(&self) -> u64 {
@@ -581,47 +585,5 @@ impl MtcKey {
     }
 }
 
-trait MtcPointVariant {
-
-    fn get_time_offset(&self) -> u16;
-
-    fn get_repeated(&self) -> u64;
-
-}
-
-
-impl MtcPointVariant for MtcPointFfi {
-
-
-    fn get_time_offset(&self) -> u16 {
-        unsafe {
-            *self.raw.time_offset
-        }
-    }
-
-    fn get_repeated(&self) -> u64 {
-        self.raw.repeated
-    }
-}
-
-impl MtcPointFfi {
-    pub fn get_value(&self) -> mtc_point_size_t {
-        self.raw.value
-    }
-}
-
-impl MtcPointVariant for MtcTimeFfi {
-
-    fn get_time_offset(&self) -> u16 {
-        unsafe {
-            *self.raw.time_offset
-        }
-    }
-
-    fn get_repeated(&self) -> u64 {
-        self.raw.repeated
-    }
-
-}
 
 

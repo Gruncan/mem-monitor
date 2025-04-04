@@ -3,7 +3,7 @@ use std::os::raw::c_char;
 use std::panic;
 use std::panic::AssertUnwindSafe;
 use crate::bindings::*;
-use crate::{handle_mtc_result, MtcError, MtcResult};
+use crate::*;
 
 pub enum TMtcKey {
     Malloc = 0x0,
@@ -77,7 +77,8 @@ impl TMtcObjectFfi {
             decode_tmtc(c_ptr, &mut self.raw);
             self.values = Vec::with_capacity(self.raw.size as usize);
             for i in 0..self.raw.size {
-                self.values.push(TMtcPointFfi {raw: *self.raw.points.wrapping_add(i as usize)});
+                let raw_value: TMtcPoint = get_mtc_struct_from_ptr!(self.raw.points.wrapping_add(i as usize));
+                self.values.push(TMtcPointFfi {raw: raw_value});
             }
         }));
 
@@ -146,7 +147,8 @@ impl TMtcPointFfi {
         let mut values = Vec::with_capacity(self.get_length() as usize);
         let result = panic::catch_unwind(AssertUnwindSafe(|| unsafe {
             for i in 0..self.get_length() {
-                values.push(*self.raw.values.wrapping_add(i as usize))
+                let value: u64 = get_mtc_struct_from_ptr!(self.raw.values.wrapping_add(i as usize));
+                values.push(value);
             }
         }));
         handle_mtc_result!(result, values, decode_failure)
