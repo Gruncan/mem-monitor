@@ -155,3 +155,236 @@ impl TMtcPointFfi {
     }
 
 }
+
+#[derive(Clone, Copy)]
+struct MemoryAddress {
+    address: u64,
+}
+
+impl From<u64> for MemoryAddress {
+    fn from(address: u64) -> Self {
+        MemoryAddress{address}
+    }
+}
+
+#[derive(Clone, Copy)]
+struct MemoryAlignment {
+    alignment: u64,
+}
+
+impl From<u64> for MemoryAlignment {
+    fn from(alignment: u64) -> Self {
+        MemoryAlignment{alignment}
+    }
+}
+
+struct MemoryAllocationMeta {
+    timestamp: u64,
+    ptr: MemoryAddress,
+    key: TMtcKey,
+}
+
+struct Malloc {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct Calloc {
+    allocation_meta: MemoryAllocationMeta,
+    nmemb: usize,
+    size: usize,
+}
+
+struct Realloc {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+    new_ptr: MemoryAddress,
+}
+
+struct ReallocArray {
+    allocation_meta: MemoryAllocationMeta,
+    nmemb: usize,
+    size: usize,
+    new_ptr: MemoryAddress,
+}
+
+struct Free {
+    allocation_meta: MemoryAllocationMeta,
+}
+
+struct New {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct NewNothrow {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct NewArray {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct NewArrayNothrow {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct Delete {
+    allocation_meta: MemoryAllocationMeta,
+}
+
+struct DeleteSized {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct DeleteNothrow {
+    allocation_meta: MemoryAllocationMeta,
+}
+
+struct DeleteArray {
+    allocation_meta: MemoryAllocationMeta,
+}
+
+struct DeleteArraySized {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+}
+
+struct DeleteArrayNothrow {
+    allocation_meta: MemoryAllocationMeta,
+}
+
+struct NewAlign {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+    align: MemoryAlignment
+}
+
+struct NewArrayAlign {
+    allocation_meta: MemoryAllocationMeta,
+    size: usize,
+    align: MemoryAlignment
+}
+
+struct DeleteAlign {
+    allocation_meta: MemoryAllocationMeta,
+    align: MemoryAlignment
+}
+
+struct DeleteArrayAlign {
+    allocation_meta: MemoryAllocationMeta,
+    align: MemoryAlignment
+}
+
+impl MemoryAllocationMeta {
+
+    pub fn new(timestamp: u64, ptr: u64, key: TMtcKey) -> Self {
+        MemoryAllocationMeta {timestamp, ptr: MemoryAddress{address:ptr}, key}
+    }
+}
+
+trait AllocationPoint {
+
+    fn timestamp(&self) -> u64;
+
+    fn address(&self) -> &MemoryAddress;
+
+    fn key(&self) -> &TMtcKey;
+
+    fn description(&self) -> String;
+
+}
+
+macro_rules! generate_allocation_meta_getters {
+    ($struct_name:ident) => {
+        impl AllocationPoint for $struct_name {
+            fn timestamp(&self) -> u64 {
+                self.allocation_meta.timestamp
+            }
+
+            fn address(&self) -> &MemoryAddress {
+                &self.allocation_meta.ptr
+            }
+
+            fn key(&self) -> &TMtcKey {
+                &self.allocation_meta.key
+            }
+
+            fn description(&self) -> String {
+                "This is a description".to_string()
+            }
+        }
+    };
+}
+
+macro_rules! generate_tmtc_funcs {
+    ($struct_name:ident, $($field_name:ident: $field_type:ty),*) => {
+        impl $struct_name {
+            pub fn new(timestamp: u64, ptr: u64, $($field_name: $field_type),*) -> Self {
+                $struct_name {allocation_meta: MemoryAllocationMeta::new(timestamp, ptr, TMtcKey::$struct_name), $(
+                        $field_name: {
+                            if let Some(converted_value) = <$field_type as From<_>>::from($field_name).into() {
+                                converted_value
+                            } else {
+                                $field_name
+                            }
+                        },
+                    )*}
+            }
+
+            $(
+                pub fn $field_name(&self) -> $field_type {
+                    self.$field_name
+                }
+            )*
+        }
+
+        generate_allocation_meta_getters!($struct_name);
+
+    };
+
+    ($struct_name:ident) => {
+        impl $struct_name {
+            pub fn new(timestamp: u64, ptr: u64) -> Self {
+                $struct_name {
+                    allocation_meta: MemoryAllocationMeta::new(timestamp, ptr, TMtcKey::$struct_name),
+                }
+            }
+        }
+
+        generate_allocation_meta_getters!($struct_name);
+    };
+}
+
+generate_tmtc_funcs!(Malloc, size: usize);
+generate_tmtc_funcs!(Calloc, nmemb: usize, size: usize);
+generate_tmtc_funcs!(Realloc, size: usize, new_ptr: MemoryAddress);
+generate_tmtc_funcs!(ReallocArray, nmemb: usize, size: usize, new_ptr: MemoryAddress);
+generate_tmtc_funcs!(Free);
+generate_tmtc_funcs!(New, size: usize);
+generate_tmtc_funcs!(NewNothrow, size: usize);
+generate_tmtc_funcs!(NewArray, size: usize);
+generate_tmtc_funcs!(NewArrayNothrow, size: usize);
+generate_tmtc_funcs!(Delete);
+generate_tmtc_funcs!(DeleteSized, size: usize);
+generate_tmtc_funcs!(DeleteNothrow);
+generate_tmtc_funcs!(DeleteArray);
+generate_tmtc_funcs!(DeleteArraySized, size: usize);
+generate_tmtc_funcs!(DeleteArrayNothrow);
+generate_tmtc_funcs!(NewAlign, size: usize, align: MemoryAlignment);
+generate_tmtc_funcs!(NewArrayAlign, size: usize, align: MemoryAlignment);
+generate_tmtc_funcs!(DeleteAlign, align: MemoryAlignment);
+generate_tmtc_funcs!(DeleteArrayAlign, align: MemoryAlignment);
+
+
+
+impl fmt::Display for dyn AllocationPoint {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.description().fmt(f)
+    }
+}
+
