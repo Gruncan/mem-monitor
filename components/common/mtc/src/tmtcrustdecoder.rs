@@ -154,6 +154,38 @@ impl TMtcPointFfi {
         handle_mtc_result!(result, values, decode_failure)
     }
 
+    pub fn convert(self) -> MtcResult<Box<dyn AllocationPoint>> {
+        let key_option = self.get_key();
+        if key_option.is_none() {
+            return Err(MtcError::data_read_failure("Invalid key".to_string()));
+        }
+        let key = key_option.unwrap();
+        let values = self.get_values()?;
+        let time_offset = self.get_time_offset() as u64;
+        let wrapped_data: Box<dyn AllocationPoint> = match key {
+            TMtcKey::Malloc => Malloc::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::Calloc => Calloc::new_box(time_offset, values[2], values[0] as usize, values[1] as usize),
+            TMtcKey::Realloc => Realloc::new_box(time_offset, values[0], values[1] as usize, values[2].into()),
+            TMtcKey::ReallocArray => ReallocArray::new_box(time_offset, values[0], values[1] as usize, values[2] as usize, 0.into()),
+            TMtcKey::Free => Free::new_box(time_offset, values[0]),
+            TMtcKey::New => New::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::NewNothrow => NewNothrow::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::NewArray => NewArray::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::NewArrayNothrow => NewArrayNothrow::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::Delete => Delete::new_box(time_offset, values[0]),
+            TMtcKey::DeleteSized => DeleteSized::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::DeleteNothrow => DeleteNothrow::new_box(time_offset, values[0]),
+            TMtcKey::DeleteArray => DeleteArray::new_box(time_offset, values[0]),
+            TMtcKey::DeleteArraySized => DeleteArraySized::new_box(time_offset, values[0], values[1] as usize),
+            TMtcKey::DeleteArrayNothrow => DeleteArrayNothrow::new_box(time_offset, values[0]),
+            TMtcKey::NewAlign => NewAlign::new_box(time_offset, values[0], values[1] as usize, values[2].into()),
+            TMtcKey::NewArrayAlign => NewArrayAlign::new_box(time_offset, values[0], values[1] as usize, values[2].into()),
+            TMtcKey::DeleteAlign => DeleteAlign::new_box(time_offset, values[0], values[1].into()),
+            TMtcKey::DeleteArrayAlign => DeleteArrayAlign::new_box(time_offset, values[0], values[1].into()),
+        };
+        Ok(wrapped_data)
+    }
+
 }
 
 #[derive(Clone, Copy)]
@@ -321,11 +353,9 @@ macro_rules! generate_allocation_meta_getters {
     };
 }
 
-macro_rules! generate_tmtc_funcs {
-    ($struct_name:ident, $($field_name:ident: $field_type:ty),*) => {
-        impl $struct_name {
-            pub fn new(timestamp: u64, ptr: u64, $($field_name: $field_type),*) -> Self {
-                $struct_name {allocation_meta: MemoryAllocationMeta::new(timestamp, ptr, TMtcKey::$struct_name), $(
+macro_rules! generate_new_body {
+    ($struct_name:ident, $timestamp:expr, $ptr:expr, $($field_name:ident: $field_type:ty),*) => {
+        $struct_name {allocation_meta: MemoryAllocationMeta::new($timestamp, $ptr, TMtcKey::$struct_name), $(
                         $field_name: {
                             if let Some(converted_value) = <$field_type as From<_>>::from($field_name).into() {
                                 converted_value
@@ -334,6 +364,21 @@ macro_rules! generate_tmtc_funcs {
                             }
                         },
                     )*}
+    };
+    ($struct_name:ident, $timestamp:expr, $ptr:expr) => {
+        $struct_name { allocation_meta: MemoryAllocationMeta::new($timestamp, $ptr, TMtcKey::$struct_name)}
+    };
+}
+
+macro_rules! generate_tmtc_funcs {
+    ($struct_name:ident, $($field_name:ident: $field_type:ty),*) => {
+        impl $struct_name {
+            pub fn new(timestamp: u64, ptr: u64, $($field_name: $field_type),*) -> Self {
+                generate_new_body!($struct_name, timestamp, ptr, $($field_name: $field_type),*)
+            }
+
+            pub fn new_box(timestamp: u64, ptr: u64, $($field_name: $field_type),*) -> Box<Self> {
+                Box::new(generate_new_body!($struct_name, timestamp, ptr, $($field_name: $field_type),*))
             }
 
             $(
@@ -350,9 +395,11 @@ macro_rules! generate_tmtc_funcs {
     ($struct_name:ident) => {
         impl $struct_name {
             pub fn new(timestamp: u64, ptr: u64) -> Self {
-                $struct_name {
-                    allocation_meta: MemoryAllocationMeta::new(timestamp, ptr, TMtcKey::$struct_name),
-                }
+                generate_new_body!($struct_name, timestamp, ptr)
+            }
+
+            pub fn new_box(timestamp: u64, ptr: u64) -> Box<Self> {
+                Box::new(generate_new_body!($struct_name, timestamp, ptr))
             }
         }
 
