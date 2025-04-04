@@ -83,7 +83,12 @@ inline void createMtcObject(struct MtcObject* object) {
     object->_key_size = KEY_SIZE;
 }
 
-// TODO implement a destroy function
+/**
+ * Refer to mtccdecoder.h
+ */
+void destroyMtcObject(struct MtcObject* object){
+    // TODO implement destroy
+}
 
 /**
  * Decodes the header of a MTC file

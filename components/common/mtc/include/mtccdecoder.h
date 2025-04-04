@@ -79,6 +79,12 @@ void decode(const char* filename, struct MtcObject* object);
 void createMtcObject(struct MtcObject* object);
 
 /**
+ * Destroy a MtcObject
+ * @param object the pointer to be destroyed
+ */
+void destroyMtcObject(struct MtcObject* object);
+
+/**
  * Query the decode progress
  * @param object the decode progress object to be queried
  * @return an int from 0-100 for percentage decoded
