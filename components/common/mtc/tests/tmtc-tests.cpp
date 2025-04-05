@@ -44,8 +44,6 @@ static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
 }
 
 
-
-
 void print_point(const struct TMtcPoint* point, uint64_t timeoffset) {
     printf("[%lu] ", timeoffset);
     switch (point->key) {
