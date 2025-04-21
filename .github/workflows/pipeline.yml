@@ -239,7 +239,7 @@ jobs:
           name: libmtc_decoder
           path: components/common/mtc/libmtc_decoder.a
 
-  build-mtc-decoder-lib-test:
+  build-tmtc-decoder-lib-test:
     runs-on: ubuntu-latest
     needs: [ build-mtc-decoder-lib ]
 
@@ -261,17 +261,17 @@ jobs:
         run: |
           mv libmtc_decoder.a components/common/mtc
           cd components/common/mtc
-          make test
+          make tmtc_tests
 
-      - name: Upload mtc_tests artifact
+      - name: Upload tmtc_tests artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mtc_tests
+          name: tmtc_tests
           path: components/common/mtc/mtc_tests
 
   test-mtc-decoder-output:
     runs-on: ubuntu-latest
-    needs: [ build-mtc-decoder-lib-test, run-tracker-tests]
+    needs: [ build-tmtc-decoder-lib-test, run-tracker-tests]
 
     steps:
       - name: Checkout Repository
@@ -282,10 +282,10 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential
 
-      - name: Download mtc_tests artifact
+      - name: Download tmtc_tests artifact
         uses: actions/download-artifact@v4
         with:
-          name: mtc_tests
+          name: tmtc_tests
 
       - name: Download output files artifacts
         uses: actions/download-artifact@v4
@@ -294,8 +294,8 @@ jobs:
 
       - name: Move artifacts
         run: |
-          chmod +x ./mtc_tests
-          mv ./mtc_tests scripts/decode-test/
+          chmod +x ./tmtc_tests
+          mv ./tmtc_tests scripts/decode-test/
           mv out.txt scripts/decode-test/
           mv memory_tracker1.tmtc scripts/decode-test/
 

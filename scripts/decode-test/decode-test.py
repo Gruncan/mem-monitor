@@ -2,7 +2,7 @@ import pytest
 import subprocess
 
 
-COMMAND = ["./mtc_tests", "memory_tracker1.tmtc"]
+COMMAND = ["./tmtc_tests", "memory_tracker1.tmtc"]
 
 COMMAND_STREAM = ["./tmtc_stream_exec", "memory_tracker1.tmtc"]
 

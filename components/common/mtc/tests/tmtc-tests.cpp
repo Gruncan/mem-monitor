@@ -111,7 +111,6 @@ void print_point(const struct TMtcPoint* point, uint64_t timeoffset) {
     }
 }
 
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
@@ -125,6 +124,8 @@ int main(int argc, char* argv[]) {
     object.is_collapsable = 1;
 
     decode_tmtc(argv[1], &object);
+
+#ifndef MEM_TEST
     printf("%lu\n", object.size);
     uint64_t timestamp = 0;
     std::map<uint64_t, struct TMtcPoint*> address_map;
@@ -171,6 +172,12 @@ int main(int argc, char* argv[]) {
     for (const auto& pair : address_map) {
         print_point(pair.second, address_timestamp[pair.first]);
     }
+
+#else
+    for (uint64_t i = 0; i < object.size; i++) {
+        print_point(object.points[i]);
+    }
+#endif
 
     return 0;
 }

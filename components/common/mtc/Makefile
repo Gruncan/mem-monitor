@@ -29,13 +29,13 @@ shared: $(LIB_NAME_SHR)
 shared: CFLAGS += -fPIC
 
 test: $(TEST_EXEC)
-test: CFLAGS += -std=c++17
+test: CFLAGS += -std=c++17 -DMEM_TEST
 
 test_tmtc: $(TEST_TMTC_EXEC))
-test_tmtc: CFLAGS += -std=c++17
+test_tmtc: CFLAGS += -std=c++17 -DMEM_TEST
 
 teststream: $(TEST_STREAM_EXEC)
-teststream: CFLAGS += -std=c++17
+teststream: CFLAGS += -std=c++17 -DMEM_TEST
 
 
 $(LIB_NAME): $(OBJS)
