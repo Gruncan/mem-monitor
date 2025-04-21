@@ -31,7 +31,7 @@ shared: CFLAGS += -fPIC
 test: $(TEST_EXEC)
 test: CFLAGS += -std=c++17 -DMEM_TEST
 
-test_tmtc: $(TEST_TMTC_EXEC))
+test_tmtc: $(TEST_TMTC_EXEC)
 test_tmtc: CFLAGS += -std=c++17 -DMEM_TEST
 
 teststream: $(TEST_STREAM_EXEC)
@@ -61,6 +61,6 @@ $(TEST_STREAM_EXEC): $(TEST_STREAM_OBJS)
 
 # Clean build artifacts
 clean:
-	rm -f $(OBJS) $(LIB_NAME) $(TEST_OBJS) $(TEST_EXEC) $(TEST_STREAM_OBJS) $(TEST_STREAM_EXEC)
+	rm -f $(OBJS) $(LIB_NAME) $(TEST_OBJS) $(TEST_EXEC) $(TEST_TMTC_EXEC) $(TEST_STREAM_OBJS) $(TEST_TMTC_OBJS) $(TEST_STREAM_EXEC)
 
 .PHONY: all clean

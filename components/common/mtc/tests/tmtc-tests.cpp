@@ -47,7 +47,9 @@ static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
 
 
 void print_point(const struct TMtcPoint* point, uint64_t timeoffset) {
+#ifndef MEM_TEST    
     printf("[%lu] ", timeoffset);
+#endif
     switch (point->key) {
         case MALLOC:
             printf(MALLOC_FORMAT_STR, point->values[1], point->values[0]);
@@ -175,7 +177,7 @@ int main(int argc, char* argv[]) {
 
 #else
     for (uint64_t i = 0; i < object.size; i++) {
-        print_point(object.points[i]);
+        print_point(&object.points[i], 0);
     }
 #endif
 

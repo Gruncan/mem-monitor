@@ -261,7 +261,7 @@ jobs:
         run: |
           mv libmtc_decoder.a components/common/mtc
           cd components/common/mtc
-          make tmtc_tests
+          make test_tmtc
 
       - name: Upload tmtc_tests artifact
         uses: actions/upload-artifact@v4
