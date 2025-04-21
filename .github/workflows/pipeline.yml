@@ -343,7 +343,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tmtc_stream_tests
-          path: components/common/mtc/tmtc_stream_exec
+          path: components/common/mtc/tmtc_stream_tests
 
   test-tmtc-stream-decoder-output:
     runs-on: ubuntu-latest

@@ -47,7 +47,7 @@ static uint64_t getTMtcPointAddress(const struct TMtcPoint* point) {
 
 
 void print_point(const struct TMtcPoint* point, uint64_t timeoffset) {
-#ifndef MEM_TEST    
+#ifndef MEM_TEST
     printf("[%lu] ", timeoffset);
 #endif
     switch (point->key) {
@@ -123,7 +123,9 @@ int main(int argc, char* argv[]) {
     TMtcObject object;
 
     createTMtcObject(&object);
-    object.is_collapsable = 1;
+#ifndef MEM_TEST
+    object.is_collapsable = 0;
+#endif
 
     decode_tmtc(argv[1], &object);
 
