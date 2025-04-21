@@ -8,7 +8,7 @@ LIB_NAME = libmtc_decoder.a
 LIB_NAME_SHR = libmtc_decoder.so
 TEST_EXEC = mtc_tests
 TEST_TMTC_EXEC = tmtc_tests
-TEST_STREAM_EXEC = tmtc_stream_exec
+TEST_STREAM_EXEC = tmtc_stream_tests
 
 SRCS = src/mtccdecoder.c src/tmtcdecoder.c
 TEST_SRC = tests/mtc-tests.cpp

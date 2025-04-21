@@ -267,7 +267,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tmtc_tests
-          path: components/common/mtc/mtc_tests
+          path: components/common/mtc/tmtc_tests
 
   test-mtc-decoder-output:
     runs-on: ubuntu-latest
@@ -370,8 +370,8 @@ jobs:
 
       - name: Move artifacts
         run: |
-          chmod +x ./tmtc_stream_tests ./tmtc_stream_exec
-          mv ./tmtc_stream_tests ./tmtc_stream_exec scripts/decode-test/
+          chmod +x ./tmtc_stream_tests
+          mv ./tmtc_stream_tests scripts/decode-test/
           mv memory_tracker1.tmtc scripts/decode-test/
 
       - name: Setup Python
