@@ -339,10 +339,10 @@ jobs:
           cd components/common/mtc
           make teststream
 
-      - name: Upload tmtc_stream_tests artifact
+      - name: Upload tmtc_stream_exec artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tmtc_stream_tests
+          name: tmtc_stream_exec
           path: components/common/mtc/tmtc_stream_exec
 
   test-tmtc-stream-decoder-output:
@@ -358,10 +358,10 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential
 
-      - name: Download tmtc_stream_tests artifact
+      - name: Download tmtc_stream_exec artifact
         uses: actions/download-artifact@v4
         with:
-          name: tmtc_stream_tests
+          name: tmtc_stream_exec
 
       - name: Download tmtc_tests artifact
         uses: actions/download-artifact@v4
