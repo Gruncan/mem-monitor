@@ -368,6 +368,11 @@ jobs:
         with:
           name: tmtc_tests
 
+      - name: Download output files artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: c-test-output-file
+
       - name: Move artifacts
         run: |
           chmod +x ./tmtc_stream_tests ./tmtc_tests
