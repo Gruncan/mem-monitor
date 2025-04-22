@@ -370,8 +370,8 @@ jobs:
 
       - name: Move artifacts
         run: |
-          chmod +x ./tmtc_stream_tests ./tmtc_tests
-          mv ./tmtc_stream_tests ./tmtc_tests scripts/decode-test/
+          chmod +x ./tmtc_stream_exec ./tmtc_tests
+          mv ./tmtc_stream_exec ./tmtc_tests scripts/decode-test/
           mv memory_tracker1.tmtc scripts/decode-test/
 
       - name: Setup Python
