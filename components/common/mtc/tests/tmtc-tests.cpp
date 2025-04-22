@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
     TMtcObject object;
 
     createTMtcObject(&object);
-#ifndef MEM_TEST
+#ifdef MEM_TEST
     object.is_collapsable = 0;
 #endif
 

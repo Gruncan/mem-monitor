@@ -4,7 +4,7 @@ import subprocess
 
 COMMAND = ["./tmtc_tests", "memory_tracker1.tmtc"]
 
-COMMAND_STREAM = ["./tmtc_stream_tests", "memory_tracker1.tmtc"]
+COMMAND_STREAM = ["./tmtc_stream_exec", "memory_tracker1.tmtc"]
 
 def test_tmtc_decoding_match():
     with open("out.txt", "r") as expectedFile:
