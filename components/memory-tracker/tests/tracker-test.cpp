@@ -31,8 +31,10 @@ int main() {
     TEST(realloc_test)
     TEST(free_test)
     TEST(calloc_test)
-
+#ifndef MEM_TEST
     sleep(2);
+#endif
+
     TEST(new_test)
     TEST(delete_test)
     TEST(new_nothrow_test)
@@ -41,8 +43,10 @@ int main() {
     TEST(delete_array_test)
     TEST(new_array_nothrow_test)
     TEST(delete_array_nothrow_test)
-
+#ifndef MEM_TEST
     sleep(5);
+#endif
+
     TEST(delete_sized)
     TEST(delete_array_sized)
     TEST(new_aligned_test)
