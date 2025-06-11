@@ -11,17 +11,31 @@
 
 #include <stdint.h>
 
-#define MASK_40 0xFFFFFFFFFF
-#define MASK_32 0xFFFFFFFF
-#define MASK_24 0xFFFFFF
-#define MASK_16 0xFFFF
-#define MASK_12 0x0FFF
-#define MASK_8S 0x7F
-#define MASK_8 0xFF
-#define MASK_6 0x3F
-#define MASK_5 0x1F
-#define MASK_4 0x0F
 
+#ifdef MEM_OLD_MASKING
+#define MASK_40(x) x & 0xFFFFFFFFFF
+#define MASK_32(x) x & 0xFFFFFFFF
+#define MASK_24(x) x & 0xFFFFFF
+#define MASK_16(x) x & 0xFFFF
+#define MASK_12(x) x & 0x0FFF
+#define MASK_8S(x) x & 0x7F
+#define MASK_8(x) x & 0xFF
+#define MASK_6(x) x & 0x3F
+#define MASK_5(x) x & 0x1F
+#define MASK_4(x) x & 0x0F
+#else
+#define MASK_GENERIC(x, mask) (((x & mask) & -(x <= mask)) | (mask & ~-(x <= mask)))
+#define MASK_40(x) MASK_GENERIC(x, 0xFFFFFFFFFF)
+#define MASK_32(x) MASK_GENERIC(x, 0xFFFFFFFF)
+#define MASK_24(x) MASK_GENERIC(x, 0xFFFFFF)
+#define MASK_16(x) MASK_GENERIC(x, 0xFFFF)
+#define MASK_12(x) MASK_GENERIC(x, 0x0FFF)
+#define MASK_8S(x) MASK_GENERIC(x, 0x7F)
+#define MASK_8(x) MASK_GENERIC(x, 0xFF)
+#define MASK_6(x) MASK_GENERIC(x, 0x3F)
+#define MASK_5(x) MASK_GENERIC(x, 0x1F)
+#define MASK_4(x) MASK_GENERIC(x, 0x0F)
+#endif
 
 #define MALLOC 0x0
 #define CALLOC 0x1
@@ -80,10 +94,10 @@ typedef uint32_t mtc_point_size_t;
      ((mtc_point_size_t) (buffer)[(index) + 3] << 8) | ((buffer)[(index) + 4]))
 
 #define WRITE_MTC_VALUE_DATA(dest, value)                                                                              \
-    (dest)[1] = (byte_t) ((value) >> 24) & MASK_8;                                                                     \
-    (dest)[2] = (byte_t) ((value) >> 16) & MASK_8;                                                                     \
-    (dest)[3] = (byte_t) ((value) >> 8) & MASK_8;                                                                      \
-    (dest)[4] = (byte_t) ((value) & MASK_8);
+    (dest)[1] = (byte_t) MASK_8((value) >> 24);                                                                     \
+    (dest)[2] = (byte_t) MASK_8((value) >> 16);                                                                     \
+    (dest)[3] = (byte_t) MASK_8((value) >> 8);                                                                      \
+    (dest)[4] = (byte_t) MASK_8(value);
 
 #define MTC_VALUE_WRITE_OFFSET 5
 
@@ -95,9 +109,9 @@ typedef uint32_t mtc_point_size_t;
      ((buffer)[(index) + 3]))
 
 #define WRITE_MTC_VALUE_DATA(dest, value)                                                                              \
-    (dest)[1] = (byte_t) ((value) >> 16) & MASK_8;                                                                     \
-    (dest)[2] = (byte_t) ((value) >> 8) & MASK_8;                                                                      \
-    (dest)[3] = (byte_t) ((value) & MASK_8);
+    (dest)[1] = (byte_t) MASK_8((value) >> 16);                                                                     \
+    (dest)[2] = (byte_t) MASK_8((value) >> 8);                                                                      \
+    (dest)[3] = (byte_t) MASK_8(value);
 
 #define MTC_VALUE_WRITE_OFFSET 4
 
@@ -105,8 +119,8 @@ typedef uint32_t mtc_point_size_t;
 #define LOAD_MTC_VALUE_DATA(buffer, index) (((mtc_point_size_t) (buffer)[(index) + 1] << 8) | ((buffer)[(index) + 2]))
 
 #define WRITE_MTC_VALUE_DATA(dest, value)                                                                              \
-    (dest)[1] = (byte_t) ((value) >> 8) & MASK_8;                                                                      \
-    (dest)[2] = (byte_t) ((value) & MASK_8);
+    (dest)[1] = (byte_t) MASK_8((value) >> 8);                                                                      \
+    (dest)[2] = (byte_t) MASK_8(value);
 
 typedef uint16_t mtc_point_size_t;
 

@@ -116,13 +116,13 @@ static unsigned char shouldTMtcPointOverride(const struct TMtcPoint* point) {
     }
 
     if (isTMtcKeyEncapsulated(point->key, prev_key) && prev_address == address) {
-        prev_key = (char) (point->key & MASK_8S);
+        prev_key = (char) MASK_8S(point->key);
         prev_address = address;
         return 1;
     }
 
 setPrevKeyAddress:
-    prev_key = (char) (point->key & MASK_8S);
+    prev_key = (char) MASK_8S(point->key);
     prev_address = address;
     return 0;
 }
@@ -134,7 +134,7 @@ inline uint8_t queryTDecodeProgress(struct TMtcObject* object) {
     if (object == NULL || object->_file_length == 0 || object->size == 0) {
         return 0;
     }
-    return (uint8_t) (((double) (object->size * LOG_SIZE) / (double) object->_file_length) * 100) & MASK_8;
+    return MASK_8((uint8_t)((double) (object->size * LOG_SIZE) / (double) object->_file_length) * 100);
 }
 
 /**
@@ -190,7 +190,7 @@ static uint8_t decode_tchunk(const byte_t* buffer, struct TMtcObject* object) {
         if (micro_seconds < prev_micro_seconds) {
             point->time_offset = 0;
         } else {
-            point->time_offset = (micro_seconds - prev_micro_seconds) & MASK_32;
+            point->time_offset = MASK_32(micro_seconds - prev_micro_seconds);
         }
     }
 

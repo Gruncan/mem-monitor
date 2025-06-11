@@ -17,21 +17,21 @@
 
 
 #define VERSION 5
-#define MTC_VALUE_MASK MASK_32
+#define MTC_VALUE_MASK(x) MASK_32(x)
 
 #ifdef VERSION_3
 #undef VERSION
 #define VERSION 3
 
 #undef MTC_VALUE_MASK
-#define MTC_VALUE_MASK MASK_24
+#define MTC_VALUE_MASK(x) MASK_24(x)
 
 #elifdef VERSION_1
 #undef VERSION
 #define VERSION 1
 
 #undef MTC_VALUE_MASK
-#define MTC_VALUE_MASK MASK_16
+#define MTC_VALUE_MASK(x) MASK_16(x)
 #endif
 
 
@@ -130,12 +130,12 @@ struct timeval* get_current_time() {
 void* write_mtc_header(const struct timeval* tv, const uint8_t version) {
     const struct tm* local_time = localtime(&tv->tv_sec);
 
-    const uint year = local_time->tm_year % 100 & MASK_6;
-    const uint month = local_time->tm_mon & MASK_4;
-    const uint day = local_time->tm_mday & MASK_5;
-    const uint hour = local_time->tm_hour & MASK_5;
-    const uint minute = local_time->tm_min & MASK_6;
-    const uint second = local_time->tm_sec & MASK_6;
+    const uint year = MASK_6(local_time->tm_year % 100);
+    const uint month = MASK_4(local_time->tm_mon);
+    const uint day = MASK_5(local_time->tm_mday);
+    const uint hour = MASK_5(local_time->tm_hour);
+    const uint minute = MASK_6(local_time->tm_min);
+    const uint second = MASK_6(local_time->tm_sec);
 
     byte_t* header = malloc(5);
 
@@ -143,7 +143,7 @@ void* write_mtc_header(const struct timeval* tv, const uint8_t version) {
         header[i] = 0;
     }
 
-    header[0] = version & MASK_8;
+    header[0] = MASK_8(version);
 
     header[1] |= year << 2;
     header[1] |= month >> 2;
@@ -179,11 +179,10 @@ ushort timeval_diff_ms(const struct timeval* start_time, const struct timeval* e
 
 
 void write_data_content(void* buffer, const uint offset, mk_size_t key, mtc_point_size_t value) {
-    value &= MTC_VALUE_MASK;
-    key &= (byte_t) MASK_8;
+    value = MTC_VALUE_MASK(value);
+    key = MASK_8(key);
 
     byte_t* dest = (byte_t*) buffer + offset;
-
 
     dest[0] = key;
     WRITE_MTC_VALUE_DATA(dest, value);
@@ -226,12 +225,12 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     struct timeval* tv = get_current_time();
 
-    ushort milliseconds = timeval_diff_ms(mem_writer->prev_timestamp, tv) & MASK_16;
+    ushort milliseconds = MASK_16(timeval_diff_ms(mem_writer->prev_timestamp, tv));
 
     byte_t* miliBuf = buffer;
 
-    miliBuf[0] = (byte_t) (milliseconds >> 8 & MASK_8);
-    miliBuf[1] = (byte_t) (milliseconds & MASK_8);
+    miliBuf[0] = (byte_t) MASK_8(milliseconds >> 8);
+    miliBuf[1] = (byte_t) MASK_8(milliseconds);
 
     free(mem_writer->prev_timestamp);
     mem_writer->prev_timestamp = tv;
@@ -253,8 +252,8 @@ void write_mem(struct mem_writer_s* mem_writer, MemInfo* mem_info, MemVmInfo* me
 
     byte_t* countBuf = buffer + 2;
     const ushort value = offset - starting_offset;
-    countBuf[0] = (byte_t) (value >> 8 & MASK_8);
-    countBuf[1] = (byte_t) (value & MASK_8);
+    countBuf[0] = (byte_t) MASK_8(value >> 8);
+    countBuf[1] = (byte_t) MASK_8(value);
 
     add_to_mem_queue(mem_writer->writer_queue, buffer, offset);
 }
